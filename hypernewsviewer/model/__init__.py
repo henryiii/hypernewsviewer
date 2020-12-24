@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import enum
-from typing import Optional, TextIO
 from pathlib import Path
-
-import inflection  # type: ignore
+from typing import Optional, TextIO
 
 import attr
 
 import click
+
+import inflection  # type: ignore
+
 
 Date = str
 Email = str
@@ -43,14 +44,15 @@ class URC:
     name: str
     from_: Email
 
-    default_outline_depth: Optional[int] = attr.ib(converter=attr.converters.optional(int), default=None)
+    default_outline_depth: Optional[int] = attr.ib(
+        converter=attr.converters.optional(int), default=None
+    )
     footer_url: Optional[str] = None
     up_url: Optional[str] = None
     header_url: Optional[str] = None
     moderation: Optional[str] = None
     user_url: Optional[str] = None
     annotation_type: Optional[str] = None
-    
 
     @classmethod
     def from_file(cls, text: TextIO) -> URC:
