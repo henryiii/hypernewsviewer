@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import annotations
 
 import enum
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import List, Optional, TextIO, TypeVar
 
 import attr
 
@@ -20,52 +20,95 @@ URL = str
 
 class ContentType(enum.Enum):
     HTML = "HTML"
+    SmartText = "Smart Text"
+    PlainText = "Plain Text"
+
+
+class Kind(str, enum.Enum):
+    main = "main"
+    msg = "msg"
 
 
 def us(inp: str) -> str:
-    return inflection.underscore(inp) if inp != "From" else "from_"
+    retval: str = inflection.underscore(inp) if inp != "From" else "from_"
+    return retval
 
 
-@attr.s(kw_only=True, slots=True, auto_attribs=True, eq=True, order=False)
-class URC:
+# not using provisional API like attr.define due to missing type info for it
+define = attr.s(
+    kw_only=True,
+    slots=True,
+    auto_attribs=True,
+    eq=True,
+    order=False,
+)
+
+int_field = attr.ib(converter=int)
+opt_int_field = attr.ib(converter=attr.converters.optional(int), default=None)
+opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
+
+T = TypeVar("T")
+
+
+@define
+class URCBase:
     content_type: ContentType = attr.ib(converter=ContentType)
     title: str
-    num_messages: int
     body: Path = attr.ib(converter=Path)
     url: URL
-    categories: int
     base_url: URL
     responses: str
     date: Date
     last_message_date: Date
     last_mod: Date
-    list_address: str
-    num: str
+    num: int = int_field
     name: str
     from_: Email
 
-    default_outline_depth: Optional[int] = attr.ib(
-        converter=attr.converters.optional(int), default=None
-    )
-    footer_url: Optional[str] = None
-    up_url: Optional[str] = None
-    header_url: Optional[str] = None
-    moderation: Optional[str] = None
-    user_url: Optional[str] = None
-    annotation_type: Optional[str] = None
+    num_messages: Optional[int] = opt_int_field
+    footer_url: Optional[str] = opt_str_field
+    up_url: Optional[str] = opt_str_field
+    header_url: Optional[str] = opt_str_field
+    moderation: Optional[str] = opt_str_field
+    user_url: Optional[str] = opt_str_field
+    annotation_type: Optional[str] = opt_str_field
 
     @classmethod
-    def from_file(cls, text: TextIO) -> URC:
+    def from_file(cls: T, text: TextIO) -> T:
         pairs = (line.split(":", 1) for line in text)
         info = dict((us(k.strip()), v.strip() or None) for k, v in pairs)
         return cls(**info)  # type: ignore
 
 
+@define
+class URCMain(URCBase):
+    list_address: str
+    categories: int
+
+    default_outline_depth: Optional[int] = opt_int_field
+
+
+@define
+class URCMessage(URCBase):
+    previous_num: Optional[int] = opt_int_field
+    next_num: Optional[int] = opt_int_field
+    keywords: Optional[str] = opt_str_field
+    up_rel: Optional[str] = opt_str_field
+    node_type: Optional[str] = opt_str_field
+    newsgroups: Optional[str] = opt_str_field
+
+    message_id: str
+
+
 @click.command()
-@click.argument("input_file", type=click.File("r"))
-def main(input_file: TextIO) -> None:
-    urc = URC.from_file(input_file)
-    print(urc)
+@click.argument("input_file", type=click.File("r", lazy=True), nargs=-1)
+@click.option("--kind", type=click.Choice(Kind), required=True)
+def main(input_file: List[TextIO], kind: Kind) -> None:
+    URC = URCMain if kind == Kind.main else URCMessage
+    for ifile in input_file:
+        with ifile as file:
+            urc = URC.from_file(file)
+            print(urc)
 
 
 if __name__ == "__main__":
