@@ -50,9 +50,9 @@ opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
 T = TypeVar("T")
 
 
-@define
+@attr.define()
 class URCBase:
-    content_type: ContentType = attr.ib(converter=ContentType)
+    content_type: ContentType = attr.field(converter=ContentType)
     title: str
     body: Path = attr.ib(converter=Path)
     url: URL
