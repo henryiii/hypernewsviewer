@@ -6,7 +6,7 @@ authors = ["Henry Schreiner <henryschreineriii@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Django = "^3.1.4"
+flask = "^1.1"
 inflection = "^0.5.1"
 attrs = "^20.3.0"
 click = "^7.1.2"
