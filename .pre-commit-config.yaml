@@ -22,7 +22,18 @@ repos:
   rev: v0.790
   hooks:
   - id: mypy
-    files: hypernewsviewer/model/.*
+    files: src/hypernewsviewer/model/.*
+
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.7.4
+  hooks:
+  - id: pyupgrade
+    args: ["--py37-plus"]
+
+- repo: https://github.com/PyCQA/isort
+  rev: 5.7.0
+  hooks:
+  - id: isort
 
 - repo: https://gitlab.com/pycqa/flake8
   rev: 3.8.4
@@ -30,5 +41,3 @@ repos:
   - id: flake8
     additional_dependencies:
     - flake8-bugbear
-    - flake8-import-order
-    exclude: hypernewsviewer/settings.py
