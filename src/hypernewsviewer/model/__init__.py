@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, TextIO
 
 import click
+from rich import print
 
 from .parser import Kind, URCMain, URCMessage
 

@@ -57,7 +57,6 @@ class URCBase:
     date: Date
     last_message_date: Date
     last_mod: Date
-    num: int = int_field
     name: str
     from_: Email
 
@@ -80,12 +79,15 @@ class URCBase:
 class URCMain(URCBase):
     list_address: str
     categories: int
+    num: str
 
     default_outline_depth: Optional[int] = opt_int_field
 
 
 @define
 class URCMessage(URCBase):
+    num: int = int_field
+
     previous_num: Optional[int] = opt_int_field
     next_num: Optional[int] = opt_int_field
     keywords: Optional[str] = opt_str_field
