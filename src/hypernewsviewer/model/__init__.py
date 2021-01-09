@@ -4,9 +4,12 @@ from typing import List, TextIO
 
 import click
 from rich import print
+import rich.traceback
 
 from .parser import Kind, URCMain, URCMessage
 
+
+rich.traceback.install(show_locals=True)
 
 @click.command()
 @click.argument("input_file", type=click.File("r", lazy=True), nargs=-1)
