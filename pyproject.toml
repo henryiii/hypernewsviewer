@@ -10,7 +10,7 @@ flask = "^1.1"
 inflection = "^0.5.1"
 attrs = "^20.3.0"
 click = "^7.1.2"
-rich = "^9.6.2"
+rich = "^9.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
