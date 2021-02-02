@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import enum
+import os
 from pathlib import Path
-from typing import Optional, TextIO, TypeVar
+from typing import TextIO, TypeVar
 
 import attr
-import inflection  # type: ignore
-
+import inflection
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.table import Table
-from rich.syntax import Syntax
-from rich.text import Text
 
 Date = str
 Email = str
@@ -48,7 +46,7 @@ int_field = attr.ib(converter=int)
 opt_int_field = attr.ib(converter=attr.converters.optional(int), default=None)
 opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
 
-T = TypeVar("T")
+T = TypeVar("T", bound="URCBase")
 
 
 @define
@@ -65,22 +63,28 @@ class URCBase:
     name: str
     from_: Email
 
-    num_messages: Optional[int] = opt_int_field
-    footer_url: Optional[str] = opt_str_field
-    up_url: Optional[str] = opt_str_field
-    header_url: Optional[str] = opt_str_field
-    moderation: Optional[str] = opt_str_field
-    user_url: Optional[str] = opt_str_field
-    annotation_type: Optional[str] = opt_str_field
+    num_messages: int | None = opt_int_field
+    footer_url: str | None = opt_str_field
+    up_url: str | None = opt_str_field
+    header_url: str | None = opt_str_field
+    moderation: str | None = opt_str_field
+    user_url: str | None = opt_str_field
+    annotation_type: str | None = opt_str_field
 
     @classmethod
-    def from_file(cls: T, text: TextIO) -> T:
+    def from_path(cls: type[T], path: os.PathLike[str]) -> T:
+        with open(path) as f:
+            return cls.from_file(f)
+
+    @classmethod
+    def from_file(cls: type[T], text: TextIO) -> T:
         pairs = (line.split(":", 1) for line in text)
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
         return cls(**info)  # type: ignore
 
-
-    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
         yield f"[b]{self.__class__.__name__}:[/b]"
         my_table = Table("Attribute", "Value")
         for k, v in attr.asdict(self).items():
@@ -98,18 +102,18 @@ class URCMain(URCBase):
     categories: int
     num: str
 
-    default_outline_depth: Optional[int] = opt_int_field
+    default_outline_depth: int | None = opt_int_field
 
 
 @define
 class URCMessage(URCBase):
     num: int = int_field
 
-    previous_num: Optional[int] = opt_int_field
-    next_num: Optional[int] = opt_int_field
-    keywords: Optional[str] = opt_str_field
-    up_rel: Optional[str] = opt_str_field
-    node_type: Optional[str] = opt_str_field
-    newsgroups: Optional[str] = opt_str_field
+    previous_num: int | None = opt_int_field
+    next_num: int | None = opt_int_field
+    keywords: str | None = opt_str_field
+    up_rel: str | None = opt_str_field
+    node_type: str | None = opt_str_field
+    newsgroups: str | None = opt_str_field
 
     message_id: str
