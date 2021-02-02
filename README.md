@@ -34,9 +34,17 @@ If you want to run it manually (perhaps instead of the above install step), run:
 pre-commit run -a
 ```
 
+### Running the webapp
+
+This will start up a server:
+
+```bash
+poetry run flask run
+```
+
 ### Running the code
 
-Currently, the only application is a command-line interface to the `utc` files. Run like this:
+There is a command-line interface to the `utc` files. Run like this:
 
 ```bash
 poetry run hyper-model --help  # help

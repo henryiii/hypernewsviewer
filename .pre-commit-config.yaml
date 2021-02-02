@@ -33,7 +33,7 @@ repos:
   rev: v0.800
   hooks:
   - id: mypy
-    files: src/hypernewsviewer/model/.*
+    files: src/hypernewsviewer/model/.*|app.py
     additional_dependencies:
     - rich
 
