@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "hypernewsviewer"
 version = "0.1.0"
-description = ""
+description = "A viewer for HyperNews"
 authors = ["Henry Schreiner <henryschreineriii@gmail.com>"]
 
 [tool.poetry.dependencies]
@@ -16,8 +16,7 @@ rich = "^9.8.0"
 pytest = "^5.2"
 
 [tool.poetry.scripts]
-hn-model= "hypernewsviewer.model:main"
-
+hyper-model = "hypernewsviewer.model.__main__:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

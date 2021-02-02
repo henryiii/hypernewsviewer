@@ -36,10 +36,32 @@ pre-commit run -a
 
 ### Running the code
 
-Currently, the only application is a simple parser for the `utc` files. Run like this:
+Currently, the only application is a command-line interface to the `utc` files. Run like this:
 
 ```bash
-poetry run hn-model --help  # help
-poetry run hn-model ../hnfiles/hnTest.html,urc --kind main  # The main file
-poetry run hn-model ../hnfiles/hnTest/1.html,urc --kind msg # Message files
+poetry run hyper-model --help  # help
+```
+
+The package will assume `--root ../hnfiles`; but you set set this to wherever the data is stored.
+
+#### Showing a message
+
+```bash
+poetry run hyper-model hnTest show  # The main file
+poetry run hyper-model hnTest/1 show  # A message
+```
+
+#### Listing messages
+
+```bash
+poetry run hyper-model hnTest list
+poetry run hyper-model hnTest/1 list
+```
+
+
+#### Tree view of messages
+
+```bash
+poetry run hyper-model hnTest tree
+poetry run hyper-model hnTest/1 tree
 ```
