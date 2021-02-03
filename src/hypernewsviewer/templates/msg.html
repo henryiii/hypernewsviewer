@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ title }}</title>
+</head>
+<body>
+    {% for item in breadcrumbs %}
+        <a href="{{ item.url }}">{{ item.name }}</a> /
+    {%- endfor %}
+
+    <h1>{{ urc.title }}</h1>
+    {{ body | safe }}
+
+    <h1> Replies </h1>
+    <ul>
+      {% for item in replies %}
+      <li>{{ item.msg.num }} <a href="{{item.url}}">{{ item.msg.title }}</a>
+        {%- if item.entries == 1 -%}
+          {{ " " }} (1 reply)
+        {%- elif item.entries > 1 -%}
+          {{ " " }} ({{ item.entries }} replies)
+        {%- endif -%}
+        </li>
+      {%- endfor %}
+    </ul>
+</body>
+</html>

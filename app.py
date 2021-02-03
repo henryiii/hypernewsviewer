@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from itertools import accumulate
 from pathlib import Path
+from typing import Any
 
-from flask import Flask, redirect, url_for
-from markupsafe import escape
+from flask import Flask, redirect, render_template, url_for
 from werkzeug.wrappers import Response
 
-from hypernewsviewer.model.structure import get_html, get_msg_paths, get_msgs
+from hypernewsviewer.model.structure import (
+    get_any_urc,
+    get_html,
+    get_msg_paths,
+    get_msgs,
+)
 
 app = Flask("hypernewsviewer")
 
@@ -16,37 +22,44 @@ DATA_ROOT = DIR.parent.joinpath("hnfiles").resolve()
 
 
 @app.route("/")
-def hello_world() -> Response:
+def reroute() -> Response:
     return redirect(url_for("list_view", subpath="hnTest"))
 
 
-@app.route("/<path:subpath>/list")
+@app.route("/favicon.ico")
+def empty() -> str:
+    return ""
+
+
+@app.route("/<path:subpath>")
+@lru_cache
 def list_view(subpath: str) -> str:
     rootpath = DATA_ROOT / subpath
-
-    output = ""
 
     if rootpath.stem.isdigit():
         parts = subpath.split("/")
         trail = accumulate(parts, lambda a, b: f"{a}/{b}")
-        for part, spath in zip(parts, trail):
-            back_url = url_for("list_view", subpath=spath)
-            output += fr'<a href="{back_url}">{part}</a> / '
+        breadcrumbs = [
+            {"name": part, "url": url_for("list_view", subpath=spath)}
+            for part, spath in zip(parts, trail)
+        ]
+    else:
+        breadcrumbs = []
 
-        output += "</p>\n"
+    urc = get_any_urc(rootpath)
+    body = get_html(rootpath)
 
-    html = get_html(rootpath)
-    if html is not None:
-        output += html
-
+    replies: list[dict[str, Any]] = []
     for m in get_msgs(rootpath):
         msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
         entries = len(list(msgs))
         url = url_for("list_view", subpath=m.responses)
-        rep_txt = "replies" if entries > 1 else "reply"
-        replies = f" ({entries} {rep_txt})" if entries else ""
-        output += (
-            fr'{str(m.num)}: <a href="{url}"> {escape(m.title)}</a>{replies}</p>'
-        )
+        replies.append({"msg": m, "url": url, "entries": entries})
 
-    return output
+    return render_template(
+        "msg.html",
+        urc=urc,
+        body=body or "",
+        breadcrumbs=breadcrumbs,
+        replies=replies,
+    )
