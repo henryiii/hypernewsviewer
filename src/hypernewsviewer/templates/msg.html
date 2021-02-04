@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prettylist.css') }}">
   <title>{{ title }}</title>
 </head>
 <body>
@@ -14,17 +15,33 @@
     <h1>{{ urc.title }}</h1>
     {{ body | safe }}
 
-    <h1> Replies </h1>
-    <ul>
-      {% for item in replies %}
-      <li>{{ item.msg.num }} <a href="{{item.url}}">{{ item.msg.title }}</a>
-        {%- if item.entries == 1 -%}
-          {{ " " }} (1 reply)
-        {%- elif item.entries > 1 -%}
-          {{ " " }} ({{ item.entries }} replies)
-        {%- endif -%}
-        </li>
-      {%- endfor %}
-    </ul>
+    {% if replies -%}
+      <h1> Replies </h1>
+
+      <div class="listing">
+        {% if replies.__len__() < 100 %}
+        <ol class="gradient-list">
+        {% else%}
+        <ol class="simple-list">
+        {% endif %}
+          {% for item in replies %}
+          <a href="{{item.url}}">
+            <li value="{{ item.msg.num }}">
+              {{ item.msg.title }}
+              {%- if item.entries == 1 -%}
+                {{ " " }} (1 reply)
+              {%- elif item.entries > 1 -%}
+                {{ " " }} ({{ item.entries }} replies)
+              {%- endif -%}
+              </li>
+            </a>
+          {%- endfor %}
+        </ol>
+      </div>
+    {% endif %}
+
+    <details><summary>Click to see raw info</summary>
+      <pre>{{ urc.as_simple_dict() | tojson(indent=2) }}</pre>
+    </details>
 </body>
 </html>

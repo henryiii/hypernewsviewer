@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 import os
 from pathlib import Path
-from typing import TextIO, TypeVar
+from typing import Any, TextIO, TypeVar
 
 import attr
 import inflection
@@ -94,6 +94,9 @@ class URCBase:
                 out = "" if v is None else str(v)
             my_table.add_row(k, out)
         yield my_table
+
+    def as_simple_dict(self) -> dict[str, str]:
+        return {k: str(v) for k, v in attr.asdict(self).items()}
 
 
 @define

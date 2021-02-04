@@ -14,9 +14,11 @@ rich = "^9.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+libsass = "^0.20.1"
 
 [tool.poetry.scripts]
 hyper-model = "hypernewsviewer.model.__main__:main"
+hyper-compile = "hypernewsviewer.compile:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
