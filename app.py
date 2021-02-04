@@ -5,7 +5,7 @@ from itertools import accumulate
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, redirect, render_template, send_from_directory, url_for
 from werkzeug.wrappers import Response
 
 from hypernewsviewer.model.structure import (
@@ -27,8 +27,8 @@ def reroute() -> Response:
 
 
 @app.route("/favicon.ico")
-def empty() -> str:
-    return ""
+def empty() -> Response:
+    return send_from_directory("static", "favicon.ico")
 
 
 @app.route("/<path:subpath>")
@@ -36,15 +36,12 @@ def empty() -> str:
 def list_view(subpath: str) -> str:
     rootpath = DATA_ROOT / subpath
 
-    if rootpath.stem.isdigit():
-        parts = subpath.split("/")
-        trail = accumulate(parts, lambda a, b: f"{a}/{b}")
-        breadcrumbs = [
-            {"name": part, "url": url_for("list_view", subpath=spath)}
-            for part, spath in zip(parts, trail)
-        ]
-    else:
-        breadcrumbs = []
+    parts = subpath.split("/")
+    trail = accumulate(parts, lambda a, b: f"{a}/{b}")
+    breadcrumbs = [
+        {"name": part, "url": url_for("list_view", subpath=spath)}
+        for part, spath in zip(parts, trail)
+    ]
 
     urc = get_any_urc(rootpath)
     body = get_html(rootpath)

@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <title>{{ title }}</title>
 </head>
 <body>
+  <ul class="breadcrumb">
     {% for item in breadcrumbs %}
-        <a href="{{ item.url }}">{{ item.name }}</a> /
+      <li><a href="{{ item.url }}">{{ item.name }}</a></li>
     {%- endfor %}
+  </ul>
 
     <h1>{{ urc.title }}</h1>
     {{ body | safe }}
