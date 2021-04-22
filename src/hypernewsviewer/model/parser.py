@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 import os
 from pathlib import Path
-from typing import Any, TextIO, TypeVar
+from typing import TextIO, TypeVar
 
 import attr
 import inflection
