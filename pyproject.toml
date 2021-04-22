@@ -13,7 +13,7 @@ click = "^7.1.2"
 rich = "^9.8.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.2"
 libsass = "^0.20.1"
 
 [tool.poetry.scripts]
