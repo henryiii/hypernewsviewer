@@ -12,9 +12,14 @@ attrs = "^20.3.0"
 click = "^7.1.2"
 rich = "^9.8.0"
 
+pytest = { version = ">=6.2", optional = true }
+
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
 libsass = "^0.20.1"
+
+[tool.poetry.extras]
+test = ["pytest"]
 
 [tool.poetry.scripts]
 hyper-model = "hypernewsviewer.model.__main__:main"

@@ -1,3 +1,14 @@
+
+### Quickstart
+
+This project has a nox file for quick runs. If you have nox:
+
+```console
+nox -e serve
+```
+
+If you don't have nox but do have pipx, then `pipx run nox` replaces `nox` above. And if you have docker, you can use `docker run --rm -it -v $PWD:/src thekevjames/nox:latest nox -f /src/noxfile.py` instead.
+
 ### Instructions
 
 This is a Poetry project. Poetry is like a combination of setuptools, pip,
