@@ -48,10 +48,6 @@ def get_html(path: Path, /) -> str | None:
     if msg.exists():
         return msg.read_text()
 
-    msg = path.parent.joinpath(f"{path.stem}.note")
-    if msg.exists():
-        return "<pre>" + msg.read_text() + "</pre>"
-
     return None
 
 

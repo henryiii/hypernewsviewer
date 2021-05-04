@@ -12,7 +12,11 @@
       <table width="100%">
         <tbody>
           <tr>
-            <td class="titleleft">Message: {{ urc.title }}</td>
+            {% if breadcrumbs | length > 1 %}
+              <td class="titleleft">Message: {{ urc.title }}</td>
+            {% else %}
+              <td class="titleleft">Forum: {{ urc.title }}</td>
+            {% endif %}
             </td>
             <td class="titleright">
             </td>
@@ -135,87 +139,94 @@
     </div>
 
 
-    <ul class="breadcrumb">
-      {% for item in breadcrumbs %}
-        <li>
-          <a href="{{ item.url }}">{{ item.name }}</a>
-        </li>
-        {%- endfor %}
-    </ul>
+    {% if breadcrumbs | length > 1 %}
+      <ul class="breadcrumb">
+        {% for item in breadcrumbs %}
+          <li>
+            <a href="{{ item.url }}">{{ item.name }}</a>
+          </li>
+          {%- endfor %}
+      </ul>
 
-    <table>
-      <tbody>
-        <tr>
-          <td>
-            <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-              <tbody>
-                <tr>
-                  <td style="BORDER:0">
-                    <nobr>
-                    <a href="https://hypernews.cern.ch/HyperNews/CMS/thread.pl/beamspot/193.html?dir=next-in-thread" class="commandlink invalid">
-                      &nbsp;Next-in-Thread
-                    </a>
-                    </nobr>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                <tbody>
+                  <tr>
+                    <td style="BORDER:0">
+                      <nobr>
+                      <a href="https://hypernews.cern.ch/HyperNews/CMS/thread.pl/beamspot/193.html?dir=next-in-thread" class="commandlink invalid">
+                        &nbsp;Next-in-Thread
+                      </a>
+                      </nobr>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
 
-          <td>
-            <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-              <tbody>
-                <tr>
-                  <td style="BORDER:0">
-                    <nobr>
-                    <a href="https://hypernews.cern.ch/HyperNews/CMS/thread.pl/beamspot/193.html?dir=nextResponse" class="commandlink invalid">
-                      &nbsp;Next-in-Forum
-                    </a>
-                    </nobr>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
+            <td>
+              <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                <tbody>
+                  <tr>
+                    <td style="BORDER:0">
+                      <nobr>
+                      <a href="https://hypernews.cern.ch/HyperNews/CMS/thread.pl/beamspot/193.html?dir=nextResponse" class="commandlink invalid">
+                        &nbsp;Next-in-Forum
+                      </a>
+                      </nobr>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
 
-        </tr>
-      </tbody>
-    </table>
-    <!-- start header -->
-    <h2>
-      <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
-    <dl>
-      <dd>
-        <nobr>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- start header -->
+      <h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
+      <dl>
+        <dd>
+          <nobr>
 
 
-        <font size="+1">
-          <i>Forum:</i>
-          <a href="/">
-            {{ forum_title }}</a>
-          <br>
-        </font>
+          <font size="+1">
+            <i>Forum:</i>
+            <a href="/">
+              {{ forum_title }}</a>
+            <br>
+          </font>
 
-        <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
-        <i>From:</i>
-        <a class="invalid" href="https://hypernews.cern.ch/HyperNews/CMS/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
-        &lt;<i>{{ urc.name }}</i>&gt; <br>
+          <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
+          <i>From:</i>
+          <a class="invalid" href="https://hypernews.cern.ch/HyperNews/CMS/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
+          &lt;<i>{{ urc.name }}</i>&gt; <br>
 
-        </nobr>
-      </dd>
-    </dl>
+          </nobr>
+        </dd>
+      </dl>
 
-    <!--  start message body  -->
-    <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
-      <tbody>
-        <tr>
-          <td>
-            {{ body | safe }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <!--  end message body -->
+      <!--  start message body  -->
+      <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
+        <tbody>
+          <tr>
+            <td>
+              {{ body | safe }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!--  end message body -->
+    {% else %}
+      <div>
+        {{ body | safe }}
+      </div>
+      <hr size="5">
+    {% endif %}
 
     {% if replies -%}
       <div class="listing">
