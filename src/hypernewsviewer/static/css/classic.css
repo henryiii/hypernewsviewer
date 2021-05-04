@@ -1,0 +1,207 @@
+
+body {
+  /* DONT CHANGE width, margin and padding size, or you ll be very sorry for
+        MSIE users */
+  margin-top: 5;
+  margin-left: 5;
+  margin-right: 5;
+  margin-bottom: 5;
+  background-color: #FFFFFF;
+  font-family: arial,helvetica;
+  color: #333333;
+}
+
+a { text-decoration: none; color: #006699;}
+a:visited { color: #663366;}
+a:hover { color: #ff0000; }
+a:active { color: #000000; }
+a.sortbutton { color: #FFFFFF; }
+
+  /* Doesn't change color after visited */
+a.stablelink {color: #006699;}
+
+a.button { text-decoration: none; color: #000000;}
+a.button:hover { color: #000000; }
+a.button:active { color: #000000; }
+
+a.titlelink:link    {color: #f0f000; text-decoration: none}
+a.titlelink:visited {color: #f0f000; text-decoration: none}
+a.titlelink:hover   {color: #ff0000; text-decoration: none}
+
+a.navlink:link    {color: #002993; text-decoration: none; font-weight: bold;font-size: small;}
+a.navlink:visited {color: #002993; text-decoration: none; font-weight: bold;font-size: small;}
+a.navlink:hover   {color: #ff0000; text-decoration: none; font-weight: bold;font-size: small;}
+
+a.headerlink:link  {color: #006699; text-decoration: none; font-weight: bold;font-size: xlarge;}
+a.headerlink:visited {color: #006699; text-decoration: none; font-weight: bold;font-size: xlarge;}
+a.headerlink:hover {color: #ff0000; text-decoration: none; font-weight: bold;font-size: xlarge;}
+
+a.commandlink:link  {color: #006699; text-decoration: none; font-weight: bold;font-size: medium;}
+a.commandlink:visited {color: #006699; text-decoration: none; font-weight: bold;font-size: medium;}
+a.commandlink:hover {color: #ff0000; text-decoration: none; font-weight: bold;font-size: medium;}
+
+a.catlink {font-size: small;}
+
+.navheader {
+  color: #000000;
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: small;
+  text-align: center;
+}
+
+h1 {
+  text-align: center;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+h2.toptitle {
+  color: #339966;
+  background-color: bisque;
+  text-align: left;
+  vertical-align: middle;
+}
+
+h3 {
+}
+
+img {
+  border: 0px;
+}
+
+.error { color: #980000; }
+.footer {  color: #333333; }
+
+.tabs { color: #006699; }
+.tabs:hover { color: #ff0000; }
+.tabselect { color: #000000; font-weight: bold; }
+.tabselect:hover { background-color: #e0cd9f; color: #000000; font-weight: bold;
+ }
+
+.pagetitle {
+  font-weight: bold;
+  background-color: #0069c3;
+  border-top: solid #9999ff;
+  border-left: solid #9999ff;
+  border-bottom: solid #575967;
+  border-right: solid #575967;
+  color: #FFFFFF;
+  font-size: medium;
+  text-align: left;
+}
+
+.titleleft {
+  font-size: medium;
+  font-weight: bold;
+  text-align: left;
+  color: #FFFFFF;
+}
+.titleright {
+  font-size: small;
+  font-weight: bold;
+  text-align: right;
+  color: #FFFFFF;
+}
+
+.member {
+  text-align: right;
+}
+
+.navigationbar {
+  background-color: #9999ff;
+  border: 1px;
+  border-top: solid #A8C9DE;
+  border-left: solid #A8C9DE;
+  border-bottom: solid #336699;
+  border-right: solid #336699;
+  color: #FFFFFF;
+  margin: 0px 0px 0px 0px
+}
+
+.navlist {
+  list-style-type: square;
+}
+
+.navtable {
+  border-spacing: 30px 0px;
+  border-color: #336699;
+  border: 1px;
+}
+
+.hnfooter {
+  display: block;
+  float: left;
+  width: 97%;
+  border-top: 2px solid #336699;
+  padding: 5px;
+}
+
+.formathelp {
+  display: block;
+  border: 1px solid #336699;
+  padding: 5px;
+  margin: 20px;
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+.hnhelp {
+  display: block;
+  border: 1px solid #336699;
+  margin: 20px;
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+
+.hnhelptitle {
+  margin: 0px;
+  padding: 3px;
+  color: #FFFFFF;
+  background-color: #0069c3;
+}
+
+.hnhelpbody {
+  padding: 5px;
+}
+
+div.mycategory {
+  display: block;
+  float: left;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  width: 97%;
+}
+
+div.categoryheader {
+  display: block;
+  margin-top: 1px;
+  margin-left: 1px;
+  margin-right: 1px;
+  margin-bottom: 5px;
+  border-bottom: 2px solid black;
+  font-size: large;
+  font-weight: bolder;
+}
+
+div.categoryforum {
+  float: left;
+  padding-top: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-bottom: 1px;
+  width: 250px;
+  font-size: medium;
+}
+
+/*-ap added fix by Giulio */
+pre {
+  white-space: pre-wrap; /* css-3 */
+  white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+}

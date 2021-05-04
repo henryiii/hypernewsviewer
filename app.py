@@ -56,6 +56,7 @@ def list_view(subpath: str) -> str:
     return render_template(
         "msg.html",
         urc=urc,
+        forum_title="HyperNews Test Forum",
         body=body or "",
         breadcrumbs=breadcrumbs,
         replies=replies,

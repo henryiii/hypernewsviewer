@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import enum
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import TextIO, TypeVar
 
@@ -48,6 +49,8 @@ opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
 
 T = TypeVar("T", bound="URCBase")
 
+FMT = "%a, %d %b %Y %H:%M:%S GMT"
+
 
 @define
 class URCBase:
@@ -57,9 +60,9 @@ class URCBase:
     url: URL
     base_url: URL
     responses: str
-    date: Date
-    last_message_date: Date
-    last_mod: Date
+    date: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
+    last_message_date: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
+    last_mod: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
     name: str
     from_: Email
 
