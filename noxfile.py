@@ -2,6 +2,7 @@ import nox
 
 nox.options.sessions = ["tests"]
 
+
 @nox.session
 def tests(session):
     """
@@ -9,6 +10,7 @@ def tests(session):
     """
     session.install(".[test]")
     session.run("pytest")
+
 
 @nox.session
 def serve(session):
