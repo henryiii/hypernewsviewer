@@ -5,7 +5,7 @@ from itertools import accumulate
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, redirect, render_template, send_from_directory, url_for
+from flask import Flask, redirect, render_template, send_from_directory, url_for, request
 from werkzeug.wrappers import Response
 
 from .model.structure import (
@@ -13,6 +13,7 @@ from .model.structure import (
     get_html,
     get_msg_paths,
     get_msgs,
+    get_member,
 )
 
 app = Flask("hypernewsviewer")
@@ -27,7 +28,6 @@ def reroute() -> Response:
 @app.route("/favicon.ico")
 def empty() -> Response:
     return send_from_directory("static", "favicon.ico")
-
 
 @app.route("/get/<path:subpath>")
 @lru_cache
@@ -62,3 +62,13 @@ def list_view(subpath: str) -> str:
         breadcrumbs=breadcrumbs,
         replies=replies,
     )
+
+@app.route("/view-member.pl")
+@lru_cache
+def view_member() -> str:
+    (answer,) = request.args
+    rootpath = DATA_ROOT / 'hnpeople' / answer
+    member = get_member(rootpath)
+    
+    header = """<p><a href="/">home</a></p>\n"""
+    return header + "<br/>\n".join(f"{k}: {v}" for k, v in member.as_simple_dict().items() if k != 'password')
