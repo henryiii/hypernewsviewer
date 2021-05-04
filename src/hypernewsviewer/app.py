@@ -43,7 +43,10 @@ def list_view(subpath: str) -> str:
     ]
 
     urc = get_any_urc(rootpath)
-    body = get_html(rootpath)
+    if len(breadcrumbs) > 1:
+        body = get_html(rootpath)
+    else:
+        body = get_html(rootpath / rootpath.name)
 
     replies: list[dict[str, Any]] = []
     for m in get_msgs(rootpath):
