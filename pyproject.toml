@@ -27,7 +27,6 @@ cli = ["click", "rich"]
 
 [tool.poetry.scripts]
 hyper-model = "hypernewsviewer.model.__main__:main"
-hyper-compile = "hypernewsviewer.compile:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
