@@ -9,7 +9,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.tree import Tree
 
-from .parser import URCMain, URCMessage, Member
+from .parser import Member, URCMain, URCMessage
 
 
 def get_any_urc(path: Path) -> URCMain | URCMessage:

@@ -47,7 +47,7 @@ int_field = attr.ib(converter=int)
 opt_int_field = attr.ib(converter=attr.converters.optional(int), default=None)
 opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
 
-T = TypeVar("T", bound="URCBase")
+T = TypeVar("T", bound="InfoBase")
 
 FMT = "%a, %d %b %Y %H:%M:%S GMT"
 
@@ -97,6 +97,7 @@ class Member(InfoBase):
     email2: str | None = opt_str_field
     subscribe: str | None = opt_str_field
     alt_user_i_ds: str | None = opt_str_field
+
 
 @define
 class URCBase(InfoBase):
