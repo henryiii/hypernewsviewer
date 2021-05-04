@@ -220,17 +220,17 @@
     {% if replies -%}
       <div class="listing">
         <ol>
-          {% for item in replies %}
-            <a href="{{item.url}}">
-              <li value="{{ item.msg.num }}">
+          {% for item in replies[::-1] %}
+            <li value="{{ item.msg.num }}">
+              <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
+              <a href="{{item.url}}">
                 {{ item.msg.title }}
-                {%- if item.entries == 1 -%}
-                {{ " " }} (1 reply)
-                {%- elif item.entries > 1 -%}
-                {{ " " }} ({{ item.entries }} replies)
-                {%- endif -%}
-              </li>
-            </a>
+              </a>
+              <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
+              {%- if item.entries > 0 -%}
+              <ul> <li> {{ item.entries | pluralize("reply") }} </li> </ul>
+              {%- endif -%}
+            </li>
             {%- endfor %}
         </ol>
       </div>
