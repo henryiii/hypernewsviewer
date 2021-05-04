@@ -24,13 +24,12 @@ DATA_ROOT = DIR.parent.joinpath("hnfiles").resolve()
 def reroute() -> Response:
     return redirect(url_for("list_view", subpath="hnTest"))
 
-
 @app.route("/favicon.ico")
 def empty() -> Response:
     return send_from_directory("static", "favicon.ico")
 
 
-@app.route("/<path:subpath>")
+@app.route("/get/<path:subpath>")
 @lru_cache
 def list_view(subpath: str) -> str:
     rootpath = DATA_ROOT / subpath
