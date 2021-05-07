@@ -5,9 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterator
 
-from rich.markdown import Markdown
-from rich.panel import Panel
-from rich.tree import Tree
 
 from .parser import Member, URCMain, URCMessage
 
@@ -32,36 +29,9 @@ def get_msgs(directory: Path) -> Iterator[URCMessage]:
         yield URCMessage.from_path(path)
 
 
-def walk_tree(directory: Path, tree: Tree) -> None:
-    for path in get_msg_paths(directory):
-        folder = path.with_suffix("")
-        emoji = ":open_file_folder:" if folder.exists() else ":file_folder:"
-        try:
-            msg_title = URCMessage.from_path(path).title
-        except UnicodeDecodeError:
-            ":cross_mark:"
-        branch = tree.add(
-            f"{emoji} [link file://{folder}]{path.stem}: {msg_title}",
-        )
-        if folder.exists():
-            walk_tree(folder, branch)
-
-
 def get_html(path: Path, /) -> str | None:
     msg = path.parent.joinpath(f"{path.stem}-body.html")
     if msg.exists():
         return msg.read_text()
 
     return None
-
-
-def get_html_panel(path: Path, /) -> Panel | None:
-    msg = get_html(path)
-    if msg is None:
-        return None
-
-    return Panel(
-        Markdown(msg),
-        title=str(path),
-        border_style="cyan",
-    )

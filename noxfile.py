@@ -19,3 +19,13 @@ def serve(session):
     """
     session.install(".")
     session.run("flask", "run")
+
+@nox.session
+def production(session):
+    """
+    Serve with a production level server (Ctrl-C to quit).
+    """
+
+    session.install(".")
+    session.install("gunicorn")
+    session.run("gunicorn", "hypernewsviewer.app:app")

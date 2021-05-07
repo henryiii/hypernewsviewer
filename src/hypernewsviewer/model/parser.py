@@ -10,8 +10,13 @@ from typing import TextIO, TypeVar
 
 import attr
 import inflection
-from rich.console import Console, ConsoleOptions, RenderResult
-from rich.table import Table
+
+try:
+    import rich
+    from rich.console import Console, ConsoleOptions, RenderResult
+    from rich.table import Table
+except ModuleNotFoundError:
+    rich = None
 
 Date = str
 Email = str
@@ -65,21 +70,23 @@ class InfoBase:
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
         return cls(**info)  # type: ignore
 
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
-        yield f"[b]{self.__class__.__name__}:[/b]"
-        my_table = Table("Attribute", "Value")
-        for k, v in attr.asdict(self).items():
-            if "url" in k and v:
-                out = f"[link=URL]{v}[/link]"
-            else:
-                out = "" if v is None else str(v)
-            my_table.add_row(k, out)
-        yield my_table
-
     def as_simple_dict(self) -> dict[str, str]:
         return {k: str(v) for k, v in attr.asdict(self).items()}
+
+    if rich:
+        def __rich_console__(
+            self, console: Console, options: ConsoleOptions
+        ) -> RenderResult:
+            yield f"[b]{self.__class__.__name__}:[/b]"
+            my_table = Table("Attribute", "Value")
+            for k, v in attr.asdict(self).items():
+                if "url" in k and v:
+                    out = f"[link=URL]{v}[/link]"
+                else:
+                    out = "" if v is None else str(v)
+                my_table.add_row(k, out)
+            yield my_table
+
 
 
 @define

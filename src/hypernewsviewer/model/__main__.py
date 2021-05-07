@@ -9,7 +9,8 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .parser import URCBase, URCMain, URCMessage
-from .structure import get_html_panel, get_msg_paths, get_msgs, walk_tree
+from .structure import get_msg_paths, get_msgs
+from .cliutils imoport get_html_panel, walk_tree
 
 rich.traceback.install(show_locals=True)
 
