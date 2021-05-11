@@ -45,7 +45,10 @@ def list_view(subpath: str) -> str:
         for part, spath in zip(parts, trail)
     ]
 
-    urc = get_any_urc(rootpath)
+    try:
+        urc = get_any_urc(rootpath)
+    except FileNotFoundError:
+        return f"Unable to find forum: {subpath}"
     if len(breadcrumbs) > 1:
         body = get_html(rootpath)
     else:
