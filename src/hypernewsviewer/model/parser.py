@@ -68,7 +68,7 @@ class InfoBase:
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
         return cls(**info)  # type: ignore
 
-    def as_simple_dict(self) -> dict[str, str]:
+    def as_simple_dict(self) -> "dict[str, str]":
         return {k: str(v) for k, v in attr.asdict(self).items()}
 
     if rich:

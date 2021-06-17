@@ -32,7 +32,7 @@ def empty() -> Response:
 
 
 @app.route("/get/<path:subpath>")
-@lru_cache
+@lru_cache()
 def list_view(subpath: str) -> str:
     rootpath = DATA_ROOT / subpath
 
@@ -70,7 +70,7 @@ def list_view(subpath: str) -> str:
 
 
 @app.route("/view-member.pl")
-@lru_cache
+@lru_cache()
 def view_member() -> str:
     (answer,) = request.args
     rootpath = DATA_ROOT / "hnpeople" / answer

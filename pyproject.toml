@@ -40,9 +40,11 @@ multi_line_output = 3
 
 [tool.mypy]
 python_version = "3.6"
+warn_unused_configs = true
+disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
-    "somelibrary",
+    "inflection.*",
 ]
 ignore_missing_imports = true
