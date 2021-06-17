@@ -5,7 +5,7 @@ description = "A viewer for HyperNews"
 authors = ["Henry Schreiner <henryschreineriii@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.6"
 flask = "^1.1"
 markupsafe = "<2"
 inflection = "^0.5.1"
@@ -37,3 +37,12 @@ build-backend = "poetry.core.masonry.api"
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.6"
+
+[[tool.mypy.overrides]]
+module = [
+    "somelibrary",
+]
+ignore_missing_imports = true

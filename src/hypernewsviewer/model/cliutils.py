@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from rich.markdown import Markdown
@@ -9,6 +7,7 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from .parser import URCMessage
+
 
 def walk_tree(directory: Path, tree: Tree) -> None:
     for path in get_msg_paths(directory):
@@ -25,7 +24,7 @@ def walk_tree(directory: Path, tree: Tree) -> None:
             walk_tree(folder, branch)
 
 
-def get_html_panel(path: Path, /) -> Panel | None:
+def get_html_panel(path: Path, /) -> "Panel | None":
     msg = get_html(path)
     if msg is None:
         return None

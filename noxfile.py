@@ -20,6 +20,7 @@ def serve(session):
     session.install(".")
     session.run("flask", "run")
 
+
 @nox.session
 def production(session):
     """

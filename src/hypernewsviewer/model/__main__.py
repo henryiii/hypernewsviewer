@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathlib import Path
 
 import click
@@ -8,9 +6,9 @@ from rich import print
 from rich.table import Table
 from rich.tree import Tree
 
+from .cliutils import get_html_panel, walk_tree
 from .parser import URCBase, URCMain, URCMessage
 from .structure import get_msg_paths, get_msgs
-from .cliutils imoport get_html_panel, walk_tree
 
 rich.traceback.install(show_locals=True)
 

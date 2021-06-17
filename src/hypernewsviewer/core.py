@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from functools import lru_cache
 from itertools import accumulate
 from pathlib import Path

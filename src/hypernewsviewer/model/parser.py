@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import enum
 import os
 from datetime import datetime
@@ -16,7 +14,7 @@ try:
     from rich.console import Console, ConsoleOptions, RenderResult
     from rich.table import Table
 except ModuleNotFoundError:
-    rich = None
+    rich = None  # type: ignore
 
 Date = str
 Email = str
@@ -60,12 +58,12 @@ FMT = "%a, %d %b %Y %H:%M:%S GMT"
 @define
 class InfoBase:
     @classmethod
-    def from_path(cls: type[T], path: os.PathLike[str]) -> T:
+    def from_path(cls: "type[T]", path: "os.PathLike[str]") -> T:
         with open(path) as f:
             return cls.from_file(f)
 
     @classmethod
-    def from_file(cls: type[T], text: TextIO) -> T:
+    def from_file(cls: "type[T]", text: TextIO) -> T:
         pairs = (line.split(":", 1) for line in text)
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
         return cls(**info)  # type: ignore
@@ -74,6 +72,7 @@ class InfoBase:
         return {k: str(v) for k, v in attr.asdict(self).items()}
 
     if rich:
+
         def __rich_console__(
             self, console: Console, options: ConsoleOptions
         ) -> RenderResult:
@@ -88,7 +87,6 @@ class InfoBase:
             yield my_table
 
 
-
 @define
 class Member(InfoBase):
     session_length: str
@@ -101,9 +99,9 @@ class Member(InfoBase):
     content: str
     email: str
     name: str
-    email2: str | None = opt_str_field
-    subscribe: str | None = opt_str_field
-    alt_user_i_ds: str | None = opt_str_field
+    email2: "str | None" = opt_str_field
+    subscribe: "str | None" = opt_str_field
+    alt_user_i_ds: "str | None" = opt_str_field
 
 
 @define
@@ -120,13 +118,13 @@ class URCBase(InfoBase):
     name: str
     from_: Email
 
-    num_messages: int | None = opt_int_field
-    footer_url: str | None = opt_str_field
-    up_url: str | None = opt_str_field
-    header_url: str | None = opt_str_field
-    moderation: str | None = opt_str_field
-    user_url: str | None = opt_str_field
-    annotation_type: str | None = opt_str_field
+    num_messages: "int | None" = opt_int_field
+    footer_url: "str | None" = opt_str_field
+    up_url: "str | None" = opt_str_field
+    header_url: "str | None" = opt_str_field
+    moderation: "str | None" = opt_str_field
+    user_url: "str | None" = opt_str_field
+    annotation_type: "str | None" = opt_str_field
 
 
 @define
@@ -135,18 +133,18 @@ class URCMain(URCBase):
     categories: int
     num: str
 
-    default_outline_depth: int | None = opt_int_field
+    default_outline_depth: "int | None" = opt_int_field
 
 
 @define
 class URCMessage(URCBase):
     num: int = int_field
 
-    previous_num: int | None = opt_int_field
-    next_num: int | None = opt_int_field
-    keywords: str | None = opt_str_field
-    up_rel: str | None = opt_str_field
-    node_type: str | None = opt_str_field
-    newsgroups: str | None = opt_str_field
+    previous_num: "int | None" = opt_int_field
+    next_num: "int | None" = opt_int_field
+    keywords: "str | None" = opt_str_field
+    up_rel: "str | None" = opt_str_field
+    node_type: "str | None" = opt_str_field
+    newsgroups: "str | None" = opt_str_field
 
     message_id: str
