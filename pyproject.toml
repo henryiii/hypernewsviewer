@@ -6,8 +6,8 @@ authors = ["Henry Schreiner <henryschreineriii@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-flask = "^1.1"
-markupsafe = "<2"
+flask = "^2.0"
+markupsafe = "^2.0"
 inflection = "^0.5.1"
 attrs = "^20.3.0"
 
