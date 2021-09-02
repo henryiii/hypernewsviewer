@@ -48,7 +48,7 @@ def list_view(subpath: str) -> str:
     try:
         urc = get_any_urc(rootpath)
     except FileNotFoundError:
-        return f"Unable to find forum: {subpath}"
+        return f"Unable to find forum: {subpath} at {DATA_ROOT}"
     if len(breadcrumbs) > 1:
         body = get_html(rootpath)
     else:
