@@ -1,3 +1,11 @@
 a.invalid:link, a.invalid:visited {
   color: red;
 }
+
+div.hn-archive-warning {
+  color: white;
+  background-color: darkred;
+  padding: 6px;
+  font-weight: bold;
+  border-radius: 0px 0px 12px 12px;
+}
