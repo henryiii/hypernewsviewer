@@ -4,4 +4,4 @@ from hypernewsviewer.core import app
 
 __all__ = ("app", "pluralize", "smartdate")
 
-# Non-app dependenices need to be imported first, so that the app can use them
+# Non-app dependencies need to be imported first, so that the app can use them

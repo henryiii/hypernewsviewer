@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from itertools import accumulate
 from pathlib import Path
@@ -18,7 +19,8 @@ from .model.structure import get_any_urc, get_html, get_member, get_msg_paths, g
 app = Flask("hypernewsviewer")
 
 DIR = Path(".").resolve()
-DATA_ROOT = DIR.parent.joinpath("hnfiles").resolve()
+HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
+DATA_ROOT = Path(HNFILES).resolve()
 
 
 @app.route("/")
