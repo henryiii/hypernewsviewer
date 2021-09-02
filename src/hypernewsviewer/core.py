@@ -1,7 +1,7 @@
 from functools import lru_cache
 from itertools import accumulate
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List
 
 from flask import (
     Flask,
@@ -52,7 +52,7 @@ def list_view(subpath: str) -> str:
     else:
         body = get_html(rootpath / rootpath.name)
 
-    replies: list[dict[str, Any]] = []
+    replies: List[Dict[str, Any]] = []
     for m in get_msgs(rootpath):
         msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
         entries = len(list(msgs))

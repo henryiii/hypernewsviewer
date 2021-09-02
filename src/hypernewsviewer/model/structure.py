@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, List
 
 from .parser import Member, URCMain, URCMessage
 
@@ -17,7 +17,7 @@ def get_member(path: Path) -> Member:
     return Member.from_path(path)
 
 
-def get_msg_paths(directory: Path) -> "list[Path]":
+def get_msg_paths(directory: Path) -> List[Path]:
     return sorted(directory.glob("*.html,urc"), key=lambda x: int(x.stem))
 
 

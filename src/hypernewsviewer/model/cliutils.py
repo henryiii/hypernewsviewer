@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from .parser import URCMessage
+from .structure import get_html, get_msg_paths
 
 
 def walk_tree(directory: Path, tree: Tree) -> None:

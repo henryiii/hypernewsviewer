@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/psf/black
-  rev: 21.6b0
+  rev: 21.8b0
   hooks:
   - id: black
 
@@ -19,26 +19,26 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.19.4
+  rev: v2.25.0
   hooks:
   - id: pyupgrade
     args: ["--py36-plus"]
 
 - repo: https://github.com/PyCQA/isort
-  rev: 5.8.0
+  rev: 5.9.3
   hooks:
   - id: isort
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.902
+  rev: v0.910
   hooks:
   - id: mypy
     files: src/hypernewsviewer/model/.*|app.py
-    args: [--scripts-are-modules]
+    args: []
     additional_dependencies:
     - rich
     - types-attrs
-    - types-click
+    - click
     - types-flask
     - types-werkzeug
 

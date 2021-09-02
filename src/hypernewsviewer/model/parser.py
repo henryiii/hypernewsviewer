@@ -4,7 +4,7 @@ import enum
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import TextIO, TypeVar
+from typing import Dict, TextIO, Type, TypeVar
 
 import attr
 import inflection
@@ -58,17 +58,17 @@ FMT = "%a, %d %b %Y %H:%M:%S GMT"
 @define
 class InfoBase:
     @classmethod
-    def from_path(cls: "type[T]", path: "os.PathLike[str]") -> T:
+    def from_path(cls: "Type[T]", path: "os.PathLike[str]") -> T:
         with open(path) as f:
             return cls.from_file(f)
 
     @classmethod
-    def from_file(cls: "type[T]", text: TextIO) -> T:
+    def from_file(cls: "Type[T]", text: TextIO) -> T:
         pairs = (line.split(":", 1) for line in text)
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
         return cls(**info)  # type: ignore
 
-    def as_simple_dict(self) -> "dict[str, str]":
+    def as_simple_dict(self) -> "Dict[str, str]":
         return {k: str(v) for k, v in attr.asdict(self).items()}
 
     if rich:
