@@ -11,24 +11,24 @@ If you don't have nox but do have pipx, then `pipx run nox` replaces `nox` above
 
 ### Instructions
 
-This is a Poetry project. Poetry is like a combination of setuptools, pip,
-venv, and twine.  It's like bundle for Ruby, or yarn for NodeJS.
+This project recommends PDM for development. PDM is like a combination of
+setuptools, pip, venv, and twine.  It's like bundle for Ruby, or yarn for
+NodeJS.
 
-To install poetry, use `pip install poetry`, `pipx install poetry`, or `brew
-install poetry`, whatever you like using. There's also a bootstrap script, just
-like pip has.
+To install PDM, use `pip install pdm`, `pipx install pdm`, or `brew
+install pdm`, whatever you like using.
 
 Now, to install a virtual env for this project, do:
 
 ```bash
-poetry install
+pdm install
 ```
 
-Now, you are ready to use anything, just prefix any command with `poetry run`
+Now, you are ready to use anything, just prefix any command with `pdm run`
 to run inside the environment.
 
-If this bugs you for some reason, you can use `poetry shell` to spawn a shell
-inside the environment.
+If this bugs you for some reason, you can use `pdm --pep582 >> ~./bash_profile`
+(or rc) to teach Python about the PDM package folder.
 
 ### Dev: styles
 
@@ -50,7 +50,7 @@ pre-commit run -a
 This will start up a server:
 
 ```bash
-poetry run flask run
+pdm run flask run
 ```
 
 ### Running the code
@@ -58,7 +58,7 @@ poetry run flask run
 There is a command-line interface to the `utc` files. Run like this:
 
 ```bash
-poetry run hyper-model --help  # help
+pdm run hyper-model --help  # help
 ```
 
 The package will assume `--root ../hnfiles`; but you set set this to wherever the data is stored.
@@ -66,8 +66,8 @@ The package will assume `--root ../hnfiles`; but you set set this to wherever th
 #### Showing a message
 
 ```bash
-poetry run hyper-model hnTest show  # The main file
-poetry run hyper-model hnTest/1 show  # A message
+pdm run hyper-model hnTest show  # The main file
+pdm run hyper-model hnTest/1 show  # A message
 ```
 
 #### Listing messages
