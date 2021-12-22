@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
+    <title>Forums by Category</title>
+  </head>
+  <body>
+
+    {% include "partials/navigationbar.html" %}
+    {% include "partials/readonly.html" %}
+
+    <div class="mycategory">
+        <div class="categoryheader"><a name="104"></a>Category: BRIL</div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-bcm-commissioning.html" onmouseover="window.status='BCM commissioning discussions '">BCM Commissioning</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-bhm-commissioning.html" onmouseover="window.status='BHM commissioning discussions '">BHM Commissioning</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-detector-performance.html" onmouseover="window.status='Forum for the BRIL detector performance discussions. '">BRIL Detector Performance</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-editorial-board.html" onmouseover="window.status='BRIL Editorial Board '">BRIL Editorial Board</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-radiation-simulation.html" onmouseover="window.status='BRIL radiation simulation discussions '">BRIL Radiation Simulation</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-LumiDaq-commissioning.html" onmouseover="window.status='LumiDaq commissioning discussions '">LumiDaq Commissioning</a></div>
+
+        <div class="categoryforum"><a class="catlink" href="https://hypernews.cern.ch/HyperNews/CMS/get/bril-plt-commissioning.html" onmouseover="window.status='PLT commissioning discussions '">PLT Commissioning</a></div>
+
+        </div>
+
+    {% include "partials/footer.html" %}
+    </body>
+</html>

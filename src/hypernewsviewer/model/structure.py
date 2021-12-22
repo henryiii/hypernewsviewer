@@ -23,7 +23,10 @@ def get_msg_paths(directory: Path) -> List[Path]:
 
 def get_msgs(directory: Path) -> Iterator[URCMessage]:
     for path in get_msg_paths(directory):
-        yield URCMessage.from_path(path)
+        try:
+            yield URCMessage.from_path(path)
+        except ValueError as e:
+            print(f"Failed to parse: {path}:", e)
 
 
 def get_html(path: Path) -> "str | None":

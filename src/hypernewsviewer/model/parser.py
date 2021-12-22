@@ -25,6 +25,7 @@ class ContentType(enum.Enum):
     HTML = "HTML"
     SmartText = "Smart Text"
     PlainText = "Plain Text"
+    WordProcessor = "Word Processor"
 
 
 class Kind(str, enum.Enum):
@@ -66,7 +67,7 @@ class InfoBase:
     def from_file(cls: "Type[T]", text: TextIO) -> T:
         pairs = (line.split(":", 1) for line in text)
         info = {us(k.strip()): v.strip() or None for k, v in pairs}
-        return cls(**info)  # type: ignore
+        return cls(**info)
 
     def as_simple_dict(self) -> "Dict[str, str]":
         return {k: str(v) for k, v in attr.asdict(self).items()}

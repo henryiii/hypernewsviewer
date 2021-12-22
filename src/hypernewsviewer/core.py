@@ -25,7 +25,7 @@ DATA_ROOT = Path(HNFILES).resolve()
 
 @app.route("/")
 def reroute() -> Response:
-    return redirect(url_for("list_view", subpath="hnTest"))
+    return redirect(url_for("top_page"))
 
 
 @app.route("/favicon.ico")
@@ -34,7 +34,6 @@ def empty() -> Response:
 
 
 @app.route("/get/<path:subpath>")
-@lru_cache()
 def list_view(subpath: str) -> str:
     rootpath = DATA_ROOT / subpath
 
@@ -82,3 +81,21 @@ def view_member() -> str:
     return header + "<br/>\n".join(
         f"{k}: {v}" for k, v in member.as_simple_dict().items() if k != "password"
     )
+
+
+@app.route("/top.pl")
+@lru_cache()
+def top_page() -> str:
+    return render_template("top.html")
+
+
+@app.route("/index")
+@lru_cache()
+def get_index() -> str:
+    return render_template("index.html")
+
+
+@app.route("/cindex")
+@lru_cache()
+def get_cindex() -> str:
+    return render_template("cindex.html")

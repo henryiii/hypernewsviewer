@@ -18,7 +18,7 @@ DIR = Path(__file__).parent.resolve()
 @click.group(help="Run with a tree path (like hnTest/1).")
 @click.option(
     "--root",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    type=click.Path(exists=True, file_okay=False, path_type=Path),  # type: ignore[type-var]
     default=DIR / "../../../../hnfiles",
     help="Set a different path for the data directory",
 )
