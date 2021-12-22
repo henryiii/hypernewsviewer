@@ -21,7 +21,7 @@ def get_forums(directory: Path) -> Iterator[URCMain]:
     for path in directory.glob("*.html,urc"):
         try:
             yield URCMain.from_path(path)
-        except TypeError as e:
+        except (TypeError, ValueError) as e:
             print(f"Failed to parse: {path}:", e)
 
 
