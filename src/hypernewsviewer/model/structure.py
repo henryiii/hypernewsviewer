@@ -17,6 +17,11 @@ def get_member(path: Path) -> Member:
     return Member.from_path(path)
 
 
+def get_forums(directory: Path) -> Iterator[URCMain]:
+    for path in directory.glob("*.html,urc"):
+        yield URCMain.from_path(path)
+
+
 def get_msg_paths(directory: Path) -> List[Path]:
     return sorted(directory.glob("*.html,urc"), key=lambda x: int(x.stem))
 

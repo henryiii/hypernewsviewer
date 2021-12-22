@@ -16,15 +16,15 @@
     <br>
 
     <hr>
-    <dd> Review of analysis SMP-20-011
 
+    <dd>
+    {% for forum in forums %}
+      <dt>
+          <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
+          <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ forum.last_mod.strftime('%Y-%m-%d') }})
+      </dt>
+    {% endfor %}
     </dd>
-
-    <dt>
-        <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
-        <b><a href="https://hypernews.cern.ch/HyperNews/CMS/get/SMP-20-011.html">Review of SMP-20-011</a> </b> (0.0 days)
-        <a href="https://hypernews.cern.ch/HyperNews/CMS/edit-response.pl/SMP-20-011.html"><img border="0" alt="(add)" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/plus.gif" width="14" height="13"></a>
-    </dt>
 
     {% include "partials/footer.html" %}
     </body>
