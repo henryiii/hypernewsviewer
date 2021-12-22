@@ -53,7 +53,17 @@ opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
 
 T = TypeVar("T", bound="InfoBase")
 
-FMT = "%a, %d %b %Y %H:%M:%S GMT"
+# Mon, 05 Dec 2005 01:55:14 GMT
+FMT = "%a, %d %b %Y %H:%M:%S %Z"
+# 'Thu Feb 14 22:20:48 CET 2008'
+FMT2 = "%a %b %d %H:%M:%S %Z %Y"
+
+
+def convert_datetime(string: str) -> datetime:
+    try:
+        return datetime.strptime(string, FMT)
+    except ValueError:
+        return datetime.strptime(string, FMT2)
 
 
 @define
@@ -113,9 +123,9 @@ class URCBase(InfoBase):
     url: URL
     base_url: URL
     responses: str
-    date: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
-    last_message_date: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
-    last_mod: datetime = attr.ib(converter=lambda x: datetime.strptime(x, FMT))
+    date: datetime = attr.ib(converter=convert_datetime)
+    last_message_date: datetime = attr.ib(converter=convert_datetime)
+    last_mod: datetime = attr.ib(converter=convert_datetime)
     name: str
     from_: Email
 

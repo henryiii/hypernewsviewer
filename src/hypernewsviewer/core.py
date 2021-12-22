@@ -14,7 +14,14 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
-from .model.structure import get_any_urc, get_html, get_member, get_msg_paths, get_msgs, get_forums
+from .model.structure import (
+    get_any_urc,
+    get_forums,
+    get_html,
+    get_member,
+    get_msg_paths,
+    get_msgs,
+)
 
 app = Flask("hypernewsviewer")
 
@@ -93,7 +100,9 @@ def top_page() -> str:
 @lru_cache()
 def get_index() -> str:
     forums = get_forums(DATA_ROOT)
-    return render_template("index.html", forums=sorted(forums, key=lambda x: x.last_mod, reverse=True))
+    return render_template(
+        "index.html", forums=sorted(forums, key=lambda x: x.last_mod, reverse=True)
+    )
 
 
 @app.route("/cindex")
