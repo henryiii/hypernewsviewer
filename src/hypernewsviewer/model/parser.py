@@ -141,7 +141,7 @@ class URCBase(InfoBase):
 @define
 class URCMain(URCBase):
     list_address: str
-    categories: int
+    categories: int = int_field
     num: str
 
     default_outline_depth: "int | None" = opt_int_field

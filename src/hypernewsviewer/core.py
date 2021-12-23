@@ -1,6 +1,5 @@
 import os
-from functools import lru_cache
-from itertools import accumulate
+from itertools import accumulate, groupby
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -16,6 +15,7 @@ from werkzeug.wrappers import Response
 
 from .model.structure import (
     get_any_urc,
+    get_categories,
     get_forums,
     get_html,
     get_member,
@@ -78,7 +78,6 @@ def list_view(subpath: str) -> str:
 
 
 @app.route("/view-member.pl")
-@lru_cache()
 def view_member() -> str:
     (answer,) = request.args
     rootpath = DATA_ROOT / "hnpeople" / answer
@@ -91,21 +90,23 @@ def view_member() -> str:
 
 
 @app.route("/top.pl")
-@lru_cache()
 def top_page() -> str:
     return render_template("top.html")
 
 
 @app.route("/index")
-@lru_cache()
 def get_index() -> str:
     forums = get_forums(DATA_ROOT)
-    return render_template(
-        "index.html", forums=sorted(forums, key=lambda x: x.last_mod, reverse=True)
-    )
+    sorted_forums = sorted(forums, key=lambda x: x.last_mod, reverse=True)
+    return render_template("index.html", forums=sorted_forums)
 
 
 @app.route("/cindex")
-@lru_cache()
 def get_cindex() -> str:
-    return render_template("cindex.html")
+    categories = get_categories(DATA_ROOT / "CATEGORIES")
+    forums = get_forums(DATA_ROOT)
+    sorted_forums = sorted(forums, key=lambda x: (x.categories, x.last_mod))
+    grouped_forums = {
+        a: list(b) for a, b in groupby(sorted_forums, lambda x: x.categories)
+    }
+    return render_template("cindex.html", groups=grouped_forums, categories=categories)

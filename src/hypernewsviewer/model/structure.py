@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
+from functools import lru_cache
 from pathlib import Path
-from typing import Iterator, List
+from typing import Dict, Iterator, List
 
 from .parser import Member, URCMain, URCMessage
 
@@ -13,11 +14,23 @@ def get_any_urc(path: Path) -> "URCMain | URCMessage":
         return URCMain.from_path(path.with_suffix(".html,urc"))
 
 
+@lru_cache(256)
 def get_member(path: Path) -> Member:
     return Member.from_path(path)
 
 
-def get_forums(directory: Path) -> Iterator[URCMain]:
+@lru_cache(1)
+def get_categories(path: Path) -> Dict[int, str]:
+    pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
+    return {int(a): b for a, b in pairs}
+
+
+@lru_cache(1)
+def get_forums(directory: Path) -> List[URCMain]:
+    return list(_get_forums(directory))
+
+
+def _get_forums(directory: Path) -> Iterator[URCMain]:
     for path in directory.glob("*.html,urc"):
         try:
             yield URCMain.from_path(path)
