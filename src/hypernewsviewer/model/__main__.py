@@ -8,10 +8,11 @@ import rich.traceback
 from rich import print
 from rich.table import Table
 from rich.tree import Tree
+from rich.progress import track
 
 from .cliutils import get_html_panel, walk_tree
 from .parser import URCBase, URCMain, URCMessage
-from .structure import get_forums, get_msg_paths, get_msgs
+from .structure import _get_forums, get_msg_paths, get_msgs
 
 rich.traceback.install(show_locals=True)
 
@@ -92,15 +93,17 @@ def show(ctx: click.Context) -> None:
 @main.command(help="Show all forums")
 @click.pass_context
 def forums(ctx: click.Context) -> None:
-    rootpath: Path = ctx.obj["rootpath"]
+    root: Path = ctx.obj["root"]
 
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
     t.add_column("Cat", style="green")
     t.add_column("Title")
 
-    for m in get_forums(rootpath):
-        t.add_row(str(m.num), str(m.categories), m.title)
+    length = len(list(root.glob("*.html,urc")))
+    for m in track(_get_forums(root), total=length):
+        if m:
+            t.add_row(str(m.num), str(m.categories), m.title)
 
     print(t)
 

@@ -32,12 +32,13 @@ def get_forums(directory: Path) -> list[URCMain]:
     return list(_get_forums(directory))
 
 
-def _get_forums(directory: Path) -> Iterator[URCMain]:
+def _get_forums(directory: Path) -> Iterator[URCMain | None]:
     for path in directory.glob("*.html,urc"):
         try:
             yield URCMain.from_path(path)
         except (TypeError, ValueError) as e:
             print(f"Failed to parse: {path}:", e)
+            yield None
 
 
 def get_msg_paths(directory: Path) -> list[Path]:
