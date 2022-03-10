@@ -104,6 +104,7 @@ def forums(ctx: click.Context) -> None:
     progress = rich.progress.Progress(
         "[green][progress.description]{task.description}",
         rich.progress.BarColumn(bar_width=None),
+        "[green]{task.completed} of {task.total}",
         "[progress.percentage]{task.percentage:>3.0f}%",
         rich.progress.TimeElapsedColumn(),
         rich.progress.TimeRemainingColumn(),
