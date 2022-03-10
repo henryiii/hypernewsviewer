@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 import click
 import rich.traceback
@@ -19,7 +20,7 @@ DIR = Path(__file__).parent.resolve()
 @click.option(
     "--root",
     type=click.Path(exists=True, file_okay=False, path_type=Path),  # type: ignore[type-var]
-    default=DIR / "../../../../hnfiles",
+    default=Path(os.environ.get("HNFILES", str(DIR / "../../../../hnfiles"))),
     help="Set a different path for the data directory",
 )
 @click.argument("path")
