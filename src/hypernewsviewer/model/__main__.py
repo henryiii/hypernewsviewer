@@ -11,7 +11,7 @@ from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
 from .parser import URCBase, URCMain, URCMessage
-from .structure import get_msg_paths, get_msgs
+from .structure import get_forums, get_msg_paths, get_msgs
 
 rich.traceback.install(show_locals=True)
 
@@ -87,6 +87,22 @@ def show(ctx: click.Context) -> None:
     URC = URCMessage if rootpath.stem.isdigit() else URCMain
     urc = URC.from_path(rootpath.with_suffix(".html,urc"))
     print(urc)
+
+
+@main.command(help="Show all forums")
+@click.pass_context
+def forums(ctx: click.Context) -> None:
+    rootpath: Path = ctx.obj["rootpath"]
+
+    t = Table(title="Forums")
+    t.add_column("#", style="cyan")
+    t.add_column("Cat", style="green")
+    t.add_column("Title")
+
+    for m in get_forums(rootpath):
+        t.add_row(str(m.num), str(m.categories), m.title)
+
+    print(t)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 
 ### Quickstart
 
+Python 3.8+ required, 3.9 used in production.
+
 This project has a nox file for quick runs. If you have nox:
 
 ```console
@@ -73,14 +75,20 @@ pdm run hyper-model hnTest/1 show  # A message
 #### Listing messages
 
 ```bash
-poetry run hyper-model hnTest list
-poetry run hyper-model hnTest/1 list
+pdm run hyper-model hnTest list
+pdm run hyper-model hnTest/1 list
 ```
 
 
 #### Tree view of messages
 
 ```bash
-poetry run hyper-model hnTest tree
-poetry run hyper-model hnTest/1 tree
+pdm run hyper-model hnTest tree
+pdm run hyper-model hnTest/1 tree
+```
+
+#### Listing of forum
+
+```bash
+pdm run hyper-model any forum
 ```
