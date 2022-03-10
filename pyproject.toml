@@ -5,7 +5,7 @@ description = "A viewer for HyperNews"
 authors = [
   {name = "Henry Schreiner", email="henryschreineriii@gmail.com"},
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 
 dependencies = [
   "flask>=2.0",
@@ -43,7 +43,7 @@ build-backend = "flit_core.buildapi"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.6"
+python_version = "3.8"
 warn_unused_configs = true
 strict = true
 
