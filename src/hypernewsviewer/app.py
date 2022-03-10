@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hypernewsviewer.filters.pluralize as pluralize
 import hypernewsviewer.filters.smartdate as smartdate
 from hypernewsviewer.core import app

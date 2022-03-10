@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterator, List
+from typing import Iterator
 
 from .parser import Member, URCMain, URCMessage
 
 
-def get_any_urc(path: Path) -> "URCMain | URCMessage":
+def get_any_urc(path: Path) -> URCMain | URCMessage:
     if path.stem.isdigit():
         return URCMessage.from_path(path.with_suffix(".html,urc"))
     else:
@@ -20,13 +22,13 @@ def get_member(path: Path) -> Member:
 
 
 @lru_cache(1)
-def get_categories(path: Path) -> Dict[int, str]:
+def get_categories(path: Path) -> dict[int, str]:
     pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
     return {int(a): b for a, b in pairs}
 
 
 @lru_cache(1)
-def get_forums(directory: Path) -> List[URCMain]:
+def get_forums(directory: Path) -> list[URCMain]:
     return list(_get_forums(directory))
 
 
@@ -38,7 +40,7 @@ def _get_forums(directory: Path) -> Iterator[URCMain]:
             print(f"Failed to parse: {path}:", e)
 
 
-def get_msg_paths(directory: Path) -> List[Path]:
+def get_msg_paths(directory: Path) -> list[Path]:
     return sorted(directory.glob("*.html,urc"), key=lambda x: int(x.stem))
 
 
@@ -50,7 +52,7 @@ def get_msgs(directory: Path) -> Iterator[URCMessage]:
             print(f"Failed to parse: {path}:", e)
 
 
-def get_html(path: Path) -> "str | None":
+def get_html(path: Path) -> str | None:
     msg = path.parent.joinpath(f"{path.stem}-body.html")
     if msg.exists():
         return msg.read_text()

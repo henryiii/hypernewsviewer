@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 from itertools import accumulate, groupby
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from flask import (
     Flask,
@@ -60,7 +62,7 @@ def list_view(subpath: str) -> str:
     else:
         body = get_html(rootpath / rootpath.name)
 
-    replies: List[Dict[str, Any]] = []
+    replies: list[dict[str, Any]] = []
     for m in get_msgs(rootpath):
         msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
         entries = len(list(msgs))

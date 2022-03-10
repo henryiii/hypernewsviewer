@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from rich.markdown import Markdown
@@ -25,7 +27,7 @@ def walk_tree(directory: Path, tree: Tree) -> None:
             walk_tree(folder, branch)
 
 
-def get_html_panel(path: Path, /) -> "Panel | None":
+def get_html_panel(path: Path, /) -> Panel | None:
     msg = get_html(path)
     if msg is None:
         return None

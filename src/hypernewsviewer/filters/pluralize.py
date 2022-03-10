@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inflection
 
 from ..core import app
