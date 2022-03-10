@@ -4,11 +4,11 @@ import os
 from pathlib import Path
 
 import click
+import rich.progress
 import rich.traceback
 from rich import print
 from rich.table import Table
 from rich.tree import Tree
-from rich.progress import track
 
 from .cliutils import get_html_panel, walk_tree
 from .parser import URCBase, URCMain, URCMessage
@@ -101,9 +101,18 @@ def forums(ctx: click.Context) -> None:
     t.add_column("Title")
 
     length = len(list(root.glob("*.html,urc")))
-    for m in track(_get_forums(root), total=length):
-        if m:
-            t.add_row(str(m.num), str(m.categories), m.title)
+    progress = rich.progress.Progress(
+        "[green][progress.description]{task.description}",
+        rich.progress.BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.0f}%",
+        rich.progress.TimeElapsedColumn(),
+        rich.progress.TimeRemainingColumn(),
+        expand=True,
+    )
+    with progress as p:
+        for m in p.track(_get_forums(root), total=length):
+            if m:
+                t.add_row(str(m.num), str(m.categories), m.title)
 
     print(t)
 

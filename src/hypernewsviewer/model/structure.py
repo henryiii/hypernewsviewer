@@ -29,7 +29,7 @@ def get_categories(path: Path) -> dict[int, str]:
 
 @lru_cache(1)
 def get_forums(directory: Path) -> list[URCMain]:
-    return list(_get_forums(directory))
+    return list(filter(None, _get_forums(directory)))
 
 
 def _get_forums(directory: Path) -> Iterator[URCMain | None]:
