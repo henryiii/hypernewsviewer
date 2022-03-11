@@ -4,7 +4,7 @@ import enum
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, TextIO, Type, TypeVar
+from typing import Any, Dict, List, Optional, TextIO, Tuple, Type, TypeVar
 
 import attrs
 import cattr
@@ -14,19 +14,24 @@ Email = str
 URL = str
 
 
-class ContentType(str, enum.Enum):
+class StrEnum(str, enum.Enum):
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+class ContentType(StrEnum):
     HTML = "HTML"
     SmartText = "Smart Text"
     PlainText = "Plain Text"
     WordProcessor = "Word Processor"
 
 
-class Kind(str, enum.Enum):
+class Kind(StrEnum):
     main = "main"
     msg = "msg"
 
 
-class AnnotationType(str, enum.Enum):
+class AnnotationType(StrEnum):
     Message = "Message"
 
 
@@ -77,6 +82,16 @@ def convert_url(string: Optional[str]) -> Optional[str]:
     return string
 
 
+def type_as_sqlite(inp: Optional[Type[Any]]) -> str:
+    if inp is None:
+        return "NULL"
+    if isinstance(1, inp):
+        return "INTEGER"
+    if isinstance(1.0, inp):
+        return "REAL"
+    return "TEXT"
+
+
 @attrs.define(kw_only=True)
 class InfoBase:
     @classmethod
@@ -97,6 +112,22 @@ class InfoBase:
     def as_simple_dict(self) -> Dict[str, Any]:
         retval: Dict[str, Any] = converter.unstructure(self)
         return retval
+
+    @classmethod
+    def from_simple_tuple(cls: Type[IB], info: Tuple[Any, ...]) -> IB:
+        return converter.structure_attrs_fromtuple(info, cls)
+
+    def as_simple_tuple(self) -> Tuple[Any, ...]:
+        retval: Tuple[Any, ...] = converter.unstructure_attrs_astuple(self)
+        return retval
+
+    @classmethod
+    def get_field_names(cls) -> List[str]:
+        return [f.name for f in attrs.fields(cls)]
+
+    @classmethod
+    def get_field_types_as_sqlite(cls) -> List[str]:
+        return [type_as_sqlite(f.type) for f in attrs.fields(cls)]
 
 
 @attrs.define(kw_only=True)

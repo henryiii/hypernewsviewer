@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 from pathlib import Path
 
 import click
@@ -19,6 +20,18 @@ rich.traceback.install(show_locals=True)
 DIR = Path(__file__).parent.resolve()
 
 
+def progress_bar() -> rich.progress.Progress:
+    return rich.progress.Progress(
+        "[green][progress.description]{task.description}",
+        rich.progress.BarColumn(bar_width=None),
+        "[green]{task.completed} of {task.total}",
+        "[progress.percentage]{task.percentage:>3.0f}%",
+        rich.progress.TimeElapsedColumn(),
+        rich.progress.TimeRemainingColumn(),
+        expand=True,
+    )
+
+
 @click.group(help="Run with a tree path (like hnTest/1).")
 @click.option(
     "--root",
@@ -26,12 +39,19 @@ DIR = Path(__file__).parent.resolve()
     default=Path(os.environ.get("HNFILES", str(DIR / "../../../../hnfiles"))),
     help="Set a different path for the data directory",
 )
+@click.option(
+    "--db",
+    default=os.environ.get("HNDATABASE", "hnvdb.sql3"),
+    type=click.Path(exists=False, file_okay=False, path_type=Path),  # type: ignore[type-var]
+    help="Path to the database",
+)
 @click.argument("path")
 @click.pass_context
-def main(ctx: click.Context, root: Path, path: str) -> None:
+def main(ctx: click.Context, root: Path, path: str, db: Path) -> None:
     ctx.ensure_object(dict)
     ctx.obj["root"] = root.resolve()
     ctx.obj["rootpath"] = (root.joinpath(path) if path else root).resolve()
+    ctx.obj["db"] = db.resolve()
 
 
 @main.command("list", help="Show a table of messages.")
@@ -101,21 +121,36 @@ def forums(ctx: click.Context) -> None:
     t.add_column("Title")
 
     length = len(list(root.glob("*.html,urc")))
-    progress = rich.progress.Progress(
-        "[green][progress.description]{task.description}",
-        rich.progress.BarColumn(bar_width=None),
-        "[green]{task.completed} of {task.total}",
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        rich.progress.TimeElapsedColumn(),
-        rich.progress.TimeRemainingColumn(),
-        expand=True,
-    )
-    with progress as p:
+    with progress_bar() as p:
         for m in p.track(_get_forums(root), total=length):
             if m:
                 t.add_row(str(m.num), str(m.categories), m.title)
 
     print(t)
+
+
+@main.command(help="Populate a database with all messages")
+@click.pass_context
+def populate(ctx: click.Context) -> None:
+    rootpath: Path = ctx.obj["rootpath"]
+
+    field_names = URCMessage.get_field_names()
+    field_types = URCMessage.get_field_types_as_sqlite()
+    columns = ", ".join(
+        f"{name} {type}" for name, type in zip(field_names, field_types)
+    )
+    create_msg = f"CREATE TABLE msgs_{rootpath.stem}({columns});"
+    insert_msg = f"INSERT INTO msgs_{rootpath.stem} VALUES ({', '.join(['?'] * len(field_names))});"
+
+    length = len(list(rootpath.glob("*.html,urc")))
+
+    with progress_bar() as p, sqlite3.connect(ctx.obj["db"]) as conn:
+        cur = conn.cursor()
+        cur.execute(create_msg)
+        for m in p.track(get_msgs(rootpath), total=length):
+            if m:
+                values = m.as_simple_tuple()
+                cur.execute(insert_msg, values)
 
 
 if __name__ == "__main__":
