@@ -85,7 +85,7 @@ def show(ctx: click.Context) -> None:
     if panel is not None:
         print(panel)
 
-    URC = URCMessage if rootpath.stem.isdigit() else URCMain
+    URC: type[URCBase] = URCMessage if rootpath.stem.isdigit() else URCMain
     urc = URC.from_path(rootpath.with_suffix(".html,urc"))
     print(urc)
 

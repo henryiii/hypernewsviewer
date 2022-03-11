@@ -38,13 +38,13 @@ repos:
     args: [--show-error-codes]
     additional_dependencies:
     - rich
-    - types-attrs
+    - attrs>=21.3.0
     - click
     - types-flask
     - types-werkzeug
 
 - repo: https://github.com/pycqa/flake8
-  rev: 3.9.2
+  rev: 4.0.1
   hooks:
   - id: flake8
     additional_dependencies:

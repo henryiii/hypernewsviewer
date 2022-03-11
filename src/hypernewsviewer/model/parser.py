@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TextIO, TypeVar
 
 import attr
+import attrs
 import inflection
 
 try:
@@ -40,18 +41,13 @@ def us(inp: str) -> str:
     return retval
 
 
-# not using provisional API like attr.define due to missing type info for it
-define = attr.s(
-    kw_only=True,
-    slots=True,
-    auto_attribs=True,
-    eq=True,
-    order=False,
+int_field: int = attrs.field(converter=int)
+opt_int_field: int | None = attrs.field(
+    converter=attr.converters.optional(int), default=None
 )
-
-int_field = attr.ib(converter=int)
-opt_int_field = attr.ib(converter=attr.converters.optional(int), default=None)
-opt_str_field = attr.ib(converter=attr.converters.optional(str), default=None)
+opt_str_field: str | None = attrs.field(
+    converter=attr.converters.optional(str), default=None
+)
 
 T = TypeVar("T", bound="InfoBase")
 
@@ -68,7 +64,7 @@ def convert_datetime(string: str) -> datetime:
         return datetime.strptime(string, FMT2)
 
 
-@define
+@attrs.define(kw_only=True)
 class InfoBase:
     @classmethod
     def from_path(cls: type[T], path: os.PathLike[str]) -> T:
@@ -82,7 +78,7 @@ class InfoBase:
         return cls(**info)
 
     def as_simple_dict(self) -> dict[str, str]:
-        return {k: str(v) for k, v in attr.asdict(self).items()}
+        return {k: str(v) for k, v in attrs.asdict(self).items()}
 
     if rich:
 
@@ -91,7 +87,7 @@ class InfoBase:
         ) -> RenderResult:
             yield f"[b]{self.__class__.__name__}:[/b]"
             my_table = Table("Attribute", "Value")
-            for k, v in attr.asdict(self).items():
+            for k, v in attrs.asdict(self).items():
                 if "url" in k and v:
                     out = f"[link=URL]{v}[/link]"
                 else:
@@ -100,7 +96,7 @@ class InfoBase:
             yield my_table
 
 
-@define
+@attrs.define(kw_only=True)
 class Member(InfoBase):
     session_length: str
     status: str
@@ -117,17 +113,17 @@ class Member(InfoBase):
     alt_user_i_ds: str | None = opt_str_field
 
 
-@define
+@attrs.define(kw_only=True)
 class URCBase(InfoBase):
-    content_type: ContentType = attr.ib(converter=ContentType)
+    content_type: ContentType = attrs.field(converter=ContentType)
     title: str
-    body: Path = attr.ib(converter=Path)
+    body: Path = attrs.field(converter=Path)
     url: URL
     base_url: URL
     responses: str
-    date: datetime = attr.ib(converter=convert_datetime)
-    last_message_date: datetime = attr.ib(converter=convert_datetime)
-    last_mod: datetime = attr.ib(converter=convert_datetime)
+    date: datetime = attrs.field(converter=convert_datetime)
+    last_message_date: datetime = attrs.field(converter=convert_datetime)
+    last_mod: datetime = attrs.field(converter=convert_datetime)
     name: str
     from_: Email
 
@@ -140,7 +136,7 @@ class URCBase(InfoBase):
     annotation_type: str | None = opt_str_field
 
 
-@define
+@attrs.define(kw_only=True)
 class URCMain(URCBase):
     list_address: str
     categories: int = int_field
@@ -149,7 +145,7 @@ class URCMain(URCBase):
     default_outline_depth: int | None = opt_int_field
 
 
-@define
+@attrs.define(kw_only=True)
 class URCMessage(URCBase):
     num: int = int_field
 
