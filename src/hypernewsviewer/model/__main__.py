@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sqlite3
 from pathlib import Path
+import contextlib
 
 import click
 import rich.progress
@@ -144,13 +145,14 @@ def populate(ctx: click.Context) -> None:
 
     length = len(list(rootpath.glob("*.html,urc")))
 
-    with progress_bar() as p, sqlite3.connect(ctx.obj["db"]) as conn:
-        cur = conn.cursor()
+    with progress_bar() as p, contextlib.closing(sqlite3.connect(ctx.obj["db"])) as con:
+        cur = con.cursor()
         cur.execute(create_msg)
         for m in p.track(get_msgs(rootpath), total=length):
             if m:
                 values = m.as_simple_tuple()
-                cur.execute(insert_msg, values)
+                with con:
+                    cur.execute(insert_msg, values)
 
 
 if __name__ == "__main__":
