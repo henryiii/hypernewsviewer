@@ -44,6 +44,10 @@ def empty() -> Response:
 
 @app.route("/get/<path:subpath>")
 def list_view(subpath: str) -> str:
+    if subpath.endswith(".html"):
+        subpath = subpath[:-5]
+    elif subpath.endswith(".htm"):
+        subpath = subpath[:-4]
     rootpath = DATA_ROOT / subpath
 
     parts = subpath.split("/")
