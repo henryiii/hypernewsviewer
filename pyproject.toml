@@ -12,6 +12,7 @@ dependencies = [
   "markupsafe>=2.0",
   "inflection>=0.5.1",
   "attrs>=21.3.0",
+  "cattrs>=1.10.0",
 ]
 
 [project.optional-dependencies]
@@ -23,14 +24,6 @@ cli = [
 deploy = [
   "gunicorn>=20.1"
 ]
-dev = [
-  "libsass>=0.20.1",
-  "pytest>=6.2",
-  "click>=8",
-  "rich>=9.8.0",
-]
-
-[tool.pdm.dev-dependencies]
 dev = [
   "libsass>=0.20.1",
   "pytest>=6.2",

@@ -11,6 +11,15 @@ requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "Classes Without Boilerplate"
 
 [[package]]
+name = "cattrs"
+version = "1.10.0"
+requires_python = ">=3.7,<4.0"
+summary = "Composable complex class support for attrs and dataclasses."
+dependencies = [
+    "attrs>=20",
+]
+
+[[package]]
 name = "click"
 version = "8.0.4"
 requires_python = ">=3.6"
@@ -142,11 +151,10 @@ dependencies = [
 
 [[package]]
 name = "rich"
-version = "11.2.0"
+version = "12.0.0"
 requires_python = ">=3.6.2,<4.0.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 dependencies = [
-    "colorama<0.5.0,>=0.4.0",
     "commonmark<0.10.0,>=0.9.0",
     "pygments<3.0.0,>=2.6.0",
 ]
@@ -177,7 +185,7 @@ summary = "The comprehensive WSGI web application library."
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:a33ca03e57cf8ca55a86cfc1b10b04b85985fda7ef2c0e7378920428f9d49b75"
+content_hash = "sha256:9b7f0318db9176c848199448a07c84360ea533ff0c81e979f89ab40880782d3f"
 
 [metadata.files]
 "atomicwrites 1.4.0" = [
@@ -187,6 +195,10 @@ content_hash = "sha256:a33ca03e57cf8ca55a86cfc1b10b04b85985fda7ef2c0e7378920428f
 "attrs 21.4.0" = [
     {file = "attrs-21.4.0-py2.py3-none-any.whl", hash = "sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4"},
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
+]
+"cattrs 1.10.0" = [
+    {file = "cattrs-1.10.0-py3-none-any.whl", hash = "sha256:35dd9063244263e63bd0bd24ea61e3015b00272cead084b2c40d788b0f857c46"},
+    {file = "cattrs-1.10.0.tar.gz", hash = "sha256:211800f725cdecedcbcf4c753bbd22d248312b37d130f06045434acb7d9b34e1"},
 ]
 "click 8.0.4" = [
     {file = "click-8.0.4-py3-none-any.whl", hash = "sha256:6a7a62563bbfabfda3a38f3023a1db4a35978c0abd76f6c9605ecd6554d6d9b1"},
@@ -302,9 +314,9 @@ content_hash = "sha256:a33ca03e57cf8ca55a86cfc1b10b04b85985fda7ef2c0e7378920428f
     {file = "pytest-7.0.1-py3-none-any.whl", hash = "sha256:9ce3ff477af913ecf6321fe337b93a2c0dcf2a0a1439c43f5452112c1e4280db"},
     {file = "pytest-7.0.1.tar.gz", hash = "sha256:e30905a0c131d3d94b89624a1cc5afec3e0ba2fbdb151867d8e0ebd49850f171"},
 ]
-"rich 11.2.0" = [
-    {file = "rich-11.2.0-py3-none-any.whl", hash = "sha256:d5f49ad91fb343efcae45a2b2df04a9755e863e50413623ab8c9e74f05aee52b"},
-    {file = "rich-11.2.0.tar.gz", hash = "sha256:1a6266a5738115017bb64a66c59c717e7aa047b3ae49a011ede4abdeffc6536e"},
+"rich 12.0.0" = [
+    {file = "rich-12.0.0-py3-none-any.whl", hash = "sha256:fdcd2f8d416e152bcf35c659987038d1ae5a7bd336e821ca7551858a4c7e38a9"},
+    {file = "rich-12.0.0.tar.gz", hash = "sha256:14bfd0507edc633e021b02c45cbf7ca22e33b513817627b8de3412f047a3e798"},
 ]
 "setuptools 60.9.3" = [
     {file = "setuptools-60.9.3-py3-none-any.whl", hash = "sha256:e4f30b9f84e5ab3decf945113119649fec09c1fc3507c6ebffec75646c56e62b"},
