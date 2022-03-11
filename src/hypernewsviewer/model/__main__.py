@@ -140,13 +140,16 @@ def populate(ctx: click.Context) -> None:
     columns = ", ".join(
         f"{name} {type}" for name, type in zip(field_names, field_types)
     )
-    create_msg = f"CREATE TABLE msgs_{rootpath.stem}({columns});"
-    insert_msg = f"INSERT INTO msgs_{rootpath.stem} VALUES ({', '.join(['?'] * len(field_names))});"
+    create_msg = f"CREATE TABLE msgs_{rootpath.stem}(path STRING, {columns});"
+    placeholders = ", ".join(["?"] * (len(field_names) + 1))
+    insert_msg = f"INSERT INTO msgs_{rootpath.stem} VALUES ({placeholders});"
 
     length = len(list(rootpath.glob("*.html,urc")))
 
-    with progress_bar() as p, contextlib.closing(sqlite3.connect(ctx.obj["db"])) as con:
-        cur = con.cursor()
+    with progress_bar() as p, contextlib.closing(
+        sqlite3.connect(ctx.obj["db"])
+    ) as con, contextlib.closing(con.cursor()) as cur:
+
         cur.execute(create_msg)
         for m in p.track(get_msgs(rootpath), total=length):
             if m:
