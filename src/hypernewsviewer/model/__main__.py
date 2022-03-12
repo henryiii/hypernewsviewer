@@ -13,8 +13,8 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
-from .messages import URCBase, URCMain, URCMessage
-from .structure import _get_forums, get_msg_paths, get_msgs
+from .messages import URCMessage
+from .structure import AllForums, _get_forums
 
 rich.traceback.install(show_locals=True)
 
@@ -49,19 +49,25 @@ def progress_bar() -> rich.progress.Progress:
 @click.argument("path")
 @click.pass_context
 def main(ctx: click.Context, root: Path, path: str, db: Path) -> None:
+    name, *others = path.split("/")
     ctx.ensure_object(dict)
-    ctx.obj["root"] = root.resolve()
-    ctx.obj["rootpath"] = (root.joinpath(path) if path else root).resolve()
+    ctx.obj["forums"] = AllForums(root=root)
+    ctx.obj["name"] = name
+    ctx.obj["path"] = Path("/".join(others))
     ctx.obj["db"] = db.resolve()
 
 
 @main.command("list", help="Show a table of messages.")
 @click.pass_context
 def list_fn(ctx: click.Context) -> None:
-    root: Path = ctx.obj["root"]
-    rootpath: Path = ctx.obj["rootpath"]
+    forums: AllForums = ctx.obj["forums"]
+    name: str = ctx.obj["name"]
+    path: Path = ctx.obj["path"]
 
-    panel = get_html_panel(rootpath)
+    forum = forums.get_forum(name)
+    html = forum.get_html(path)
+
+    panel = get_html_panel(html, title=f"{name}/{path}")
     if panel is not None:
         print(panel)
 
@@ -70,8 +76,8 @@ def list_fn(ctx: click.Context) -> None:
     t.add_column("N", style="green")
     t.add_column("Title")
 
-    for m in get_msgs(rootpath):
-        msgs = get_msg_paths(root / m.responses.lstrip("/"))
+    for _, m in forum.get_msgs(path):
+        msgs = forum.get_msg_paths(path / m.responses.lstrip("/"))
         entries = len(list(msgs))
         t.add_row(str(m.num), str(entries), m.title)
 
@@ -81,49 +87,53 @@ def list_fn(ctx: click.Context) -> None:
 @main.command(help="Show a tree view for messages")
 @click.pass_context
 def tree(ctx: click.Context) -> None:
-    root: Path = ctx.obj["root"]
-    rootpath: Path = ctx.obj["rootpath"]
+    forums: AllForums = ctx.obj["forums"]
+    name: str = ctx.obj["name"]
+    path: Path = ctx.obj["path"]
 
-    msg: URCBase
-    if rootpath.stem.isdigit():
-        msg = URCMessage.from_path(rootpath.with_suffix(".html,urc"))
-    else:
-        msg = URCMain.from_path(rootpath.with_suffix(".html,urc"))
+    forum = forums.get_forum(name)
+    msg = forum.get_msg(path)
+
     tree = Tree(
         ":open_file_folder: "
-        f"[link file://{rootpath}]{rootpath.relative_to(root)}: {msg.title}"
+        f"[link file://{forums.root}/{path}/{name}]{path}/{name}: {msg.title}"
     )
-    walk_tree(rootpath, tree)
+    walk_tree(forums.root / name / path, tree)
     print(tree)
 
 
 @main.command(help="Show all parsed information for a message or main.")
 @click.pass_context
 def show(ctx: click.Context) -> None:
-    rootpath: Path = ctx.obj["rootpath"]
+    forums: AllForums = ctx.obj["forums"]
+    name: str = ctx.obj["name"]
+    path: Path = ctx.obj["path"]
 
-    panel = get_html_panel(rootpath)
+    forum = forums.get_forum(name)
+    msg = forum.get_msg(path)
+    html = forum.get_html(path)
+
+    panel = get_html_panel(html, title=f"{name}/{path}")
     if panel is not None:
         print(panel)
 
-    URC: type[URCBase] = URCMessage if rootpath.stem.isdigit() else URCMain
-    urc = URC.from_path(rootpath.with_suffix(".html,urc"))
-    print(urc)
+    print(msg)
 
 
 @main.command(help="Show all forums")
 @click.pass_context
 def forums(ctx: click.Context) -> None:
-    root: Path = ctx.obj["root"]
+    forums: AllForums = ctx.obj["forums"]
+    rootpath = forums.root
 
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
     t.add_column("Cat", style="green")
     t.add_column("Title")
 
-    length = len(list(root.glob("*.html,urc")))
+    length = len(list(rootpath.glob("*.html,urc")))
     with progress_bar() as p:
-        for m in p.track(_get_forums(root), total=length):
+        for m in p.track(_get_forums(rootpath), total=length):
             if m:
                 t.add_row(str(m.num), str(m.categories), m.title)
 
@@ -133,7 +143,12 @@ def forums(ctx: click.Context) -> None:
 @main.command(help="Populate a database with all messages")
 @click.pass_context
 def populate(ctx: click.Context) -> None:
-    rootpath: Path = ctx.obj["rootpath"]
+    forums: AllForums = ctx.obj["forums"]
+    name: str = ctx.obj["name"]
+    path: Path = ctx.obj["path"]
+
+    rootpath = forums.root
+    forum = forums.get_forum(name)
 
     field_names = URCMessage.get_field_names()
     field_types = URCMessage.get_field_types_as_sqlite()
@@ -151,7 +166,9 @@ def populate(ctx: click.Context) -> None:
     ) as con, contextlib.closing(con.cursor()) as cur:
         cur.execute(create_msg)
         msgs = (
-            m.as_simple_tuple() for m in p.track(get_msgs(rootpath), total=length) if m
+            m.as_simple_tuple()
+            for _, m in p.track(forum.get_msgs(path), total=length)
+            if m
         )
         cur.executemany(insert_msg, msgs)
 

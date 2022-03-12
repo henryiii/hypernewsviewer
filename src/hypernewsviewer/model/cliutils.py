@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from .messages import URCMessage
-from .structure import get_html, get_msg_paths
+from .structure import get_msg_paths
 
 
 def walk_tree(directory: Path, tree: Tree) -> None:
@@ -27,13 +27,12 @@ def walk_tree(directory: Path, tree: Tree) -> None:
             walk_tree(folder, branch)
 
 
-def get_html_panel(path: Path, /) -> Panel | None:
-    msg = get_html(path)
+def get_html_panel(msg: str | None, /, *, title: str) -> Panel | None:
     if msg is None:
         return None
 
     return Panel(
         Markdown(msg),
-        title=str(path),
+        title=title,
         border_style="cyan",
     )

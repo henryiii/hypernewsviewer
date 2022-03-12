@@ -16,13 +16,11 @@ from flask import (
 from werkzeug.wrappers import Response
 
 from .model.structure import (
-    get_any_urc,
+    AllForums,
     get_categories,
     get_forums,
-    get_html,
     get_member,
     get_msg_paths,
-    get_msgs,
 )
 
 app = Flask("hypernewsviewer")
@@ -30,6 +28,7 @@ app = Flask("hypernewsviewer")
 DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
 DATA_ROOT = Path(HNFILES).resolve()
+FORUMS = AllForums(root=DATA_ROOT)
 
 
 @app.route("/")
@@ -48,7 +47,6 @@ def list_view(subpath: str) -> str:
         subpath = subpath[:-5]
     elif subpath.endswith(".htm"):
         subpath = subpath[:-4]
-    rootpath = DATA_ROOT / subpath
 
     parts = subpath.split("/")
     trail = accumulate(parts, lambda a, b: f"{a}/{b}")
@@ -56,18 +54,26 @@ def list_view(subpath: str) -> str:
         {"name": part, "url": url_for("list_view", subpath=spath)}
         for part, spath in zip(parts, trail)
     ]
+    forum_name, *others = parts
+    path = Path("/".join(others))
 
     try:
-        urc = get_any_urc(rootpath)
+        forum = FORUMS.get_forum(forum_name)
     except FileNotFoundError:
         return f"Unable to find forum: {subpath} at {DATA_ROOT}"
-    if len(breadcrumbs) > 1:
-        body = get_html(rootpath)
+
+    try:
+        msg = forum.get_msg(path)
+    except FileNotFoundError:
+        return f"Unable to find message: {subpath} at {DATA_ROOT}"
+
+    if others:
+        body = forum.get_html(path)
     else:
-        body = get_html(rootpath / rootpath.name)
+        body = forum.get_html(path / path.name)
 
     replies: list[dict[str, Any]] = []
-    for m in get_msgs(rootpath):
+    for _, m in forum.get_msgs(path):
         msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
         entries = len(list(msgs))
         url = url_for("list_view", subpath=m.responses)
@@ -75,7 +81,7 @@ def list_view(subpath: str) -> str:
 
     return render_template(
         "msg.html",
-        urc=urc,
+        urc=msg,
         forum_title="HyperNews Test Forum",
         body=body or "",
         breadcrumbs=breadcrumbs,
