@@ -68,7 +68,6 @@ class AllForums:
             branch = func(local_path, start)
             yield branch
 
-            if folder.exists():
-                yield from self.walk_tree(
-                    forum, Path(path) / local_path.stem, func, branch
-                )
+            yield from self.walk_tree(
+                forum, Path(path) / local_path.stem, func, branch
+            )

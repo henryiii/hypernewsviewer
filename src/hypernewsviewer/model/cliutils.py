@@ -13,7 +13,7 @@ from .messages import URCMessage
 
 def walk_tree(path: Path, tree: Tree) -> Tree:
     folder = path.with_suffix("")
-    emoji = ":open_file_folder:" if folder.exists() else ":file_folder:"
+    emoji = ":open_file_folder:" if folder.joinpath("responses.html").exists() else ":file_folder:"
     try:
         msg_title = URCMessage.from_path(path).title
     except UnicodeDecodeError:
