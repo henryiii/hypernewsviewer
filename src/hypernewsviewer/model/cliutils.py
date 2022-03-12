@@ -8,7 +8,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.tree import Tree
 
-from .parser import URCMessage
+from .messages import URCMessage
 from .structure import get_html, get_msg_paths
 
 

@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
-from .parser import URCBase, URCMain, URCMessage
+from .messages import URCBase, URCMain, URCMessage
 from .structure import _get_forums, get_msg_paths, get_msgs
 
 rich.traceback.install(show_locals=True)

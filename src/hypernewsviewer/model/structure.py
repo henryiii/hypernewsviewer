@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Iterator
 
-from .parser import Member, URCMain, URCMessage
+from .messages import Member, URCMain, URCMessage
 
 
 def get_any_urc(path: Path) -> URCMain | URCMessage:
