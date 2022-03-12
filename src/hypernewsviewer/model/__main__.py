@@ -49,10 +49,10 @@ def progress_bar() -> rich.progress.Progress:
 @click.argument("path")
 @click.pass_context
 def main(ctx: click.Context, root: Path, path: str, db: Path) -> None:
-    name, *others = path.split("/")
+    forum, *others = path.split("/")
     ctx.ensure_object(dict)
     ctx.obj["forums"] = AllForums(root=root)
-    ctx.obj["name"] = name
+    ctx.obj["forum"] = forum
     ctx.obj["path"] = Path("/".join(others))
     ctx.obj["db"] = db.resolve()
 
@@ -61,13 +61,12 @@ def main(ctx: click.Context, root: Path, path: str, db: Path) -> None:
 @click.pass_context
 def list_fn(ctx: click.Context) -> None:
     forums: AllForums = ctx.obj["forums"]
-    name: str = ctx.obj["name"]
+    forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    forum = forums.get_forum(name)
-    html = forum.get_html(path)
+    html = forums.get_html(forum, path)
 
-    panel = get_html_panel(html, title=f"{name}/{path}")
+    panel = get_html_panel(html, title=f"{forum}/{path}")
     if panel is not None:
         print(panel)
 
@@ -76,8 +75,8 @@ def list_fn(ctx: click.Context) -> None:
     t.add_column("N", style="green")
     t.add_column("Title")
 
-    for _, m in forum.get_msgs(path):
-        msgs = forum.get_msg_paths(path / m.responses.lstrip("/"))
+    for _, m in forums.get_msgs(forum, path):
+        msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
         entries = len(list(msgs))
         t.add_row(str(m.num), str(entries), m.title)
 
@@ -88,17 +87,16 @@ def list_fn(ctx: click.Context) -> None:
 @click.pass_context
 def tree(ctx: click.Context) -> None:
     forums: AllForums = ctx.obj["forums"]
-    name: str = ctx.obj["name"]
+    forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    forum = forums.get_forum(name)
-    msg = forum.get_msg(path)
+    msg = forums.get_msg(forum, path)
 
     tree = Tree(
         ":open_file_folder: "
-        f"[link file://{forums.root}/{path}/{name}]{path}/{name}: {msg.title}"
+        f"[link file://{forums.root}/{forum}/{path}]{forum}/{path}: {msg.title}"
     )
-    walk_tree(forums.root / name / path, tree)
+    walk_tree(forums.root / forum / path, tree)
     print(tree)
 
 
@@ -106,14 +104,13 @@ def tree(ctx: click.Context) -> None:
 @click.pass_context
 def show(ctx: click.Context) -> None:
     forums: AllForums = ctx.obj["forums"]
-    name: str = ctx.obj["name"]
+    forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    forum = forums.get_forum(name)
-    msg = forum.get_msg(path)
-    html = forum.get_html(path)
+    msg = forums.get_msg(forum, path)
+    html = forums.get_html(forum, path)
 
-    panel = get_html_panel(html, title=f"{name}/{path}")
+    panel = get_html_panel(html, title=f"{forum}/{path}")
     if panel is not None:
         print(panel)
 
@@ -144,11 +141,10 @@ def forums(ctx: click.Context) -> None:
 @click.pass_context
 def populate(ctx: click.Context) -> None:
     forums: AllForums = ctx.obj["forums"]
-    name: str = ctx.obj["name"]
+    forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
     rootpath = forums.root
-    forum = forums.get_forum(name)
 
     field_names = URCMessage.get_field_names()
     field_types = URCMessage.get_field_types_as_sqlite()
@@ -167,7 +163,7 @@ def populate(ctx: click.Context) -> None:
         cur.execute(create_msg)
         msgs = (
             m.as_simple_tuple()
-            for _, m in p.track(forum.get_msgs(path), total=length)
+            for _, m in p.track(forums.get_msgs(forum, path), total=length)
             if m
         )
         cur.executemany(insert_msg, msgs)

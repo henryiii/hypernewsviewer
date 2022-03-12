@@ -28,7 +28,7 @@ app = Flask("hypernewsviewer")
 DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
 DATA_ROOT = Path(HNFILES).resolve()
-FORUMS = AllForums(root=DATA_ROOT)
+forums = AllForums(root=DATA_ROOT)
 
 
 @app.route("/")
@@ -54,26 +54,21 @@ def list_view(subpath: str) -> str:
         {"name": part, "url": url_for("list_view", subpath=spath)}
         for part, spath in zip(parts, trail)
     ]
-    forum_name, *others = parts
+    forum, *others = parts
     path = Path("/".join(others))
 
     try:
-        forum = FORUMS.get_forum(forum_name)
-    except FileNotFoundError:
-        return f"Unable to find forum: {subpath} at {DATA_ROOT}"
-
-    try:
-        msg = forum.get_msg(path)
+        msg = forums.get_msg(forum, path)
     except FileNotFoundError:
         return f"Unable to find message: {subpath} at {DATA_ROOT}"
 
     if others:
-        body = forum.get_html(path)
+        body = forums.get_html(forum, path)
     else:
-        body = forum.get_html(path / path.name)
+        body = forums.get_html(forum, path / path.name)
 
     replies: list[dict[str, Any]] = []
-    for _, m in forum.get_msgs(path):
+    for _, m in forums.get_msgs(forum, path):
         msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
         entries = len(list(msgs))
         url = url_for("list_view", subpath=m.responses)
