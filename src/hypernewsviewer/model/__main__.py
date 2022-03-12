@@ -14,7 +14,7 @@ from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
 from .messages import URCMessage
-from .structure import AllForums, _get_forums
+from .structure import AllForums
 
 rich.traceback.install(show_locals=True)
 
@@ -96,7 +96,8 @@ def tree(ctx: click.Context) -> None:
         ":open_file_folder: "
         f"[link file://{forums.root}/{forum}/{path}]{forum}/{path}: {msg.title}"
     )
-    walk_tree(forums.root / forum / path, tree)
+    for _ in forums.walk_tree(forum, path, walk_tree, tree):
+        pass
     print(tree)
 
 
@@ -121,16 +122,14 @@ def show(ctx: click.Context) -> None:
 @click.pass_context
 def forums(ctx: click.Context) -> None:
     forums: AllForums = ctx.obj["forums"]
-    rootpath = forums.root
 
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
     t.add_column("Cat", style="green")
     t.add_column("Title")
 
-    length = len(list(rootpath.glob("*.html,urc")))
     with progress_bar() as p:
-        for m in p.track(_get_forums(rootpath), total=length):
+        for m in p.track(forums.get_forums_iter(), total=forums.get_num_forums()):
             if m:
                 t.add_row(str(m.num), str(m.categories), m.title)
 

@@ -15,13 +15,7 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
-from .model.structure import (
-    AllForums,
-    get_categories,
-    get_forums,
-    get_member,
-    get_msg_paths,
-)
+from .model.structure import AllForums
 
 app = Flask("hypernewsviewer")
 
@@ -69,7 +63,8 @@ def list_view(subpath: str) -> str:
 
     replies: list[dict[str, Any]] = []
     for _, m in forums.get_msgs(forum, path):
-        msgs = get_msg_paths(DATA_ROOT / m.responses.lstrip("/"))
+        local_forum, *local_others = m.responses.lstrip("/").split("/")
+        msgs = forums.get_msg_paths(local_forum, "/".join(local_others))
         entries = len(list(msgs))
         url = url_for("list_view", subpath=m.responses)
         replies.append({"msg": m, "url": url, "entries": entries})
@@ -87,8 +82,7 @@ def list_view(subpath: str) -> str:
 @app.route("/view-member.pl")
 def view_member() -> str:
     (answer,) = request.args
-    rootpath = DATA_ROOT / "hnpeople" / answer
-    member = get_member(rootpath)
+    member = forums.get_member(answer)
 
     header = """<p><a href="/">home</a></p>\n"""
     return header + "<br/>\n".join(
@@ -103,16 +97,16 @@ def top_page() -> str:
 
 @app.route("/index")
 def get_index() -> str:
-    forums = get_forums(DATA_ROOT)
-    sorted_forums = sorted(forums, key=lambda x: x.last_mod, reverse=True)
+    all_forums = filter(None, forums.get_forums_iter())
+    sorted_forums = sorted(all_forums, key=lambda x: x.last_mod, reverse=True)
     return render_template("index.html", forums=sorted_forums)
 
 
 @app.route("/cindex")
 def get_cindex() -> str:
-    categories = get_categories(DATA_ROOT / "CATEGORIES")
-    forums = get_forums(DATA_ROOT)
-    sorted_forums = sorted(forums, key=lambda x: (x.categories, x.last_mod))
+    categories = forums.get_categories()
+    all_forums = filter(None, forums.get_forums_iter())
+    sorted_forums = sorted(all_forums, key=lambda x: (x.categories, x.last_mod))
     grouped_forums = {
         a: list(b) for a, b in groupby(sorted_forums, lambda x: x.categories)
     }

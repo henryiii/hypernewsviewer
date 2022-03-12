@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
 from pathlib import Path
-from typing import Iterator
+from typing import Callable, Iterator, TypeVar
 
 import attrs
 
 from .messages import Member, URCMain, URCMessage
+
+T = TypeVar("T")
 
 
 @attrs.define(kw_only=True)
@@ -40,31 +41,34 @@ class AllForums:
 
         return None
 
+    def get_member(self, name: str) -> Member:
+        return Member.from_path(self.root / "hnpeople" / name)
 
-@lru_cache(256)
-def get_member(path: Path) -> Member:
-    return Member.from_path(path)
+    def get_categories(self) -> dict[int, str]:
+        path = self.root / "CATEGORIES"
+        pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
+        return {int(a): b for a, b in pairs}
 
+    def get_num_forums(self) -> int:
+        return len(list(self.root.glob("*.html,urc")))
 
-@lru_cache(1)
-def get_categories(path: Path) -> dict[int, str]:
-    pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
-    return {int(a): b for a, b in pairs}
+    def get_forums_iter(self) -> Iterator[URCMain | None]:
+        for path in self.root.glob("*.html,urc"):
+            try:
+                yield URCMain.from_path(path)
+            except (TypeError, ValueError) as e:
+                print(f"Failed to parse: {path}:", e)
+                yield None
 
+    def walk_tree(
+        self, forum: str, path: Path | str, func: Callable[[Path, T], T], start: T
+    ) -> Iterator[T]:
+        for local_path in self.get_msg_paths(forum, path):
+            folder = local_path.with_suffix("")
+            branch = func(local_path, start)
+            yield branch
 
-@lru_cache(1)
-def get_forums(directory: Path) -> list[URCMain]:
-    return list(filter(None, _get_forums(directory)))
-
-
-def _get_forums(directory: Path) -> Iterator[URCMain | None]:
-    for path in directory.glob("*.html,urc"):
-        try:
-            yield URCMain.from_path(path)
-        except (TypeError, ValueError) as e:
-            print(f"Failed to parse: {path}:", e)
-            yield None
-
-
-def get_msg_paths(directory: Path) -> list[Path]:
-    return sorted(directory.glob("*.html,urc"), key=lambda x: int(x.stem))
+            if folder.exists():
+                yield from self.walk_tree(
+                    forum, Path(path) / local_path.stem, func, branch
+                )
