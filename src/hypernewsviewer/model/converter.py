@@ -32,8 +32,8 @@ converter.register_unstructure_hook(datetime, convert_from_datetime)
 converter.register_structure_hook(datetime, convert_datetime)
 
 
-def convert_simple(string: str, type: Type[T]) -> T:
-    return type(string)  # type: ignore[call-arg]
+def convert_simple(string: str, to_type: Type[T]) -> T:
+    return to_type(string)  # type: ignore[call-arg]
 
 
 converter.register_unstructure_hook(Path, str)

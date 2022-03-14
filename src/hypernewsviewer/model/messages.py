@@ -27,7 +27,7 @@ def us(inp: str) -> str:
 class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
-        with open(path) as f:
+        with open(path, encoding="Latin-1") as f:
             return cls.from_file(f)
 
     @classmethod

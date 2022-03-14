@@ -49,3 +49,21 @@ strict = true
 [[tool.mypy.overrides]]
 module = ["inflection", "hypernewsviewer.filters.*"]
 ignore_missing_imports = true
+
+[tool.pylint]
+master.py-version = "3.8"
+master.jobs = "0"
+reports.output-format = "colorized"
+similarities.ignore-imports = "yes"
+messages_control.enable = ["useless-suppression"]
+messages_control.disable = [
+  "design",
+  "fixme",
+  "line-too-long",
+  "wrong-import-position",
+  "missing-module-docstring",
+  "missing-function-docstring",
+  "missing-class-docstring",
+  "invalid-name",
+  "missing-function-docstring",
+]

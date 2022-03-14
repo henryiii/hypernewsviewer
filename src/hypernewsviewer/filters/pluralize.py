@@ -10,5 +10,4 @@ def pluralize(num, text):
     """Pluralize based on a number"""
     if num == 1:
         return f"{num} {text}"
-    else:
-        return f"{num} {inflection.pluralize(text)}"
+    return f"{num} {inflection.pluralize(text)}"

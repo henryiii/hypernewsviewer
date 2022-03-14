@@ -2,29 +2,40 @@ from __future__ import annotations
 
 import nox
 
-nox.options.sessions = ["tests"]
+nox.options.sessions = ["lint", "tests"]
 
 
 @nox.session
-def tests(session):
+def lint(session: nox.Session) -> None:
+    """
+    Run pre-commit linting.
+    """
+    session.install("pre-commit")
+    session.run(
+        "pre-commit", "run", "--show-diff-on-failure", "--all-files", *session.posargs
+    )
+
+
+@nox.session
+def tests(session: nox.Session) -> None:
     """
     Run the package tests (minimal at the moment).
     """
     session.install(".[test]")
-    session.run("pytest")
+    session.run("pytest", *session.posargs)
 
 
 @nox.session
-def serve(session):
+def serve(session: nox.Session) -> None:
     """
     Serve a session (Ctrl-C to quit).
     """
     session.install(".")
-    session.run("flask", "run")
+    session.run("flask", "run", *session.posargs)
 
 
 @nox.session
-def production(session):
+def production(session: nox.Session) -> None:
     """
     Serve with a production level server (Ctrl-C to quit).
     """

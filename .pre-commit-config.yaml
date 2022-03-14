@@ -44,8 +44,21 @@ repos:
     - types-werkzeug
 
 - repo: https://github.com/pycqa/flake8
-  rev: 4.0.1
+  rev: "4.0.1"
   hooks:
   - id: flake8
     additional_dependencies:
     - flake8-bugbear
+
+- repo: https://github.com/PyCQA/pylint
+  rev: "v2.12.2"
+  hooks:
+  - id: pylint
+    additional_dependencies:
+    - click
+    - rich
+    - cattrs
+    - attrs
+    - flask
+    - inflection
+    - nox

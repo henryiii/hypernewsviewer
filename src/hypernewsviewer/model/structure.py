@@ -20,8 +20,8 @@ class AllForums:
         abspath = self.root / forum / path
         if abspath.stem.isdigit():
             return URCMessage.from_path(abspath.with_suffix(".html,urc"))
-        else:
-            return URCMain.from_path(abspath.with_suffix(".html,urc"))
+
+        return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msgs(
         self, forum: str, path: Path | str
@@ -64,10 +64,7 @@ class AllForums:
         self, forum: str, path: Path | str, func: Callable[[Path, T], T], start: T
     ) -> Iterator[T]:
         for local_path in self.get_msg_paths(forum, path):
-            folder = local_path.with_suffix("")
             branch = func(local_path, start)
             yield branch
 
-            yield from self.walk_tree(
-                forum, Path(path) / local_path.stem, func, branch
-            )
+            yield from self.walk_tree(forum, Path(path) / local_path.stem, func, branch)

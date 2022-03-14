@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import hypernewsviewer.filters.pluralize as pluralize
-import hypernewsviewer.filters.smartdate as smartdate
 from hypernewsviewer.core import app
+from hypernewsviewer.filters import pluralize, smartdate
 
 __all__ = ("app", "pluralize", "smartdate")
 

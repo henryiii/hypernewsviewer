@@ -8,13 +8,15 @@ from pathlib import Path
 import click
 import rich.progress
 import rich.traceback
-from rich import print
+from rich import print  # pylint: disable=redefined-builtin
 from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
 from .messages import URCMessage
 from .structure import AllForums
+
+# pylint: disable=redefined-outer-name
 
 rich.traceback.install(show_locals=True)
 
@@ -169,4 +171,4 @@ def populate(ctx: click.Context) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pylint: disable=no-value-for-parameter
