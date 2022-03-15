@@ -24,14 +24,24 @@ class AllForums:
         return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msgs(
-        self, forum: str, path: Path | str
-    ) -> Iterator[tuple[Path, URCMessage]]:
+        self, forum: str, path: Path | str, *, recursive: bool = False
+    ) -> Iterator[URCMessage]:
         for msg_path in self.get_msg_paths(forum, path):
-            yield msg_path, URCMessage.from_path(msg_path.with_suffix(".html,urc"))
+            yield URCMessage.from_path(msg_path.with_suffix(".html,urc"))
+            if recursive:
+                yield from self.get_msgs(
+                    forum, Path(path) / msg_path.stem, recursive=True
+                )
 
     def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
         abspath = self.root / forum / path
         return sorted(abspath.glob("*.html,urc"), key=lambda x: int(x.stem))
+
+    def get_num_msgs(
+        self, forum: str, path: Path | str, *, recursive: bool = False
+    ) -> int:
+        abspath = self.root / forum / path
+        return len(list(abspath.glob("**/*.html,urc" if recursive else "*.html,urc")))
 
     def get_html(self, forum: str, path: Path | str) -> str | None:
         abspath = self.root / forum / path
@@ -51,6 +61,9 @@ class AllForums:
 
     def get_num_forums(self) -> int:
         return len(list(self.root.glob("*.html,urc")))
+
+    def get_forum_names(self) -> list[str]:
+        return [f.stem for f in self.root.glob("*.html,urc")]
 
     def get_forums_iter(self) -> Iterator[URCMain | None]:
         for path in self.root.glob("*.html,urc"):

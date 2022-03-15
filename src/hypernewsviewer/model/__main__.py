@@ -27,7 +27,7 @@ def progress_bar() -> rich.progress.Progress:
     return rich.progress.Progress(
         "[green][progress.description]{task.description}",
         rich.progress.BarColumn(bar_width=None),
-        "[green]{task.completed} of {task.total}",
+        "[green]{task.completed} of {task.total:g}",
         "[progress.percentage]{task.percentage:>3.0f}%",
         rich.progress.TimeElapsedColumn(),
         rich.progress.TimeRemainingColumn(),
@@ -77,7 +77,7 @@ def list_fn(ctx: click.Context) -> None:
     t.add_column("N", style="green")
     t.add_column("Title")
 
-    for _, m in forums.get_msgs(forum, path):
+    for m in forums.get_msgs(forum, path):
         msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
         entries = len(list(msgs))
         t.add_row(str(m.num), str(entries), m.title)
@@ -145,29 +145,38 @@ def populate(ctx: click.Context) -> None:
     forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    rootpath = forums.root
-
     field_names = URCMessage.get_field_names()
     field_types = URCMessage.get_field_types_as_sqlite()
     columns = ", ".join(
         f"{name} {type}" for name, type in zip(field_names, field_types)
     )
-    create_msg = f"CREATE TABLE msgs_{rootpath.stem}({columns});"
+    create_msg = f"CREATE TABLE msgs_{forum}({columns});"
     placeholders = ", ".join(["?"] * len(field_names))
-    insert_msg = f"INSERT INTO msgs_{rootpath.stem} VALUES ({placeholders});"
+    insert_msg = f"INSERT INTO msgs_{forum} VALUES ({placeholders});"
 
-    length = len(list(rootpath.glob("*.html,urc")))
+    length = forums.get_num_msgs(forum, path, recursive=True)
 
     with progress_bar() as p, contextlib.closing(
         sqlite3.connect(ctx.obj["db"])
     ) as con, contextlib.closing(con.cursor()) as cur:
         cur.execute(create_msg)
-        msgs = (
-            m.as_simple_tuple()
-            for _, m in p.track(forums.get_msgs(forum, path), total=length)
-            if m
-        )
-        cur.executemany(insert_msg, msgs)
+        if forum == "all":
+            forum_list = forums.get_forum_names()
+        else:
+            forum_list = [forum]
+
+        for forum_each in forum_list:
+            length = forums.get_num_msgs(forum_each, path, recursive=True)
+            msgs = (
+                m.as_simple_tuple()
+                for m in p.track(
+                    forums.get_msgs(forum_each, path, recursive=True),
+                    total=length,
+                    description=forum_each,
+                )
+                if m
+            )
+            cur.executemany(insert_msg, msgs)
 
 
 if __name__ == "__main__":

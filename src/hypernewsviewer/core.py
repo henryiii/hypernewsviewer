@@ -56,13 +56,10 @@ def list_view(subpath: str) -> str:
     except FileNotFoundError:
         return f"Unable to find message: {subpath} at {DATA_ROOT}"
 
-    if others:
-        body = forums.get_html(forum, path)
-    else:
-        body = forums.get_html(forum, path / path.name)
+    body = forums.get_html(forum, path if others else path / path.name)
 
     replies: list[dict[str, Any]] = []
-    for _, m in forums.get_msgs(forum, path):
+    for m in forums.get_msgs(forum, path):
         local_forum, *local_others = m.responses.lstrip("/").split("/")
         msgs = forums.get_msg_paths(local_forum, "/".join(local_others))
         entries = len(list(msgs))
