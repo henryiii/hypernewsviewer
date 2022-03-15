@@ -61,4 +61,3 @@ repos:
     - attrs
     - flask
     - inflection
-    - nox

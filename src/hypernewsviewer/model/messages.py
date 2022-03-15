@@ -28,7 +28,10 @@ class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
         with open(path, encoding="Latin-1") as f:
-            return cls.from_file(f)
+            try:
+                return cls.from_file(f)
+            except KeyError as err:
+                raise KeyError(f"{err} missing in {path}") from None
 
     @classmethod
     def from_file(cls: Type[IB], text: TextIO) -> IB:
@@ -57,25 +60,34 @@ class InfoBase:
         return [f.name for f in attrs.fields(cls)]
 
     @classmethod
-    def get_field_types_as_sqlite(cls) -> List[str]:
-        return [type_as_sqlite(f.type) for f in attrs.fields(cls)]
+    def sqlite_create_table_statement(cls, name: str) -> str:
+        field_types = (type_as_sqlite(f.type) for f in attrs.fields(cls))
+        columns = ", ".join(
+            f"{name} {type}" for name, type in zip(cls.get_field_names(), field_types)
+        )
+        return f"CREATE TABLE {name} ({columns})"
+
+    @classmethod
+    def sqlite_insert_statement(cls, name: str) -> str:
+        placeholders = ", ".join(["?"] * len(cls.get_field_names()))
+        return f"INSERT INTO {name} VALUES ({placeholders});"
 
 
 @attrs.define(kw_only=True)
 class Member(InfoBase):
-    session_length: str
+    session_length: str = "default"
     status: str
     user_id: str
-    format: str
-    hide: str
-    password: str
-    user_url: str
-    content: str
-    email: str
+    format: str = "PlainText"
+    hide: str = "Nothing"
+    password: str = ""
+    user_url: str = ""
+    content: str = "Everything"
+    email: str = ""
     name: str
-    email2: Optional[str] = None
-    subscribe: Optional[str] = None
-    alt_user_i_ds: Optional[str] = None
+    email2: str = ""
+    subscribe: str = ""
+    alt_user_i_ds: str = ""
 
 
 @attrs.define(kw_only=True)

@@ -54,6 +54,20 @@ class AllForums:
     def get_member(self, name: str) -> Member:
         return Member.from_path(self.root / "hnpeople" / name)
 
+    def get_member_iter(self) -> Iterator[Member]:
+        for path in sorted(self.get_members_paths()):
+            yield Member.from_path(path)
+
+    def get_num_members(self) -> int:
+        return len(list(self.get_members_paths()))
+
+    def get_members_paths(self) -> Iterator[Path]:
+        return (
+            p
+            for p in self.root.joinpath("hnpeople").iterdir()
+            if (p.is_file() and not p.stem.startswith(".") and not p.suffix == ".sql3")
+        )
+
     def get_categories(self) -> dict[int, str]:
         path = self.root / "CATEGORIES"
         pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())

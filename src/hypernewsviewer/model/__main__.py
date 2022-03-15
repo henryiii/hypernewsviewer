@@ -13,12 +13,12 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
-from .messages import URCMessage
+from .messages import Member, URCMain, URCMessage
 from .structure import AllForums
 
 # pylint: disable=redefined-outer-name
 
-rich.traceback.install(show_locals=True)
+rich.traceback.install(suppress=[click, rich], show_locals=True)
 
 DIR = Path(__file__).parent.resolve()
 
@@ -39,7 +39,9 @@ def progress_bar() -> rich.progress.Progress:
 @click.option(
     "--root",
     type=click.Path(exists=True, file_okay=False, path_type=Path),  # type: ignore[type-var]
-    default=Path(os.environ.get("HNFILES", str(DIR / "../../../../hnfiles"))),
+    default=Path(
+        os.environ.get("HNFILES", str(DIR.joinpath("../../../../hnfiles").resolve()))
+    ),
     help="Set a different path for the data directory",
 )
 @click.option(
@@ -145,26 +147,15 @@ def populate(ctx: click.Context) -> None:
     forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    field_names = URCMessage.get_field_names()
-    field_types = URCMessage.get_field_types_as_sqlite()
-    columns = ", ".join(
-        f"{name} {type}" for name, type in zip(field_names, field_types)
-    )
-    create_msg = f"CREATE TABLE msgs_{forum}({columns});"
-    placeholders = ", ".join(["?"] * len(field_names))
-    insert_msg = f"INSERT INTO msgs_{forum} VALUES ({placeholders});"
-
     length = forums.get_num_msgs(forum, path, recursive=True)
 
     with progress_bar() as p, contextlib.closing(
         sqlite3.connect(ctx.obj["db"])
     ) as con, contextlib.closing(con.cursor()) as cur:
-        cur.execute(create_msg)
-        if forum == "all":
-            forum_list = forums.get_forum_names()
-        else:
-            forum_list = [forum]
+        cur.execute(URCMessage.sqlite_create_table_statement("hnvmsgs"))
+        forum_list = forums.get_forum_names() if forum == "all" else forum.split()
 
+        insert_msg = URCMessage.sqlite_insert_statement("hnvmsgs")
         for forum_each in forum_list:
             length = forums.get_num_msgs(forum_each, path, recursive=True)
             msgs = (
@@ -178,6 +169,27 @@ def populate(ctx: click.Context) -> None:
             )
             cur.executemany(insert_msg, msgs)
 
+        insert_forum = URCMain.sqlite_insert_statement("hnvforums")
+        cur.execute(URCMain.sqlite_create_table_statement("hnvforums"))
+        for forum_main in p.track(
+            forums.get_forums_iter(),
+            total=forums.get_num_forums(),
+            description="Forums",
+        ):
+            if forum_main:
+                cur.execute(insert_forum, forum_main.as_simple_tuple())
+
+        insert_people = Member.sqlite_insert_statement("hnvpeople")
+        cur.execute(Member.sqlite_create_table_statement("hnvpeople"))
+        for member in p.track(
+            forums.get_member_iter(),
+            total=forums.get_num_members(),
+            description="People",
+        ):
+            if member:
+                cur.execute(insert_people, member.as_simple_tuple())
+
 
 if __name__ == "__main__":
+    _rich_traceback_guard = True
     main()  # pylint: disable=no-value-for-parameter

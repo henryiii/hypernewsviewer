@@ -1,7 +1,9 @@
-import pytest
 from pathlib import Path
-from hypernewsviewer.model.structure import AllForums
+
+import pytest
+
 from hypernewsviewer.model.messages import URCMessage
+from hypernewsviewer.model.structure import AllForums
 
 DIR = Path(__file__).parent.resolve()
 
