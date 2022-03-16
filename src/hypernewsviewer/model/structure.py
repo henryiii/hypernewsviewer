@@ -60,19 +60,25 @@ class AllForums:
     def get_member(self, name: str) -> Member:
         return Member.from_path(self.root / "hnpeople" / name)
 
+    def get_members_paths(self) -> Iterator[Path]:
+        return (
+            p
+            for p in self.root.joinpath("hnpeople").iterdir()
+            if (
+                p.is_file()
+                and not p.is_symlink()
+                and not p.stem.startswith(".")
+                and not p.suffix == ".sql3"
+                and not p.name.endswith("~")
+            )
+        )
+
     def get_member_iter(self) -> Iterator[Member]:
         for path in sorted(self.get_members_paths()):
             yield Member.from_path(path)
 
     def get_num_members(self) -> int:
         return len(list(self.get_members_paths()))
-
-    def get_members_paths(self) -> Iterator[Path]:
-        return (
-            p
-            for p in self.root.joinpath("hnpeople").iterdir()
-            if (p.is_file() and not p.stem.startswith(".") and not p.suffix == ".sql3")
-        )
 
     def get_categories(self) -> dict[int, str]:
         path = self.root / "CATEGORIES"
@@ -169,3 +175,23 @@ class DBForums(AllForums):
                     (f"/get/{forum}{spath}.html",),
                 )
             return result.fetchone()[0]  # type: ignore[no-any-return]
+
+    # get_html does not use the database
+
+    def get_member(self, name: str) -> Member:
+        with contextlib.closing(self.db.cursor()) as cur:
+            results = list(cur.execute("SELECT * FROM people WHERE user_id=?", (name,)))
+            (member,) = results
+            return Member.from_simple_tuple(member)
+
+    def get_members_paths(self) -> Iterator[Path]:
+        with contextlib.closing(self.db.cursor()) as cur:
+            for (path,) in cur.execute("SELECT user_id FROM people"):
+                yield self.root / "hnpeople" / path
+
+    def get_member_iter(self) -> Iterator[Member]:
+        with contextlib.closing(self.db.cursor()) as cur:
+            for member_tuple in cur.execute("SELECT * FROM people"):
+                yield Member.from_simple_tuple(member_tuple)
+
+    # get_num_members doesn't need an optimization, it uses the database already
