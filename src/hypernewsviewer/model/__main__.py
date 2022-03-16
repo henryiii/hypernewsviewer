@@ -47,7 +47,7 @@ def progress_bar() -> rich.progress.Progress:
 @click.option(
     "--db",
     default=os.environ.get("HNDATABASE", "hnvdb.sql3"),
-    type=click.Path(exists=False, file_okay=False, path_type=Path),  # type: ignore[type-var]
+    type=click.Path(exists=False, file_okay=True, path_type=Path),  # type: ignore[type-var]
     help="Path to the database",
 )
 @click.argument("path")
@@ -94,7 +94,7 @@ def tree(ctx: click.Context) -> None:
     forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    msg = forums.get_msg(forum, path)
+    msg = forums.get_forum(forum) if path == Path() else forums.get_msg(forum, path)
 
     tree = Tree(
         ":open_file_folder: "
@@ -112,7 +112,7 @@ def show(ctx: click.Context) -> None:
     forum: str = ctx.obj["forum"]
     path: Path = ctx.obj["path"]
 
-    msg = forums.get_msg(forum, path)
+    msg = forums.get_forum(forum) if path == Path() else forums.get_msg(forum, path)
     html = forums.get_html(forum, path)
 
     panel = get_html_panel(html, title=f"{forum}/{path}")
@@ -152,10 +152,10 @@ def populate(ctx: click.Context) -> None:
     with progress_bar() as p, contextlib.closing(
         sqlite3.connect(ctx.obj["db"])
     ) as con, contextlib.closing(con.cursor()) as cur:
-        cur.execute(URCMessage.sqlite_create_table_statement("hnvmsgs"))
+        cur.execute(URCMessage.sqlite_create_table_statement("msgs"))
         forum_list = forums.get_forum_names() if forum == "all" else forum.split()
 
-        insert_msg = URCMessage.sqlite_insert_statement("hnvmsgs")
+        insert_msg = URCMessage.sqlite_insert_statement("msgs")
         for forum_each in forum_list:
             length = forums.get_num_msgs(forum_each, path, recursive=True)
             msgs = (
@@ -169,8 +169,8 @@ def populate(ctx: click.Context) -> None:
             )
             cur.executemany(insert_msg, msgs)
 
-        insert_forum = URCMain.sqlite_insert_statement("hnvforums")
-        cur.execute(URCMain.sqlite_create_table_statement("hnvforums"))
+        insert_forum = URCMain.sqlite_insert_statement("forums")
+        cur.execute(URCMain.sqlite_create_table_statement("forums"))
         for forum_main in p.track(
             forums.get_forums_iter(),
             total=forums.get_num_forums(),
@@ -179,8 +179,8 @@ def populate(ctx: click.Context) -> None:
             if forum_main:
                 cur.execute(insert_forum, forum_main.as_simple_tuple())
 
-        insert_people = Member.sqlite_insert_statement("hnvpeople")
-        cur.execute(Member.sqlite_create_table_statement("hnvpeople"))
+        insert_people = Member.sqlite_insert_statement("people")
+        cur.execute(Member.sqlite_create_table_statement("people"))
         for member in p.track(
             forums.get_member_iter(),
             total=forums.get_num_members(),
@@ -188,6 +188,8 @@ def populate(ctx: click.Context) -> None:
         ):
             if member:
                 cur.execute(insert_people, member.as_simple_tuple())
+
+        con.commit()
 
 
 if __name__ == "__main__":

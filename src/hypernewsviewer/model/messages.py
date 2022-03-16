@@ -23,7 +23,7 @@ def us(inp: str) -> str:
     return retval
 
 
-@attrs.define(kw_only=True)
+@attrs.define(kw_only=True, eq=True, frozen=True)
 class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
@@ -49,7 +49,9 @@ class InfoBase:
 
     @classmethod
     def from_simple_tuple(cls: Type[IB], info: Tuple[Any, ...]) -> IB:
-        return converter.structure_attrs_fromtuple(info, cls)
+        return converter.structure_attrs_fromdict(
+            {n.name: i for n, i in zip(attrs.fields(cls), info)}, cls
+        )
 
     def as_simple_tuple(self) -> Tuple[Any, ...]:
         retval: Tuple[Any, ...] = converter.unstructure_attrs_astuple(self)
@@ -73,7 +75,7 @@ class InfoBase:
         return f"INSERT INTO {name} VALUES ({placeholders});"
 
 
-@attrs.define(kw_only=True)
+@attrs.define(kw_only=True, eq=True, frozen=True)
 class Member(InfoBase):
     session_length: str = "default"
     status: str
@@ -90,7 +92,7 @@ class Member(InfoBase):
     alt_user_i_ds: str = ""
 
 
-@attrs.define(kw_only=True)
+@attrs.define(kw_only=True, eq=True, frozen=True)
 class URCBase(InfoBase):
     content_type: ContentType
     title: str
@@ -113,7 +115,7 @@ class URCBase(InfoBase):
     annotation_type: Optional[AnnotationType] = None
 
 
-@attrs.define(kw_only=True)
+@attrs.define(kw_only=True, eq=True, frozen=True)
 class URCMain(URCBase):
     list_address: str
     categories: int
@@ -122,7 +124,7 @@ class URCMain(URCBase):
     default_outline_depth: Optional[int] = None
 
 
-@attrs.define(kw_only=True)
+@attrs.define(kw_only=True, eq=True, frozen=True)
 class URCMessage(URCBase):
     num: int
 

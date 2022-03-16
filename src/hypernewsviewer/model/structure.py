@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
+import contextlib
+import sqlite3
 from pathlib import Path
 from typing import Callable, Iterator, TypeVar
 
@@ -14,18 +14,24 @@ T = TypeVar("T")
 
 @attrs.define(kw_only=True)
 class AllForums:
-    root: Path
+    root: Path = attrs.field(converter=Path)
+
+    def get_forum(self, forum: str) -> URCMain:
+        abspath = self.root / forum
+        return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
+        assert path, "Must supply a path, use get_forum() instead for empty path"
         abspath = self.root / forum / path
-        if abspath.stem.isdigit():
-            return URCMessage.from_path(abspath.with_suffix(".html,urc"))
-
-        return URCMain.from_path(abspath.with_suffix(".html,urc"))
+        return URCMessage.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msgs(
         self, forum: str, path: Path | str, *, recursive: bool = False
     ) -> Iterator[URCMessage]:
+        """
+        This allows an empty path, unlike get_msg, since it returns the inner msgs.
+        """
+
         for msg_path in self.get_msg_paths(forum, path):
             yield URCMessage.from_path(msg_path.with_suffix(".html,urc"))
             if recursive:
@@ -95,3 +101,71 @@ class AllForums:
             yield branch
 
             yield from self.walk_tree(forum, Path(path) / local_path.stem, func, branch)
+
+
+@attrs.define(kw_only=True)
+class DBForums(AllForums):
+    db: sqlite3.Connection
+
+    def get_forum(self, forum: str) -> URCMain:
+        with contextlib.closing(self.db.cursor()) as cur:
+            (result,) = cur.execute("SELECT * FROM forums WHERE Num=?", (forum,))
+            return URCMain.from_simple_tuple(result)
+
+    def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
+        with contextlib.closing(self.db.cursor()) as cur:
+            (msg,) = cur.execute(
+                "SELECT * FROM msgs WHERE responses=?", (f"/{forum}/{path}",)
+            )
+            return URCMessage.from_simple_tuple(msg)
+
+    def get_msgs(
+        self, forum: str, path: Path | str, *, recursive: bool = False
+    ) -> Iterator[URCMessage]:
+        spath = f"/{path}" if path else ""
+        with contextlib.closing(self.db.cursor()) as cur:
+            if recursive:
+                msgs = cur.execute(
+                    "SELECT * FROM msgs WHERE responses LIKE ?",
+                    (f"/{forum}{spath}/%",),
+                )
+            else:
+                msgs = cur.execute(
+                    "SELECT * FROM msgs WHERE up_url=?",
+                    (f"/get/{forum}{spath}.html",),
+                )
+            for msg in msgs:
+                yield URCMessage.from_simple_tuple(msg)
+
+    def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
+        abspath = self.root.resolve()
+        spath = f"/{path}" if path else ""
+        with contextlib.closing(self.db.cursor()) as cur:
+            responses = cur.execute(
+                "SELECT responses FROM msgs WHERE up_url=?",
+                (f"/get/{forum}{spath}.html",),
+            )
+            return sorted(
+                (
+                    (abspath / resp[0].lstrip("/")).with_suffix(".html,urc")
+                    for resp in responses
+                ),
+                key=lambda x: int(x.stem),
+            )
+
+    def get_num_msgs(
+        self, forum: str, path: Path | str, *, recursive: bool = False
+    ) -> int:
+        spath = f"/{path}" if path else ""
+        with contextlib.closing(self.db.cursor()) as cur:
+            if recursive:
+                result = cur.execute(
+                    "SELECT COUNT(*) FROM msgs WHERE responses LIKE ?",
+                    (f"/{forum}{spath}/%",),
+                )
+            else:
+                result = cur.execute(
+                    "SELECT COUNT(*) FROM msgs WHERE up_url=?",
+                    (f"/get/{forum}{spath}.html",),
+                )
+            return result.fetchone()[0]  # type: ignore[no-any-return]

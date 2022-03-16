@@ -66,4 +66,5 @@ messages_control.disable = [
   "missing-class-docstring",
   "invalid-name",
   "import-error",
+  "no-member",
 ]

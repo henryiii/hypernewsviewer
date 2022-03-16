@@ -52,7 +52,7 @@ def list_view(subpath: str) -> str:
     path = Path("/".join(others))
 
     try:
-        msg = forums.get_msg(forum, path)
+        msg = forums.get_msg(forum, path) if others else forums.get_forum(forum)
     except FileNotFoundError:
         return f"Unable to find message: {subpath} at {DATA_ROOT}"
 

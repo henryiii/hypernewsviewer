@@ -25,7 +25,7 @@ def convert_datetime(string: str, _type: object = None) -> datetime:
 
 
 def convert_from_datetime(dt: datetime) -> str:
-    return dt.strftime(FMT)
+    return dt.strftime("%a, %d %b %Y %H:%M:%S UTC")
 
 
 converter.register_unstructure_hook(datetime, convert_from_datetime)
@@ -41,9 +41,15 @@ converter.register_structure_hook(Path, convert_simple)
 
 
 def convert_url(string: Optional[str]) -> Optional[str]:
+    if string is None:
+        return None
+
     remove = "https://hypernews.cern.ch/HyperNews/CMS"
-    if string and string.startswith(remove):
+    if string.startswith(remove):
         string = string[len(remove) :]
+
+    if not string.endswith(".html"):
+        string += ".html"
 
     return string
 
