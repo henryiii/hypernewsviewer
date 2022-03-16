@@ -169,7 +169,8 @@ class DBForums(AllForums):
                     "SELECT COUNT(*) FROM msgs WHERE up_url=?",
                     (f"/get/{forum}{spath}.html",),
                 )
-            return result.fetchone()[0]  # type: ignore[no-any-return]
+            answer: int = result.fetchone()[0]
+            return answer
 
     # get_html does not use the database
 

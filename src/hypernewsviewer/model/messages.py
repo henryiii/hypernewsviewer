@@ -6,9 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO, Tuple, Type, TypeVar
 
 import attrs
-import inflection
 
-from .converter import convert_url, converter, type_as_sqlite
+from .converter import convert_url, converter_db, converter_utc, type_as_sqlite
 from .enums import AnnotationType, ContentType
 
 Email = str
@@ -16,11 +15,6 @@ URL = str
 
 
 IB = TypeVar("IB", bound="InfoBase")
-
-
-def us(inp: str) -> str:
-    retval: str = inflection.underscore(inp) if inp != "From" else "from_"
-    return retval
 
 
 @attrs.define(kw_only=True, eq=True, frozen=True)
@@ -31,30 +25,22 @@ class InfoBase:
             try:
                 return cls.from_file(f)
             except KeyError as err:
-                raise KeyError(f"{err} missing in {path}") from None
+                raise KeyError(f"{err} missing in {path} for {cls.__name__}") from err
 
     @classmethod
     def from_file(cls: Type[IB], text: TextIO) -> IB:
-        pairs = (line.split(":", 1) for line in text)
-        info = {us(k.strip()): v.strip() or None for k, v in pairs}
-        return cls.from_dict(info)
-
-    @classmethod
-    def from_dict(cls: Type[IB], info: Dict[str, Any]) -> IB:
-        return converter.structure(info, cls)
+        return converter_utc.structure(text, cls)
 
     def as_simple_dict(self) -> Dict[str, Any]:
-        retval: Dict[str, Any] = converter.unstructure(self)
+        retval: Dict[str, Any] = converter_db.unstructure_attrs_asdict(self)
         return retval
 
     @classmethod
     def from_simple_tuple(cls: Type[IB], info: Tuple[Any, ...]) -> IB:
-        return converter.structure_attrs_fromdict(
-            {n.name: i for n, i in zip(attrs.fields(cls), info)}, cls
-        )
+        return converter_db.structure(info, cls)
 
     def as_simple_tuple(self) -> Tuple[Any, ...]:
-        retval: Tuple[Any, ...] = converter.unstructure_attrs_astuple(self)
+        retval: Tuple[Any, ...] = converter_db.unstructure_attrs_astuple(self)
         return retval
 
     @classmethod
@@ -86,6 +72,7 @@ class Member(InfoBase):
     user_url: str = ""
     content: str = "Everything"
     email: str = ""
+    old_email: str = ""
     name: str
     email2: str = ""
     subscribe: str = ""
