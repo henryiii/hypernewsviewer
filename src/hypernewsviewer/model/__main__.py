@@ -153,7 +153,11 @@ def populate(ctx: click.Context) -> None:
         sqlite3.connect(ctx.obj["db"])
     ) as con, contextlib.closing(con.cursor()) as cur:
         cur.execute(URCMessage.sqlite_create_table_statement("msgs"))
-        forum_list = forums.get_forum_names() if forum == "all" else forum.split()
+        forum_list = (
+            [f.stem for f in forums.get_forum_paths()]
+            if forum == "all"
+            else forum.split()
+        )
 
         insert_msg = URCMessage.sqlite_insert_statement("msgs")
         for forum_each in forum_list:

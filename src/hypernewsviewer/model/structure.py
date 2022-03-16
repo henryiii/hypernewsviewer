@@ -16,10 +16,6 @@ T = TypeVar("T")
 class AllForums:
     root: Path = attrs.field(converter=Path)
 
-    def get_forum(self, forum: str) -> URCMain:
-        abspath = self.root / forum
-        return URCMain.from_path(abspath.with_suffix(".html,urc"))
-
     def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
         assert path, "Must supply a path, use get_forum() instead for empty path"
         abspath = self.root / forum / path
@@ -85,11 +81,9 @@ class AllForums:
         pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
         return {int(a): b for a, b in pairs}
 
-    def get_num_forums(self) -> int:
-        return len(list(self.root.glob("*.html,urc")))
-
-    def get_forum_names(self) -> list[str]:
-        return [f.stem for f in self.root.glob("*.html,urc")]
+    def get_forum(self, forum: str) -> URCMain:
+        abspath = self.root / forum
+        return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_forums_iter(self) -> Iterator[URCMain | None]:
         for path in self.root.glob("*.html,urc"):
@@ -98,6 +92,12 @@ class AllForums:
             except (TypeError, ValueError) as e:
                 print(f"Failed to parse: {path}:", e)
                 yield None
+
+    def get_forum_paths(self) -> Iterator[Path]:
+        return self.root.glob("*.html,urc")
+
+    def get_num_forums(self) -> int:
+        return len(list(self.get_forum_paths()))
 
     def walk_tree(
         self, forum: str, path: Path | str, func: Callable[[Path, T], T], start: T
@@ -112,11 +112,6 @@ class AllForums:
 @attrs.define(kw_only=True)
 class DBForums(AllForums):
     db: sqlite3.Connection
-
-    def get_forum(self, forum: str) -> URCMain:
-        with contextlib.closing(self.db.cursor()) as cur:
-            (result,) = cur.execute("SELECT * FROM forums WHERE Num=?", (forum,))
-            return URCMain.from_simple_tuple(result)
 
     def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
         with contextlib.closing(self.db.cursor()) as cur:
@@ -195,3 +190,22 @@ class DBForums(AllForums):
                 yield Member.from_simple_tuple(member_tuple)
 
     # get_num_members doesn't need an optimization, it uses the database already
+
+    # get_categories doesn't need an optimization, it reads one file only already
+
+    def get_forum(self, forum: str) -> URCMain:
+        with contextlib.closing(self.db.cursor()) as cur:
+            (result,) = cur.execute("SELECT * FROM forums WHERE Num=?", (forum,))
+            return URCMain.from_simple_tuple(result)
+
+    def get_forums_iter(self) -> Iterator[URCMain]:
+        with contextlib.closing(self.db.cursor()) as cur:
+            for result in cur.execute("SELECT * FROM forums"):
+                yield URCMain.from_simple_tuple(result)
+
+    def get_forum_paths(self) -> Iterator[Path]:
+        with contextlib.closing(self.db.cursor()) as cur:
+            for (name,) in cur.execute("SELECT Num FROM forums"):
+                yield self.root / f"{name}.html,urc"
+
+    # walk_tree is only used for the CLI, so not implementing it now
