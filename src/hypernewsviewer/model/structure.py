@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import logging
 import sqlite3
 from pathlib import Path
 from typing import Callable, Generator, Iterator, TypeVar
@@ -11,6 +12,7 @@ from .messages import Member, URCMain, URCMessage
 
 __all__ = ["AllForums", "DBForums", "connect_forums"]
 
+log = logging.getLogger("hypernewsviewer.sql")
 
 T = TypeVar("T")
 
@@ -199,7 +201,7 @@ class DBForums(AllForums):
 
     def get_forum(self, forum: str) -> URCMain:
         with contextlib.closing(self.db.cursor()) as cur:
-            (result,) = cur.execute("SELECT * FROM forums WHERE Num=?", (forum,))
+            (result,) = cur.execute("SELECT * FROM forums WHERE num=?", (forum,))
             return URCMain.from_simple_tuple(result)
 
     def get_forums_iter(self) -> Iterator[URCMain]:
@@ -209,7 +211,7 @@ class DBForums(AllForums):
 
     def get_forum_paths(self) -> Iterator[Path]:
         with contextlib.closing(self.db.cursor()) as cur:
-            for (name,) in cur.execute("SELECT Num FROM forums"):
+            for (name,) in cur.execute("SELECT num FROM forums"):
                 yield self.root / f"{name}.html,urc"
 
     # walk_tree is only used for the CLI, so not implementing it now
@@ -221,6 +223,7 @@ def connect_forums(
 ) -> Generator[AllForums | DBForums, None, None]:
     if db_path:
         with contextlib.closing(sqlite3.connect(str(db_path))) as db:
+            db.set_trace_callback(log.debug)
             yield DBForums(root=root, db=db)
     else:
         yield AllForums(root=root)

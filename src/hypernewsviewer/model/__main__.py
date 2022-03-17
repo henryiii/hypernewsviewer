@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import contextlib
 import functools
+import logging
 import os
 import time
 from pathlib import Path
 from typing import Callable, Generator
 
 import click
+import rich.logging
 import rich.progress
 import rich.traceback
 from rich import print  # pylint: disable=redefined-builtin
@@ -21,6 +23,17 @@ from .structure import AllForums, DBForums, connect_forums
 # pylint: disable=redefined-outer-name
 
 rich.traceback.install(suppress=[click, rich], show_locals=True, width=None)
+
+
+logging.basicConfig(
+    level=logging.NOTSET,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[rich.logging.RichHandler(rich_tracebacks=True)],
+)
+
+log_sql = logging.getLogger("hypernewsviewer.sql")
+log_sql.setLevel(logging.INFO)
 
 DIR = Path(__file__).parent.resolve()
 
@@ -182,9 +195,9 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
     }
 
     with progress_bar() as p, contextlib.closing(con.cursor()) as cur:
-        cur.execute(
-            URCMessage.sqlite_create_table_statement("msgs", contraint_msgs) + ";"
-        )
+        con.set_trace_callback(log_sql.info)
+        create_msgs = URCMessage.sqlite_create_table_statement("msgs", contraint_msgs)
+        cur.execute(create_msgs + ";")
         forum_list = (
             [f.stem for f in forums.get_forum_paths()]
             if forum == "all"
@@ -192,6 +205,7 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         )
 
         insert_msg = URCMessage.sqlite_insert_statement("msgs")
+        con.set_trace_callback(None)
         for forum_each in forum_list:
             length = forums.get_num_msgs(forum_each, path, recursive=True)
             msgs = (
@@ -204,12 +218,14 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
                 if m
             )
             cur.executemany(insert_msg, msgs)
+        con.set_trace_callback(log_sql.info)
 
         create_forums = URCMain.sqlite_create_table_statement(
             "forums", contraint_forums
         )
         # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
         cur.execute(create_forums + ";")
+        con.set_trace_callback(None)
         insert_forum = URCMain.sqlite_insert_statement("forums")
         for forum_main in p.track(
             forums.get_forums_iter(),
@@ -218,12 +234,14 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         ):
             if forum_main:
                 cur.execute(insert_forum, forum_main.as_simple_tuple())
+        con.set_trace_callback(log_sql.info)
 
         create_members = Member.sqlite_create_table_statement(
             "people", {"user_id": "PRIMARY KEY"}
         )
         # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
         cur.execute(create_members + ";")
+        con.set_trace_callback(None)
         insert_people = Member.sqlite_insert_statement("people")
         for member in p.track(
             forums.get_member_iter(),
@@ -232,8 +250,13 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         ):
             if member:
                 cur.execute(insert_people, member.as_simple_tuple())
+        con.set_trace_callback(log_sql.info)
+
+        cur.execute("CREATE INDEX idx_msgs_up_url ON msgs(up_url);")
 
         con.commit()
+
+        con.set_trace_callback(log_sql.debug)
 
 
 if __name__ == "__main__":
