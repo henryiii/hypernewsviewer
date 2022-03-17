@@ -7,6 +7,7 @@ from typing import Any
 
 from flask import (
     Flask,
+    g,
     redirect,
     render_template,
     request,
@@ -15,14 +16,32 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
-from .model.structure import AllForums
+from .model.structure import connect_forums
 
 app = Flask("hypernewsviewer")
 
 DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
+HNDATABASE = os.environ.get("HNDATABASE", None)
+
 DATA_ROOT = Path(HNFILES).resolve()
-forums = AllForums(root=DATA_ROOT)
+DB_ROOT = Path(HNDATABASE).resolve() if HNDATABASE else None
+
+
+def get_forums() -> None:
+    forums = getattr(g, "_forums", None)
+    if forums is None:
+        # pylint: disable-next=protected-access,assigning-non-slot
+        g._forums = connect_forums(DATA_ROOT, DB_ROOT)
+        forums = g._forums.__enter__()  # pylint: disable=protected-access
+    return forums
+
+
+@app.teardown_appcontext
+def close_connection(_exception: Exception | None) -> None:
+    forums = getattr(g, "_forums", None)
+    if forums is not None:
+        forums.__exit__(None, None, None)
 
 
 @app.route("/")
@@ -51,6 +70,7 @@ def list_view(subpath: str) -> str:
     forum, *others = parts
     path = Path("/".join(others))
 
+    forums = get_forums()
     try:
         msg = forums.get_msg(forum, path) if others else forums.get_forum(forum)
     except FileNotFoundError:
@@ -59,6 +79,7 @@ def list_view(subpath: str) -> str:
     body = forums.get_html(forum, path if others else path / path.name)
 
     replies: list[dict[str, Any]] = []
+    print(forum, path)
     for m in forums.get_msgs(forum, path):
         local_forum, *local_others = m.responses.lstrip("/").split("/")
         msgs = forums.get_msg_paths(local_forum, "/".join(local_others))
@@ -79,6 +100,7 @@ def list_view(subpath: str) -> str:
 @app.route("/view-member.pl")
 def view_member() -> str:
     (answer,) = request.args
+    forums = get_forums()
     member = forums.get_member(answer)
 
     header = """<p><a href="/">home</a></p>\n"""
@@ -94,6 +116,7 @@ def top_page() -> str:
 
 @app.route("/index")
 def get_index() -> str:
+    forums = get_forums()
     all_forums = filter(None, forums.get_forums_iter())
     sorted_forums = sorted(all_forums, key=lambda x: x.last_mod, reverse=True)
     return render_template("index.html", forums=sorted_forums)
@@ -101,9 +124,11 @@ def get_index() -> str:
 
 @app.route("/cindex")
 def get_cindex() -> str:
+    forums = get_forums()
     categories = forums.get_categories()
     all_forums = filter(None, forums.get_forums_iter())
     sorted_forums = sorted(all_forums, key=lambda x: (x.categories, x.last_mod))
+
     grouped_forums = {
         a: list(b) for a, b in groupby(sorted_forums, lambda x: x.categories)
     }

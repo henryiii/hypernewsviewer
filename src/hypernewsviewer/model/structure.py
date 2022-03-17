@@ -126,7 +126,7 @@ class DBForums(AllForums):
     def get_msgs(
         self, forum: str, path: Path | str, *, recursive: bool = False
     ) -> Iterator[URCMessage]:
-        spath = f"/{path}" if path else ""
+        spath = f"/{path}" if path != path.__class__() else ""
         with contextlib.closing(self.db.cursor()) as cur:
             if recursive:
                 msgs = cur.execute(
@@ -143,7 +143,7 @@ class DBForums(AllForums):
 
     def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
         abspath = self.root.resolve()
-        spath = f"/{path}" if path else ""
+        spath = f"/{path}" if path != path.__class__() else ""
         with contextlib.closing(self.db.cursor()) as cur:
             responses = cur.execute(
                 "SELECT responses FROM msgs WHERE up_url=?",

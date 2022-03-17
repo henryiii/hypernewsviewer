@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import nox
 
 nox.options.sessions = ["lint", "tests"]
@@ -30,8 +32,10 @@ def serve(session: nox.Session) -> None:
     """
     Serve a session (Ctrl-C to quit).
     """
+    env = os.environ.copy()
+    env["FLASK_ENV"] = "development"
     session.install(".")
-    session.run("flask", "run", *session.posargs)
+    session.run("flask", "run", *session.posargs, env=env)
 
 
 @nox.session
