@@ -115,7 +115,13 @@ def type_as_sqlite(inp: type[Any] | None) -> str:
     if inp is None:
         return "NULL"
 
-    suffix = "" if isinstance(None, inp) else " NOT NULL"
+    try:
+        suffix = "" if isinstance(None, inp) else " NOT NULL"
+    except TypeError:
+        # Python < 3.10 doesn't support this on Optional - but that's okay, we now know it is Optional!
+        suffix = ""
+        (inp,) = (t for t in inp.__args__ if not isinstance(None, t))
+    assert inp is not None
 
     if isinstance(1, inp):
         return "INTEGER" + suffix

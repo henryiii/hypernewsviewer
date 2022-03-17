@@ -192,10 +192,11 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
             )
             cur.executemany(insert_msg, msgs)
 
-        cur.execute(
-            URCMain.sqlite_create_table_statement("forums", contraint_forums)
-            + " WITHOUT ROWID;"
+        create_forums = URCMain.sqlite_create_table_statement(
+            "forums", contraint_forums
         )
+        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
+        cur.execute(create_forums + ";")
         insert_forum = URCMain.sqlite_insert_statement("forums")
         for forum_main in p.track(
             forums.get_forums_iter(),
@@ -205,10 +206,11 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
             if forum_main:
                 cur.execute(insert_forum, forum_main.as_simple_tuple())
 
-        cur.execute(
-            Member.sqlite_create_table_statement("people", {"user_id": "PRIMARY KEY"})
-            + " WITHOUT ROWID;"
+        create_members = Member.sqlite_create_table_statement(
+            "people", {"user_id": "PRIMARY KEY"}
         )
+        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
+        cur.execute(create_members + ";")
         insert_people = Member.sqlite_insert_statement("people")
         for member in p.track(
             forums.get_member_iter(),
