@@ -119,10 +119,11 @@ def list_fn(forum: str, path: Path, forums: AllForums | DBForums) -> None:
     t.add_column("N", style="green")
     t.add_column("Title")
 
-    for m in forums.get_msgs(forum, path):
-        msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
-        entries = len(list(msgs))
-        t.add_row(str(m.num), str(entries), m.title)
+    with timer("Time to read and build list"):
+        for m in forums.get_msgs(forum, path):
+            msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
+            entries = len(list(msgs))
+            t.add_row(str(m.num), str(entries), m.title)
 
     print(t)
 
