@@ -3,8 +3,9 @@ from __future__ import annotations
 import contextlib
 import functools
 import os
+import time
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Generator
 
 import click
 import rich.progress
@@ -19,9 +20,19 @@ from .structure import AllForums, DBForums, connect_forums
 
 # pylint: disable=redefined-outer-name
 
-rich.traceback.install(suppress=[click, rich], show_locals=True)
+rich.traceback.install(suppress=[click, rich], show_locals=True, width=None)
 
 DIR = Path(__file__).parent.resolve()
+
+
+@contextlib.contextmanager
+def timer(description: str) -> Generator[None, None, None]:
+    start = time.monotonic()
+    try:
+        yield
+    finally:
+        ellapsed_time = time.monotonic() - start
+        print(f"{description}: {ellapsed_time}")
 
 
 def progress_bar() -> rich.progress.Progress:
@@ -113,8 +124,10 @@ def tree(forum: str, path: Path, forums: AllForums | DBForums) -> None:
         ":open_file_folder: "
         f"[link file://{forums.root}/{forum}/{path}]{forum}/{path}: {msg.title}"
     )
-    for _ in forums.walk_tree(forum, path, walk_tree, tree):
-        pass
+
+    with timer("Time to walk tree"):
+        for _ in forums.walk_tree(forum, path, walk_tree, tree):
+            pass
 
     print(tree)
 
