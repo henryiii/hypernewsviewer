@@ -3,11 +3,14 @@ from __future__ import annotations
 import contextlib
 import sqlite3
 from pathlib import Path
-from typing import Callable, Iterator, TypeVar
+from typing import Callable, Generator, Iterator, TypeVar
 
 import attrs
 
 from .messages import Member, URCMain, URCMessage
+
+__all__ = ["AllForums", "DBForums", "connect_forums"]
+
 
 T = TypeVar("T")
 
@@ -210,3 +213,14 @@ class DBForums(AllForums):
                 yield self.root / f"{name}.html,urc"
 
     # walk_tree is only used for the CLI, so not implementing it now
+
+
+@contextlib.contextmanager
+def connect_forums(
+    root: Path, db_path: Path | None
+) -> Generator[AllForums | DBForums, None, None]:
+    if db_path:
+        with contextlib.closing(sqlite3.connect(str(db_path))) as db:
+            yield DBForums(root=root, db=db)
+    else:
+        yield AllForums(root=root)

@@ -3,9 +3,8 @@ from __future__ import annotations
 import contextlib
 import functools
 import os
-import sqlite3
 from pathlib import Path
-from typing import Callable, Generator
+from typing import Callable
 
 import click
 import rich.progress
@@ -16,7 +15,7 @@ from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
 from .messages import Member, URCMain, URCMessage
-from .structure import AllForums, DBForums
+from .structure import AllForums, DBForums, connect_forums
 
 # pylint: disable=redefined-outer-name
 
@@ -37,17 +36,6 @@ def progress_bar() -> rich.progress.Progress:
     )
 
 
-@contextlib.contextmanager
-def connect_db(
-    root: Path, db_path: Path | None
-) -> Generator[AllForums | DBForums, None, None]:
-    if db_path:
-        with contextlib.closing(sqlite3.connect(str(db_path))) as db:
-            yield DBForums(root=root, db=db)
-    else:
-        yield AllForums(root=root)
-
-
 def convert_context(
     function: Callable[[str, Path, AllForums | DBForums], None]
 ) -> Callable[[click.Context], None]:
@@ -60,7 +48,7 @@ def convert_context(
         forum: str = ctx.obj["forum"]
         path: Path = ctx.obj["path"]
 
-        with connect_db(ctx.obj["root"], ctx.obj["db"]) as forums:
+        with connect_forums(ctx.obj["root"], ctx.obj["db"]) as forums:
             function(forum, path, forums)
 
     return wrapper
@@ -94,28 +82,25 @@ def main(ctx: click.Context, root: Path, db: Path | None, path: str) -> None:
 
 @main.command("list", help="Show a table of messages.")
 @click.pass_context
-def list_fn(ctx: click.Context) -> None:
-    forum: str = ctx.obj["forum"]
-    path: Path = ctx.obj["path"]
+@convert_context
+def list_fn(forum: str, path: Path, forums: AllForums | DBForums) -> None:
+    html = forums.get_html(forum, path)
 
-    with connect_db(ctx.obj["root"], ctx.obj["db"]) as forums:
-        html = forums.get_html(forum, path)
+    panel = get_html_panel(html, title=f"{forum}/{path}")
+    if panel is not None:
+        print(panel)
 
-        panel = get_html_panel(html, title=f"{forum}/{path}")
-        if panel is not None:
-            print(panel)
+    t = Table(title="Messages")
+    t.add_column("#", style="cyan")
+    t.add_column("N", style="green")
+    t.add_column("Title")
 
-        t = Table(title="Messages")
-        t.add_column("#", style="cyan")
-        t.add_column("N", style="green")
-        t.add_column("Title")
+    for m in forums.get_msgs(forum, path):
+        msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
+        entries = len(list(msgs))
+        t.add_row(str(m.num), str(entries), m.title)
 
-        for m in forums.get_msgs(forum, path):
-            msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
-            entries = len(list(msgs))
-            t.add_row(str(m.num), str(entries), m.title)
-
-        print(t)
+    print(t)
 
 
 @main.command(help="Show a tree view for messages")
