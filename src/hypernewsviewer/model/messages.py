@@ -48,10 +48,18 @@ class InfoBase:
         return [f.name for f in attrs.fields(cls)]
 
     @classmethod
-    def sqlite_create_table_statement(cls, name: str) -> str:
+    def sqlite_create_table_statement(
+        cls, name: str, constraint: Optional[Dict[str, str]] = None
+    ) -> str:
         field_types = (type_as_sqlite(f.type) for f in attrs.fields(cls))
+        names = cls.get_field_names()
+        if constraint:
+            field_types = (
+                f"{f} {constraint[n]}" if n in constraint else f
+                for n, f in zip(names, field_types)
+            )
         columns = ", ".join(
-            f"{name} {type}" for name, type in zip(cls.get_field_names(), field_types)
+            f"{name} {column}" for name, column in zip(names, field_types)
         )
         return f"CREATE TABLE {name} ({columns})"
 

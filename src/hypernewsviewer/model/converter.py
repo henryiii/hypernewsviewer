@@ -114,8 +114,11 @@ def convert_url(string: str | None) -> str | None:
 def type_as_sqlite(inp: type[Any] | None) -> str:
     if inp is None:
         return "NULL"
+
+    suffix = "" if isinstance(None, inp) else " NOT NULL"
+
     if isinstance(1, inp):
-        return "INTEGER"
+        return "INTEGER" + suffix
     if isinstance(1.0, inp):
-        return "REAL"
-    return "TEXT"
+        return "REAL" + suffix
+    return "TEXT" + suffix

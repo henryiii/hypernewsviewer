@@ -175,9 +175,18 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
     forums = AllForums(root=db_forums.root)
 
     length = forums.get_num_msgs(forum, path, recursive=True)
+    contraint_msgs = {"responses": "PRIMARY KEY", "url": "UNIQUE", "body": "UNIQUE"}
+    contraint_forums = {
+        "num": "PRIMARY KEY",
+        "responses": "UNIQUE",
+        "url": "UNIQUE",
+        "body": "UNIQUE",
+    }
 
     with progress_bar() as p, contextlib.closing(con.cursor()) as cur:
-        cur.execute(URCMessage.sqlite_create_table_statement("msgs"))
+        cur.execute(
+            URCMessage.sqlite_create_table_statement("msgs", contraint_msgs) + ";"
+        )
         forum_list = (
             [f.stem for f in forums.get_forum_paths()]
             if forum == "all"
@@ -198,8 +207,11 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
             )
             cur.executemany(insert_msg, msgs)
 
+        cur.execute(
+            URCMain.sqlite_create_table_statement("forums", contraint_forums)
+            + " WITHOUT ROWID;"
+        )
         insert_forum = URCMain.sqlite_insert_statement("forums")
-        cur.execute(URCMain.sqlite_create_table_statement("forums"))
         for forum_main in p.track(
             forums.get_forums_iter(),
             total=forums.get_num_forums(),
@@ -208,8 +220,11 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
             if forum_main:
                 cur.execute(insert_forum, forum_main.as_simple_tuple())
 
+        cur.execute(
+            Member.sqlite_create_table_statement("people", {"user_id": "PRIMARY KEY"})
+            + " WITHOUT ROWID;"
+        )
         insert_people = Member.sqlite_insert_statement("people")
-        cur.execute(Member.sqlite_create_table_statement("people"))
         for member in p.track(
             forums.get_member_iter(),
             total=forums.get_num_members(),

@@ -86,7 +86,7 @@ class AllForums:
         return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_forums_iter(self) -> Iterator[URCMain | None]:
-        for path in self.root.glob("*.html,urc"):
+        for path in sorted(self.root.glob("*.html,urc")):
             try:
                 yield URCMain.from_path(path)
             except (TypeError, ValueError) as e:
