@@ -223,7 +223,6 @@ def connect_forums(
 ) -> Generator[AllForums | DBForums, None, None]:
     if db_path:
         with contextlib.closing(sqlite3.connect(str(db_path))) as db:
-            db.set_trace_callback(log.debug)
             yield DBForums(root=root, db=db)
     else:
         yield AllForums(root=root)

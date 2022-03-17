@@ -256,7 +256,7 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
 
         con.commit()
 
-        con.set_trace_callback(log_sql.debug)
+        con.set_trace_callback(None)
 
 
 if __name__ == "__main__":
