@@ -6,7 +6,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Callable, Generator
+from typing import Callable, Generator, Iterable, TypeVar
 
 import click
 import rich.logging
@@ -23,6 +23,8 @@ from .structure import AllForums, DBForums, connect_forums
 # pylint: disable=redefined-outer-name
 
 rich.traceback.install(suppress=[click, rich], show_locals=True, width=None)
+
+T = TypeVar("T")
 
 
 logging.basicConfig(
@@ -60,6 +62,16 @@ def progress_bar() -> rich.progress.Progress:
     )
 
 
+def track(
+    iterable: Iterable[T], total: int, description: str
+) -> Generator[T, None, None]:
+    """
+    Track progress of an iterable using the custom progress bar.
+    """
+    with progress_bar() as p:
+        yield from p.track(iterable, total=total, description=description)
+
+
 def convert_context(
     function: Callable[[str, Path, AllForums | DBForums], None]
 ) -> Callable[[click.Context], None]:
@@ -78,7 +90,10 @@ def convert_context(
     return wrapper
 
 
-@click.group(help="Run with a tree path (like hnTest/1).")
+@click.group(
+    help="Run with a tree path (like hnTest/1).",
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 @click.option(
     "--root",
     type=click.Path(file_okay=False, path_type=Path),  # type: ignore[type-var]
@@ -170,10 +185,9 @@ def forums(_forum: str, _path: Path, forums: AllForums | DBForums) -> None:
     t.add_column("Cat", style="green")
     t.add_column("Title")
 
-    with progress_bar() as p:
-        for m in p.track(forums.get_forums_iter(), total=forums.get_num_forums()):
-            if m:
-                t.add_row(str(m.num), str(m.categories), m.title)
+    for m in track(forums.get_forums_iter(), forums.get_num_forums(), "Forums"):
+        if m:
+            t.add_row(str(m.num), str(m.categories), m.title)
 
     print(t)
 
@@ -195,10 +209,25 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         "body": "UNIQUE",
     }
 
-    with progress_bar() as p, contextlib.closing(con.cursor()) as cur:
+    with contextlib.closing(con.cursor()) as cur:
         con.set_trace_callback(log_sql.info)
         create_msgs = URCMessage.sqlite_create_table_statement("msgs", contraint_msgs)
         cur.execute(create_msgs + ";")
+
+        create_forums = URCMain.sqlite_create_table_statement(
+            "forums", contraint_forums
+        )
+        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
+        cur.execute(create_forums + ";")
+
+        create_members = Member.sqlite_create_table_statement(
+            "people", {"user_id": "PRIMARY KEY"}
+        )
+        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
+        cur.execute(create_members + ";")
+
+        con.set_trace_callback(None)
+
         forum_list = (
             [f.stem for f in forums.get_forum_paths()]
             if forum == "all"
@@ -206,57 +235,42 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         )
 
         insert_msg = URCMessage.sqlite_insert_statement("msgs")
-        con.set_trace_callback(None)
         for forum_each in forum_list:
             length = forums.get_num_msgs(forum_each, path, recursive=True)
             msgs = (
                 m.as_simple_tuple()
-                for m in p.track(
+                for m in track(
                     forums.get_msgs(forum_each, path, recursive=True),
-                    total=length,
-                    description=forum_each,
+                    length,
+                    forum_each,
                 )
                 if m
             )
             cur.executemany(insert_msg, msgs)
-        con.set_trace_callback(log_sql.info)
+            con.commit()
 
-        create_forums = URCMain.sqlite_create_table_statement(
-            "forums", contraint_forums
-        )
-        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
-        cur.execute(create_forums + ";")
-        con.set_trace_callback(None)
         insert_forum = URCMain.sqlite_insert_statement("forums")
-        for forum_main in p.track(
+        for forum_main in track(
             forums.get_forums_iter(),
-            total=forums.get_num_forums(),
-            description="Forums",
+            forums.get_num_forums(),
+            "Forums",
         ):
             if forum_main:
                 cur.execute(insert_forum, forum_main.as_simple_tuple())
-        con.set_trace_callback(log_sql.info)
+                con.commit()
 
-        create_members = Member.sqlite_create_table_statement(
-            "people", {"user_id": "PRIMARY KEY"}
-        )
-        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
-        cur.execute(create_members + ";")
-        con.set_trace_callback(None)
         insert_people = Member.sqlite_insert_statement("people")
-        for member in p.track(
+        for member in track(
             forums.get_member_iter(),
-            total=forums.get_num_members(),
-            description="People",
+            forums.get_num_members(),
+            "People",
         ):
             if member:
                 cur.execute(insert_people, member.as_simple_tuple())
+
         con.set_trace_callback(log_sql.info)
-
         cur.execute("CREATE INDEX idx_msgs_up_url ON msgs(up_url);")
-
         con.commit()
-
         con.set_trace_callback(None)
 
 
