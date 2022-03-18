@@ -235,14 +235,14 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
         )
 
         insert_msg = URCMessage.sqlite_insert_statement("msgs")
-        for forum_each in forum_list:
+        for n, forum_each in enumerate(forum_list):
             length = forums.get_num_msgs(forum_each, path, recursive=True)
             msgs = (
                 m.as_simple_tuple()
                 for m in track(
                     forums.get_msgs(forum_each, path, recursive=True),
                     length,
-                    forum_each,
+                    f"({n}/{len(forum_list)}) {forum_each}",
                 )
                 if m
             )

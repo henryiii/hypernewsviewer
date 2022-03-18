@@ -9,10 +9,11 @@ class StrEnum(str, enum.Enum):
 
 
 class ContentType(StrEnum):
+    PlainText = "Plain Text"
     HTML = "HTML"
     SmartText = "Smart Text"
-    PlainText = "Plain Text"
     WordProcessor = "Word Processor"
+    PlainTex = "Plain Tex"
 
 
 class AnnotationType(StrEnum):
