@@ -77,8 +77,8 @@ converter_db.register_structure_hook_func(
 
 
 def structure_from_utc(obj: TextIO, cls: type[T]) -> T:
-    pairs = (line.split(":", 1) for line in obj)
-    info = {us(k.strip()): v.strip() or None for k, v in pairs}
+    pairs = (ll.split(":", 1) for line in obj if (ll := line.strip()))
+    info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
     fields = attrs.fields_dict(cls)
 
     conv_obj = {

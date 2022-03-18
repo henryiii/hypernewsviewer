@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 from datetime import datetime
 from pathlib import Path
@@ -26,6 +24,8 @@ class InfoBase:
                 return cls.from_file(f)
             except KeyError as err:
                 raise KeyError(f"{err} missing in {path} for {cls.__name__}") from err
+            except ValueError as err:
+                raise ValueError(f"{err} in {path} for {cls.__name__}") from err
 
     @classmethod
     def from_file(cls: Type[IB], text: TextIO) -> IB:
@@ -89,8 +89,8 @@ class Member(InfoBase):
 
 @attrs.define(kw_only=True, eq=True, frozen=True)
 class URCBase(InfoBase):
-    content_type: ContentType
-    title: str
+    content_type: ContentType = ContentType.PlainText
+    title: str = ""
     body: Path
     url: URL = attrs.field(converter=convert_url)
     base_url: URL = attrs.field(converter=convert_url)
@@ -98,7 +98,7 @@ class URCBase(InfoBase):
     date: datetime
     last_message_date: datetime
     last_mod: datetime
-    name: str
+    name: str = ""
     from_: Email
 
     num_messages: Optional[int] = None
