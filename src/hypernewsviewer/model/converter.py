@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, TextIO, TypeVar
+from typing import Any, TypeVar
 
 import attrs
 import cattr
@@ -76,8 +76,8 @@ converter_db.register_structure_hook_func(
 )
 
 
-def structure_from_utc(obj: TextIO, cls: type[T]) -> T:
-    pairs = (ll.split(":", 1) for line in obj if (ll := line.strip()))
+def structure_from_utc(obj: str, cls: type[T]) -> T:
+    pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
     info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
     fields = attrs.fields_dict(cls)
 

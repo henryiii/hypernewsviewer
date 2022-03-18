@@ -14,6 +14,7 @@ class ContentType(StrEnum):
     SmartText = "Smart Text"
     WordProcessor = "Word Processor"
     PlainTex = "Plain Tex"
+    Plain = "Plain"
 
 
 class AnnotationType(StrEnum):

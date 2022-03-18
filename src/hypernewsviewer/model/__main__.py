@@ -9,10 +9,13 @@ from pathlib import Path
 from typing import Callable, Generator, Iterable, TypeVar
 
 import click
+import rich.console
+import rich.live
 import rich.logging
 import rich.progress
 import rich.traceback
 from rich import print  # pylint: disable=redefined-builtin
+from rich.progress import Progress
 from rich.table import Table
 from rich.tree import Tree
 
@@ -50,16 +53,14 @@ def timer(description: str) -> Generator[None, None, None]:
         print(f"{description}: {ellapsed_time}")
 
 
-def progress_bar() -> rich.progress.Progress:
-    return rich.progress.Progress(
-        "[green][progress.description]{task.description}",
-        rich.progress.BarColumn(bar_width=None),
-        "[green]{task.completed} of {task.total:g}",
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        rich.progress.TimeElapsedColumn(),
-        rich.progress.TimeRemainingColumn(),
-        expand=True,
-    )
+PROGRESS_COLUMNS = (
+    "[green][progress.description]{task.description}",
+    rich.progress.BarColumn(bar_width=None),
+    "[green]{task.completed} of {task.total:g}",
+    "[progress.percentage]{task.percentage:>3.0f}%",
+    rich.progress.TimeElapsedColumn(),
+    rich.progress.TimeRemainingColumn(),
+)
 
 
 def track(
@@ -68,7 +69,7 @@ def track(
     """
     Track progress of an iterable using the custom progress bar.
     """
-    with progress_bar() as p:
+    with Progress(*PROGRESS_COLUMNS, expand=True) as p:
         yield from p.track(iterable, total=total, description=description)
 
 
@@ -234,20 +235,40 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
             else forum.split()
         )
 
-        insert_msg = URCMessage.sqlite_insert_statement("msgs")
-        for n, forum_each in enumerate(forum_list):
-            length = forums.get_num_msgs(forum_each, path, recursive=True)
-            msgs = (
-                m.as_simple_tuple()
-                for m in track(
-                    forums.get_msgs(forum_each, path, recursive=True),
-                    length,
-                    f"({n}/{len(forum_list)}) {forum_each}",
+        outer_progress = Progress(*PROGRESS_COLUMNS, expand=True)
+        inner_progress = Progress(*PROGRESS_COLUMNS, expand=True)
+        live_group = rich.console.Group(outer_progress, inner_progress)
+
+        with rich.live.Live(live_group, refresh_per_second=10):
+            insert_msg = URCMessage.sqlite_insert_statement("msgs")
+            for n, forum_each in enumerate(
+                outer_progress.track(forum_list, description="Forums")
+            ):
+                length = forums.get_num_msgs(forum_each, path, recursive=True)
+
+                task_id = inner_progress.add_task("Forum")
+                task = inner_progress.tasks[inner_progress.task_ids.index(task_id)]
+
+                def inner_track(
+                    iterable: Iterable[T], total: int, description: str
+                ) -> Iterable[T]:
+                    task.description = description
+                    yield from inner_progress.track(
+                        iterable, total=total, task_id=task.id
+                    )
+
+                msgs = (
+                    m.as_simple_tuple()
+                    for m in inner_track(
+                        forums.get_msgs(forum_each, path, recursive=True),
+                        total=length,
+                        description=f"({n}/{len(forum_list)}) {forum_each}",
+                    )
+                    if m
                 )
-                if m
-            )
-            cur.executemany(insert_msg, msgs)
-            con.commit()
+                cur.executemany(insert_msg, msgs)
+                con.commit()
+                inner_progress.remove_task(task_id)
 
         insert_forum = URCMain.sqlite_insert_statement("forums")
         for forum_main in track(

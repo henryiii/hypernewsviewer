@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TextIO, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 import attrs
 
@@ -11,7 +11,6 @@ from .enums import AnnotationType, ContentType
 Email = str
 URL = str
 
-
 IB = TypeVar("IB", bound="InfoBase")
 
 
@@ -19,16 +18,18 @@ IB = TypeVar("IB", bound="InfoBase")
 class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
-        with open(path, encoding="Latin-1") as f:
-            try:
-                return cls.from_file(f)
-            except KeyError as err:
-                raise KeyError(f"{err} missing in {path} for {cls.__name__}") from err
-            except ValueError as err:
-                raise ValueError(f"{err} in {path} for {cls.__name__}") from err
+        with open(path, "rb") as f:
+            btxt = f.read().translate(None, b"\x0D\x1C\x1D\x1E\x1F")
+        try:
+            txt = btxt.decode("Latin-1")
+            return cls.from_file(txt)
+        except KeyError as err:
+            raise KeyError(f"{err} missing in {path} for {cls.__name__}") from err
+        except Exception as err:
+            raise RuntimeError(f"{err} in {path} for {cls.__name__}") from err
 
     @classmethod
-    def from_file(cls: Type[IB], text: TextIO) -> IB:
+    def from_file(cls: Type[IB], text: str) -> IB:
         return converter_utc.structure(text, cls)
 
     def as_simple_dict(self) -> Dict[str, Any]:
@@ -99,7 +100,7 @@ class URCBase(InfoBase):
     last_message_date: datetime
     last_mod: datetime
     name: str = ""
-    from_: Email
+    from_: Email = ""
 
     num_messages: Optional[int] = None
     footer_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
