@@ -11,6 +11,7 @@ Email = str
 URL = str
 
 IB = TypeVar("IB", bound="InfoBase")
+M = TypeVar("M", bound="Message")
 
 
 @attrs.define(kw_only=True, eq=True, frozen=True)
@@ -58,10 +59,10 @@ class InfoBase:
                 f"{f} {constraint[n]}" if n in constraint else f
                 for n, f in zip(names, field_types)
             )
-        columns = ", ".join(
+        columns = ",\n    ".join(
             f"{name} {column}" for name, column in zip(names, field_types)
         )
-        return f"CREATE TABLE {name} ({columns})"
+        return f"CREATE TABLE {name} (\n    {columns}\n);"
 
     @classmethod
     def sqlite_insert_statement(cls, name: str) -> str:
@@ -220,28 +221,30 @@ class Message(InfoBase):
 
     message_id: str
 
+    @classmethod
+    def from_path(cls: Type[M], path: os.PathLike[str]) -> M:
+        self = URCMessage.from_path(path)
 
-def simplifiy_message(self: URCMessage) -> Message:
-    forum, msg = self.responses.lstrip("/").split("/", 1)
+        forum, msg = self.responses.lstrip("/").split("/", 1)
 
-    return Message(
-        content_type=self.content_type,
-        title=self.title,
-        forum=forum,
-        msg=msg,
-        up=msg.rsplit("/", 1)[0] if "/" in msg else "",
-        date=self.date,
-        last_message_date=self.last_message_date,
-        last_mod=self.last_mod,
-        name=self.name,
-        from_=self.from_,
-        num_messages=self.num_messages,
-        annotation_type=self.annotation_type,
-        num=self.num,
-        previous_num=self.previous_num,
-        next_num=self.next_num,
-        up_rel=self.up_rel,
-        node_type=self.node_type,
-        newsgroups=self.newsgroups,
-        message_id=self.message_id,
-    )
+        return cls(
+            content_type=self.content_type,
+            title=self.title,
+            forum=forum,
+            msg=msg,
+            up=msg.rsplit("/", 1)[0] if "/" in msg else "",
+            date=self.date,
+            last_message_date=self.last_message_date,
+            last_mod=self.last_mod,
+            name=self.name,
+            from_=self.from_,
+            num_messages=self.num_messages,
+            annotation_type=self.annotation_type,
+            num=self.num,
+            previous_num=self.previous_num,
+            next_num=self.next_num,
+            up_rel=self.up_rel,
+            node_type=self.node_type,
+            newsgroups=self.newsgroups,
+            message_id=self.message_id,
+        )

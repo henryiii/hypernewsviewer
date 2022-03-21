@@ -3,7 +3,7 @@ from pathlib import Path
 import attrs
 import pytest
 
-from hypernewsviewer.model.messages import URCMessage, simplifiy_message
+from hypernewsviewer.model.messages import Message, URCMessage
 from hypernewsviewer.model.structure import AllForums
 
 DIR = Path(__file__).parent.resolve()
@@ -18,8 +18,8 @@ def test_simplify():
     all_forums = AllForums(root=HNFILES)
     forum = "hnTest"
 
-    all_msgs = list(all_forums.get_msgs(forum, "", recursive=True))
-    simple_msgs = [simplifiy_message(m) for m in all_msgs]
+    all_msgs = [URCMessage.from_path(p) for p in all_forums.get_msg_paths(forum, "")]
+    simple_msgs = [Message.from_path(p) for p in all_forums.get_msg_paths(forum, "")]
 
     for orig, simp in zip(all_msgs, simple_msgs):
         for field in attrs.fields(URCMessage):  # pylint: disable=not-an-iterable

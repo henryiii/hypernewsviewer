@@ -8,7 +8,7 @@ from typing import Callable, Generator, Iterator, TypeVar
 
 import attrs
 
-from .messages import Member, URCMain, URCMessage
+from .messages import Member, Message, URCMain
 
 __all__ = ["AllForums", "DBForums", "connect_forums"]
 
@@ -21,20 +21,20 @@ T = TypeVar("T")
 class AllForums:
     root: Path = attrs.field(converter=Path)
 
-    def get_msg(self, forum: str, path: str) -> URCMain | URCMessage:
+    def get_msg(self, forum: str, path: str) -> Message:
         assert path, "Must supply a path, use get_forum() instead for empty path"
         abspath = self.root / forum / path
-        return URCMessage.from_path(abspath.with_suffix(".html,urc"))
+        return Message.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msgs(
         self, forum: str, path: str, *, recursive: bool = False
-    ) -> Iterator[URCMessage]:
+    ) -> Iterator[Message]:
         """
         This allows an empty path, unlike get_msg, since it returns the inner msgs.
         """
 
         for msg_path in self.get_msg_paths(forum, path):
-            yield URCMessage.from_path(msg_path.with_suffix(".html,urc"))
+            yield Message.from_path(msg_path.with_suffix(".html,urc"))
             if recursive:
                 yield from self.get_msgs(
                     forum,
@@ -123,99 +123,90 @@ class AllForums:
 class DBForums(AllForums):
     db: sqlite3.Connection
 
-    def get_msg(self, forum: str, path: str) -> URCMain | URCMessage:
-        with contextlib.closing(self.db.cursor()) as cur:
-            (msg,) = cur.execute(
-                "SELECT * FROM msgs WHERE responses=?", (f"/{forum}/{path}",)
-            )
-            return URCMessage.from_simple_tuple(msg)
+    def get_msg(self, forum: str, path: str) -> Message:
+        assert path, "Must supply a path, use get_forum() instead for empty path"
+        (msg,) = self.db.execute(
+            "SELECT * FROM msgs WHERE responses=?", (f"/{forum}/{path}",)
+        )
+        return Message.from_simple_tuple(msg)
 
     def get_msgs(
         self, forum: str, path: str, *, recursive: bool = False
-    ) -> Iterator[URCMessage]:
+    ) -> Iterator[Message]:
         spath = f"/{path}" if path != path.__class__() else ""
-        with contextlib.closing(self.db.cursor()) as cur:
-            if recursive:
-                msgs = cur.execute(
-                    "SELECT * FROM msgs WHERE responses LIKE ?",
-                    (f"/{forum}{spath}/%",),
-                )
-            else:
-                msgs = cur.execute(
-                    "SELECT * FROM msgs WHERE up_url=?",
-                    (f"/get/{forum}{spath}.html",),
-                )
-            for msg in msgs:
-                yield URCMessage.from_simple_tuple(msg)
+        if recursive:
+            msgs = self.db.execute(
+                "SELECT * FROM msgs WHERE responses LIKE ?",
+                (f"/{forum}{spath}/%",),
+            )
+        else:
+            msgs = self.db.execute(
+                "SELECT * FROM msgs WHERE up_url=?",
+                (f"/get/{forum}{spath}.html",),
+            )
+        for msg in msgs:
+            yield Message.from_simple_tuple(msg)
 
     def get_msg_paths(self, forum: str, path: str) -> list[Path]:
         abspath = self.root.resolve()
         spath = f"/{path}" if path else ""
-        with contextlib.closing(self.db.cursor()) as cur:
-            responses = cur.execute(
-                "SELECT responses FROM msgs WHERE up_url=?",
-                (f"/get/{forum}{spath}.html",),
-            )
-            return sorted(
-                (
-                    (abspath / resp[0].lstrip("/")).with_suffix(".html,urc")
-                    for resp in responses
-                ),
-                key=lambda x: int(x.stem),
-            )
+        responses = self.db.execute(
+            "SELECT responses FROM msgs WHERE up_url=?",
+            (f"/get/{forum}{spath}.html",),
+        )
+        return sorted(
+            (
+                (abspath / resp[0].lstrip("/")).with_suffix(".html,urc")
+                for resp in responses
+            ),
+            key=lambda x: int(x.stem),
+        )
 
     def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
         spath = f"/{path}" if path else ""
-        with contextlib.closing(self.db.cursor()) as cur:
-            if recursive:
-                result = cur.execute(
-                    "SELECT COUNT(*) FROM msgs WHERE responses LIKE ?",
-                    (f"/{forum}{spath}/%",),
-                )
-            else:
-                result = cur.execute(
-                    "SELECT COUNT(*) FROM msgs WHERE up_url=?",
-                    (f"/get/{forum}{spath}.html",),
-                )
-            answer: int = result.fetchone()[0]
-            return answer
+        if recursive:
+            result = self.db.execute(
+                "SELECT COUNT(*) FROM msgs WHERE responses LIKE ?",
+                (f"/{forum}{spath}/%",),
+            )
+        else:
+            result = self.db.execute(
+                "SELECT COUNT(*) FROM msgs WHERE up_url=?",
+                (f"/get/{forum}{spath}.html",),
+            )
+        answer: int = result.fetchone()[0]
+        return answer
 
     # get_html does not use the database
 
     def get_member(self, name: str) -> Member:
-        with contextlib.closing(self.db.cursor()) as cur:
-            results = list(cur.execute("SELECT * FROM people WHERE user_id=?", (name,)))
-            (member,) = results
-            return Member.from_simple_tuple(member)
+        results = list(self.db.execute("SELECT * FROM people WHERE user_id=?", (name,)))
+        (member,) = results
+        return Member.from_simple_tuple(member)
 
     def get_members_paths(self) -> Iterator[Path]:
-        with contextlib.closing(self.db.cursor()) as cur:
-            for (path,) in cur.execute("SELECT user_id FROM people"):
-                yield self.root / "hnpeople" / path
+        for (path,) in self.db.execute("SELECT user_id FROM people"):
+            yield self.root / "hnpeople" / path
 
     def get_member_iter(self) -> Iterator[Member]:
-        with contextlib.closing(self.db.cursor()) as cur:
-            for member_tuple in cur.execute("SELECT * FROM people"):
-                yield Member.from_simple_tuple(member_tuple)
+        for member_tuple in self.db.execute("SELECT * FROM people"):
+            yield Member.from_simple_tuple(member_tuple)
 
     # get_num_members doesn't need an optimization, it uses the database already
 
     # get_categories doesn't need an optimization, it reads one file only already
 
     def get_forum(self, forum: str) -> URCMain:
-        with contextlib.closing(self.db.cursor()) as cur:
-            (result,) = cur.execute("SELECT * FROM forums WHERE num=?", (forum,))
-            return URCMain.from_simple_tuple(result)
+        (result,) = self.db.execute("SELECT * FROM forums WHERE num=?", (forum,))
+        return URCMain.from_simple_tuple(result)
 
     def get_forums_iter(self) -> Iterator[URCMain]:
-        with contextlib.closing(self.db.cursor()) as cur:
-            for result in cur.execute("SELECT * FROM forums"):
-                yield URCMain.from_simple_tuple(result)
+        for result in self.db.execute("SELECT * FROM forums"):
+            yield URCMain.from_simple_tuple(result)
 
     def get_forum_paths(self) -> Iterator[Path]:
-        with contextlib.closing(self.db.cursor()) as cur:
-            for (name,) in cur.execute("SELECT num FROM forums"):
-                yield self.root / f"{name}.html,urc"
+        for (name,) in self.db.execute("SELECT num FROM forums"):
+            yield self.root / f"{name}.html,urc"
 
     # walk_tree is only used for the CLI, so not implementing it now
 

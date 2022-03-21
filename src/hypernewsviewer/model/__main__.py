@@ -21,7 +21,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
-from .messages import Member, URCMain, URCMessage
+from .messages import Member, Message, URCMain
 from .structure import AllForums, DBForums, connect_forums
 
 # pylint: disable=redefined-outer-name
@@ -149,7 +149,9 @@ def list_fn(forum: str, path: str, forums: AllForums | DBForums) -> None:
 @click.pass_context
 @convert_context
 def tree(forum: str, path: str, forums: AllForums | DBForums) -> None:
-    msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
+    msg: Message | URCMain = (
+        forums.get_msg(forum, path) if path else forums.get_forum(forum)
+    )
 
     tree = Tree(
         ":open_file_folder: "
@@ -203,7 +205,6 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
     forums = AllForums(root=db_forums.root)
 
     length = forums.get_num_msgs(forum, path, recursive=True)
-    contraint_msgs = {"responses": "PRIMARY KEY", "url": "UNIQUE", "body": "UNIQUE"}
     contraint_forums = {
         "num": "PRIMARY KEY",
         "responses": "UNIQUE",
@@ -212,21 +213,28 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
     }
 
     with contextlib.closing(con.cursor()) as cur:
-        con.set_trace_callback(log_sql.info)
-        create_msgs = URCMessage.sqlite_create_table_statement("msgs", contraint_msgs)
-        cur.execute(create_msgs + ";")
+
+        def log_info(msg: str) -> None:
+            log_sql.info(msg, extra={"highlighter": None})
+
+        con.set_trace_callback(log_info)
 
         create_forums = URCMain.sqlite_create_table_statement(
             "forums", contraint_forums
         )
-        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
-        cur.execute(create_forums + ";")
+        cur.execute(create_forums)
 
         create_members = Member.sqlite_create_table_statement(
             "people", {"user_id": "PRIMARY KEY"}
         )
         # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
-        cur.execute(create_members + ";")
+        cur.execute(create_members)
+
+        create_msgs = Message.sqlite_create_table_statement("msgs")
+        cur.execute(
+            create_msgs[:-3]
+            + ",\n    PRIMARY KEY(forum, msg),\n    FOREIGN KEY(forum) REFERENCES forums(num)\n);"
+        )
 
         con.set_trace_callback(None)
 
@@ -260,7 +268,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
         live_group = rich.console.Group(outer_progress, inner_progress)  # type: ignore[arg-type]
 
         with rich.live.Live(live_group, refresh_per_second=10):
-            insert_msg = URCMessage.sqlite_insert_statement("msgs")
+            insert_msg = Message.sqlite_insert_statement("msgs")
             for n, forum_each in enumerate(
                 outer_progress.track(forum_list, description="Forums")
             ):
@@ -290,8 +298,8 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
                 con.commit()
                 inner_progress.remove_task(task_id)
 
-        con.set_trace_callback(log_sql.info)
-        cur.execute("CREATE INDEX idx_msgs_up_url ON msgs(up_url);")
+        con.set_trace_callback(log_info)
+        cur.execute("CREATE INDEX idx_msgs_up ON msgs(forum, up);")
         con.commit()
         con.set_trace_callback(None)
 
