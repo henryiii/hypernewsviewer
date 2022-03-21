@@ -36,11 +36,12 @@ repos:
     files: ^src/hypernewsviewer/model/
     args: [--show-error-codes]
     additional_dependencies:
-    - rich
     - attrs>=21.3.0
     - cattrs
     - click
+    - rich
     - types-flask
+    - types-python-dateutil
     - types-werkzeug
 
 - repo: https://github.com/pycqa/flake8
@@ -55,9 +56,9 @@ repos:
   hooks:
   - id: pylint
     additional_dependencies:
-    - click
-    - rich
-    - cattrs
     - attrs
+    - cattrs
+    - click
     - flask
     - inflection
+    - rich

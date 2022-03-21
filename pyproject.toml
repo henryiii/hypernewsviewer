@@ -13,6 +13,7 @@ dependencies = [
   "inflection>=0.5.1",
   "attrs>=21.3.0",
   "cattrs>=1.10.0",
+  "python-dateutil",
 ]
 
 [project.optional-dependencies]

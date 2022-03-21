@@ -42,13 +42,13 @@ class AllForums:
 
     def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
         abspath = self.root / forum / path
-        return sorted(abspath.glob("*.html,urc"), key=lambda x: int(x.stem))
+        return sorted(abspath.glob("*?.html,urc"), key=lambda x: int(x.stem))
 
     def get_num_msgs(
         self, forum: str, path: Path | str, *, recursive: bool = False
     ) -> int:
         abspath = self.root / forum / path
-        return len(list(abspath.glob("**/*.html,urc" if recursive else "*.html,urc")))
+        return len(list(abspath.glob("**/*?.html,urc" if recursive else "*?.html,urc")))
 
     def get_html(self, forum: str, path: Path | str) -> str | None:
         abspath = self.root / forum / path
@@ -91,7 +91,7 @@ class AllForums:
         return URCMain.from_path(abspath.with_suffix(".html,urc"))
 
     def get_forums_iter(self) -> Iterator[URCMain | None]:
-        for path in sorted(self.root.glob("*.html,urc")):
+        for path in sorted(self.root.glob("*?.html,urc")):
             try:
                 yield URCMain.from_path(path)
             except (TypeError, ValueError) as e:
@@ -99,7 +99,7 @@ class AllForums:
                 yield None
 
     def get_forum_paths(self) -> Iterator[Path]:
-        return self.root.glob("*.html,urc")
+        return self.root.glob("*?.html,urc")
 
     def get_num_forums(self) -> int:
         return len(list(self.get_forum_paths()))

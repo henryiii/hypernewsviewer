@@ -82,7 +82,7 @@ class Member(InfoBase):
     content: str = "Everything"
     email: str = ""
     old_email: str = ""
-    name: str
+    name: str = ""
     email2: str = ""
     subscribe: str = ""
     alt_user_i_ds: str = ""
@@ -90,43 +90,57 @@ class Member(InfoBase):
 
 @attrs.define(kw_only=True, eq=True, frozen=True)
 class URCBase(InfoBase):
-    content_type: ContentType = ContentType.PlainText
+    content_type: ContentType = ContentType.Default
     title: str = ""
     body: Path
     url: URL = attrs.field(converter=convert_url)
     base_url: URL = attrs.field(converter=convert_url)
     responses: str
     date: datetime
-    last_message_date: datetime
-    last_mod: datetime
     name: str = ""
     from_: Email = ""
 
     num_messages: Optional[int] = None
     footer_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
-    up_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
     header_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
     moderation: Optional[str] = None
     user_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
     annotation_type: Optional[AnnotationType] = None
 
 
+def convert_responses_to_num(self: "URCMain") -> str:
+    return self.responses.lstrip("/")
+
+
 @attrs.define(kw_only=True, eq=True, frozen=True)
 class URCMain(URCBase):
-    list_address: str
+    list_address: str = ""
     categories: int
-    num: str
+    num: str = attrs.field(
+        default=attrs.Factory(convert_responses_to_num, takes_self=True)
+    )
 
     default_outline_depth: Optional[int] = None
+
+    # 'last_message_date', 'last_mod', 'up_url', 'list_address', 'categories', and 'num'
+    up_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
+    last_message_date: Optional[datetime] = None
+    last_mod: Optional[datetime] = None
+
+    previous_num: Optional[int] = None
 
 
 @attrs.define(kw_only=True, eq=True, frozen=True)
 class URCMessage(URCBase):
+    last_message_date: datetime
+    last_mod: datetime
+    up_url: URL = attrs.field(converter=convert_url)
+
     num: int
 
     previous_num: Optional[int] = None
     next_num: Optional[int] = None
-    keywords: Optional[str] = None
+    keywords: None = None
     up_rel: Optional[str] = None
     node_type: Optional[str] = None
     newsgroups: Optional[URL] = attrs.field(converter=convert_url, default=None)

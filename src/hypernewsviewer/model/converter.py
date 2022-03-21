@@ -8,17 +8,21 @@ from typing import Any, TypeVar
 import attrs
 import cattr
 import cattr.preconf
+import dateutil.parser
 import inflection
+
+from .enums import AnnotationType, ContentType
 
 __all__ = ["converter_db", "converter_utc", "convert_url", "type_as_sqlite"]
 
 
+TZOFFSETS = {
+    "CET": 1 * 60 * 60,
+    "CEST": 2 * 60 * 60,
+}
+
 T = TypeVar("T")
 
-# Mon, 05 Dec 2005 01:55:14 GMT
-FMT = "%a, %d %b %Y %H:%M:%S %Z"
-# 'Thu Feb 14 22:20:48 CET 2008'
-FMT2 = "%a %b %d %H:%M:%S %Z %Y"
 
 converter_utc = cattr.GenConverter()
 converter_db = cattr.GenConverter()
@@ -30,14 +34,14 @@ def us(inp: str) -> str:
 
 
 def convert_datetime(string: str, _type: object = None) -> datetime:
-    try:
-        return datetime.strptime(string, FMT)
-    except ValueError:
-        return datetime.strptime(string, FMT2)
+    # Formats:
+    # Mon, 05 Dec 2005 01:55:14 GMT
+    # Thu Feb 14 22:20:48 CET 2008
+    return dateutil.parser.parse(string, tzinfos=TZOFFSETS)
 
 
 def convert_from_datetime(dt: datetime) -> str:
-    return dt.strftime("%a, %d %b %Y %H:%M:%S UTC")
+    return dt.isoformat()
 
 
 def convert_simple(string: str, to_type: type[T]) -> T:
@@ -76,6 +80,28 @@ converter_db.register_structure_hook_func(
 )
 
 
+def convert_annotation_type(string: str, t: type[AnnotationType]) -> AnnotationType:
+    if string == "Message":
+        return t.Message
+    raise ValueError(f"Unknown annotation type {string}")
+
+
+def convert_content_type(string: str, cls: type[ContentType]) -> ContentType:
+    if string.startswith("Plain"):
+        return cls.PlainText
+    if string == "HTML":
+        return cls.HTML
+    if string == "Smart Text":
+        return cls.SmartText
+    if string == "Word Processor":
+        return cls.WordProcessor
+    raise ValueError(f"Unknown content type {string}")
+
+
+converter_utc.register_structure_hook(ContentType, convert_content_type)
+converter_utc.register_structure_hook(AnnotationType, convert_annotation_type)
+
+
 def structure_from_utc(obj: str, cls: type[T]) -> T:
     pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
     info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
@@ -105,8 +131,9 @@ def convert_url(string: str | None) -> str | None:
     if string.startswith(remove):
         string = string[len(remove) :]
 
-    if not string.endswith(".html"):
-        string += ".html"
+    remove = "https://cmshypernews02.cern.ch/HyperNews/CMS"
+    if string.startswith(remove):
+        string = string[len(remove) :]
 
     return string
 

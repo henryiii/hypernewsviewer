@@ -1,3 +1,4 @@
+# pylint: disable=cell-var-from-loop
 from __future__ import annotations
 
 import contextlib
@@ -229,6 +230,25 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
 
         con.set_trace_callback(None)
 
+        insert_forum = URCMain.sqlite_insert_statement("forums")
+        for forum_main in track(
+            forums.get_forums_iter(),
+            forums.get_num_forums(),
+            "Forums",
+        ):
+            if forum_main:
+                cur.execute(insert_forum, forum_main.as_simple_tuple())
+                con.commit()
+
+        insert_people = Member.sqlite_insert_statement("people")
+        for member in track(
+            forums.get_member_iter(),
+            forums.get_num_members(),
+            "People",
+        ):
+            if member:
+                cur.execute(insert_people, member.as_simple_tuple())
+
         forum_list = (
             [f.stem for f in forums.get_forum_paths()]
             if forum == "all"
@@ -237,7 +257,7 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
 
         outer_progress = Progress(*PROGRESS_COLUMNS, expand=True)
         inner_progress = Progress(*PROGRESS_COLUMNS, expand=True)
-        live_group = rich.console.Group(outer_progress, inner_progress)
+        live_group = rich.console.Group(outer_progress, inner_progress)  # type: ignore[arg-type]
 
         with rich.live.Live(live_group, refresh_per_second=10):
             insert_msg = URCMessage.sqlite_insert_statement("msgs")
@@ -269,25 +289,6 @@ def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
                 cur.executemany(insert_msg, msgs)
                 con.commit()
                 inner_progress.remove_task(task_id)
-
-        insert_forum = URCMain.sqlite_insert_statement("forums")
-        for forum_main in track(
-            forums.get_forums_iter(),
-            forums.get_num_forums(),
-            "Forums",
-        ):
-            if forum_main:
-                cur.execute(insert_forum, forum_main.as_simple_tuple())
-                con.commit()
-
-        insert_people = Member.sqlite_insert_statement("people")
-        for member in track(
-            forums.get_member_iter(),
-            forums.get_num_members(),
-            "People",
-        ):
-            if member:
-                cur.execute(insert_people, member.as_simple_tuple())
 
         con.set_trace_callback(log_sql.info)
         cur.execute("CREATE INDEX idx_msgs_up_url ON msgs(up_url);")

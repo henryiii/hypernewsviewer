@@ -1,21 +1,18 @@
+from __future__ import annotations
+
 import enum
 
 __all__ = ["ContentType", "AnnotationType"]
 
 
-class StrEnum(str, enum.Enum):
-    def __str__(self) -> str:
-        return str(self.value)
+class ContentType(enum.Enum):
+    Default = enum.auto()
+    PlainText = enum.auto()
+    HTML = enum.auto()
+    SmartText = enum.auto()
+    WordProcessor = enum.auto()
 
 
-class ContentType(StrEnum):
-    PlainText = "Plain Text"
-    HTML = "HTML"
-    SmartText = "Smart Text"
-    WordProcessor = "Word Processor"
-    PlainTex = "Plain Tex"
-    Plain = "Plain"
-
-
-class AnnotationType(StrEnum):
-    Message = "Message"
+class AnnotationType(enum.Enum):
+    Default = enum.auto()
+    Message = enum.auto()
