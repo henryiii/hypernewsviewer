@@ -126,53 +126,62 @@ class DBForums(AllForums):
     def get_msg(self, forum: str, path: str) -> Message:
         assert path, "Must supply a path, use get_forum() instead for empty path"
         (msg,) = self.db.execute(
-            "SELECT * FROM msgs WHERE responses=?", (f"/{forum}/{path}",)
+            "SELECT * FROM msgs WHERE forum=? AND msg=?",
+            (forum, path),
         )
         return Message.from_simple_tuple(msg)
 
     def get_msgs(
         self, forum: str, path: str, *, recursive: bool = False
     ) -> Iterator[Message]:
-        spath = f"/{path}" if path != path.__class__() else ""
         if recursive:
-            msgs = self.db.execute(
-                "SELECT * FROM msgs WHERE responses LIKE ?",
-                (f"/{forum}{spath}/%",),
-            )
+            if path:
+                msgs = self.db.execute(
+                    "SELECT * FROM msgs WHERE forum=? AND msg LIKE ? ORDER BY msg",
+                    (forum, f"{path}/%"),
+                )
+            else:
+                msgs = self.db.execute(
+                    "SELECT * FROM msgs WHERE forum=?",
+                    (forum,),
+                )
         else:
             msgs = self.db.execute(
-                "SELECT * FROM msgs WHERE up_url=?",
-                (f"/get/{forum}{spath}.html",),
+                "SELECT * FROM msgs WHERE forum=? AND up=?",
+                (forum, path),
             )
         for msg in msgs:
             yield Message.from_simple_tuple(msg)
 
     def get_msg_paths(self, forum: str, path: str) -> list[Path]:
-        abspath = self.root.resolve()
-        spath = f"/{path}" if path else ""
         responses = self.db.execute(
-            "SELECT responses FROM msgs WHERE up_url=?",
-            (f"/get/{forum}{spath}.html",),
+            "SELECT msg FROM msgs WHERE forum=? AND up=?",
+            (forum, path),
         )
         return sorted(
             (
-                (abspath / resp[0].lstrip("/")).with_suffix(".html,urc")
+                (self.root.resolve() / forum / resp[0]).with_suffix(".html,urc")
                 for resp in responses
             ),
             key=lambda x: int(x.stem),
         )
 
     def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
-        spath = f"/{path}" if path else ""
         if recursive:
-            result = self.db.execute(
-                "SELECT COUNT(*) FROM msgs WHERE responses LIKE ?",
-                (f"/{forum}{spath}/%",),
-            )
+            if path:
+                result = self.db.execute(
+                    "SELECT COUNT(*) FROM msgs WHERE forum=? AND msg LIKE ?",
+                    (forum, f"{path}/%"),
+                )
+            else:
+                result = self.db.execute(
+                    "SELECT COUNT(*) FROM msgs WHERE forum=?",
+                    (forum,),
+                )
         else:
             result = self.db.execute(
-                "SELECT COUNT(*) FROM msgs WHERE up_url=?",
-                (f"/get/{forum}{spath}.html",),
+                "SELECT COUNT(*) FROM msgs WHERE forum=? AND up=?",
+                (forum, path),
             )
         answer: int = result.fetchone()[0]
         return answer

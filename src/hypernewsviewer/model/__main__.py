@@ -205,12 +205,6 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
     forums = AllForums(root=db_forums.root)
 
     length = forums.get_num_msgs(forum, path, recursive=True)
-    contraint_forums = {
-        "num": "PRIMARY KEY",
-        "responses": "UNIQUE",
-        "url": "UNIQUE",
-        "body": "UNIQUE",
-    }
 
     with contextlib.closing(con.cursor()) as cur:
 
@@ -220,14 +214,19 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
         con.set_trace_callback(log_info)
 
         create_forums = URCMain.sqlite_create_table_statement(
-            "forums", contraint_forums
+            "forums",
+            {
+                "num": "PRIMARY KEY",
+                "responses": "UNIQUE",
+                "url": "UNIQUE",
+                "body": "UNIQUE",
+            },
         )
         cur.execute(create_forums)
 
         create_members = Member.sqlite_create_table_statement(
             "people", {"user_id": "PRIMARY KEY"}
         )
-        # requires SQLite 3.8.2 (2013)  + " WITHOUT ROWID;"
         cur.execute(create_members)
 
         create_msgs = Message.sqlite_create_table_statement("msgs")
@@ -270,7 +269,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
         with rich.live.Live(live_group, refresh_per_second=10):
             insert_msg = Message.sqlite_insert_statement("msgs")
             for n, forum_each in enumerate(
-                outer_progress.track(forum_list, description="Forums")
+                outer_progress.track(forum_list, description="Messages")
             ):
                 length = forums.get_num_msgs(forum_each, path, recursive=True)
 

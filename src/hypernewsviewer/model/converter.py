@@ -9,6 +9,7 @@ import attrs
 import cattr
 import cattr.preconf
 import dateutil.parser
+import dateutil.tz
 import inflection
 
 from .enums import AnnotationType, ContentType
@@ -37,7 +38,8 @@ def convert_datetime(string: str, _type: object) -> datetime:
     # Formats:
     # Mon, 05 Dec 2005 01:55:14 GMT
     # Thu Feb 14 22:20:48 CET 2008
-    return dateutil.parser.parse(string, tzinfos=TZOFFSETS)
+    dt = dateutil.parser.parse(string, tzinfos=TZOFFSETS)
+    return dt.astimezone(dateutil.tz.UTC).replace(tzinfo=None)
 
 
 def convert_isodatetime(string: str, cls: type[datetime]) -> datetime:
