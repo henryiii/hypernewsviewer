@@ -49,7 +49,7 @@ def convert_from_datetime(dt: datetime) -> str:
 
 
 converter_utc.register_structure_hook(datetime, convert_datetime)
-converter_db.register_structure_hook(datetime, convert_datetime)
+converter_db.register_structure_hook(datetime, convert_isodatetime)
 converter_db.register_unstructure_hook(datetime, convert_from_datetime)
 
 
