@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 import attrs
@@ -92,7 +91,7 @@ class Member(InfoBase):
 class URCBase(InfoBase):
     content_type: ContentType = ContentType.Default
     title: str = ""
-    body: Path
+    body: str
     url: URL = attrs.field(converter=convert_url)
     base_url: URL = attrs.field(converter=convert_url)
     responses: str
@@ -157,8 +156,8 @@ class Message(InfoBase):
     up: str
 
     @property
-    def body(self) -> Path:
-        return Path(f"/{self.forum}/{self.msg}-body.html")
+    def body(self) -> str:
+        return f"/{self.forum}/{self.msg}-body.html"
 
     @property
     def url(self) -> URL:

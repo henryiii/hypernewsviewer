@@ -75,7 +75,7 @@ def track(
 
 
 def convert_context(
-    function: Callable[[str, Path, AllForums | DBForums], None]
+    function: Callable[[str, str, AllForums | DBForums], None]
 ) -> Callable[[click.Context], None]:
     """
     Decorator to convert the context to a DBForums or AllForums object.
@@ -84,7 +84,7 @@ def convert_context(
     @functools.wraps(function)
     def wrapper(ctx: click.Context) -> None:
         forum: str = ctx.obj["forum"]
-        path: Path = ctx.obj["path"]
+        path: str = ctx.obj["path"]
 
         with connect_forums(ctx.obj["root"], ctx.obj["db"]) as forums:
             function(forum, path, forums)
@@ -116,7 +116,7 @@ def main(ctx: click.Context, root: Path, db: Path | None, path: str) -> None:
     forum, *others = path.split("/")
     ctx.ensure_object(dict)
     ctx.obj["forum"] = forum
-    ctx.obj["path"] = Path("/".join(others))
+    ctx.obj["path"] = "/".join(others)
     ctx.obj["db"] = db.resolve() if db else None
     ctx.obj["root"] = root.resolve()
 
@@ -124,7 +124,7 @@ def main(ctx: click.Context, root: Path, db: Path | None, path: str) -> None:
 @main.command("list", help="Show a table of messages.")
 @click.pass_context
 @convert_context
-def list_fn(forum: str, path: Path, forums: AllForums | DBForums) -> None:
+def list_fn(forum: str, path: str, forums: AllForums | DBForums) -> None:
     html = forums.get_html(forum, path)
 
     panel = get_html_panel(html, title=f"{forum}/{path}")
@@ -138,7 +138,7 @@ def list_fn(forum: str, path: Path, forums: AllForums | DBForums) -> None:
 
     with timer("Time to read and build list"):
         for m in forums.get_msgs(forum, path):
-            msgs = forums.get_msg_paths(forum, path / m.responses.lstrip("/"))
+            msgs = forums.get_msg_paths(forum, f"{path}/{m.responses.lstrip('/')}")
             entries = len(list(msgs))
             t.add_row(str(m.num), str(entries), m.title)
 
@@ -148,8 +148,8 @@ def list_fn(forum: str, path: Path, forums: AllForums | DBForums) -> None:
 @main.command(help="Show a tree view for messages")
 @click.pass_context
 @convert_context
-def tree(forum: str, path: Path, forums: AllForums | DBForums) -> None:
-    msg = forums.get_forum(forum) if path == Path() else forums.get_msg(forum, path)
+def tree(forum: str, path: str, forums: AllForums | DBForums) -> None:
+    msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
 
     tree = Tree(
         ":open_file_folder: "
@@ -166,8 +166,8 @@ def tree(forum: str, path: Path, forums: AllForums | DBForums) -> None:
 @main.command(help="Show all parsed information for a message or main.")
 @click.pass_context
 @convert_context
-def show(forum: str, path: Path, forums: AllForums | DBForums) -> None:
-    msg = forums.get_forum(forum) if path == Path() else forums.get_msg(forum, path)
+def show(forum: str, path: str, forums: AllForums | DBForums) -> None:
+    msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
     html = forums.get_html(forum, path)
 
     panel = get_html_panel(html, title=f"{forum}/{path}")
@@ -180,7 +180,7 @@ def show(forum: str, path: Path, forums: AllForums | DBForums) -> None:
 @main.command(help="Show all forums")
 @click.pass_context
 @convert_context
-def forums(_forum: str, _path: Path, forums: AllForums | DBForums) -> None:
+def forums(_forum: str, _path: str, forums: AllForums | DBForums) -> None:
 
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
@@ -197,7 +197,7 @@ def forums(_forum: str, _path: Path, forums: AllForums | DBForums) -> None:
 @main.command(help="Populate a database with all messages")
 @click.pass_context
 @convert_context
-def populate(forum: str, path: Path, db_forums: AllForums | DBForums) -> None:
+def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
     assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
     con = db_forums.db
     forums = AllForums(root=db_forums.root)

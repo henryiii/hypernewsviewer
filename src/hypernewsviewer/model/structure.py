@@ -21,13 +21,13 @@ T = TypeVar("T")
 class AllForums:
     root: Path = attrs.field(converter=Path)
 
-    def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
+    def get_msg(self, forum: str, path: str) -> URCMain | URCMessage:
         assert path, "Must supply a path, use get_forum() instead for empty path"
         abspath = self.root / forum / path
         return URCMessage.from_path(abspath.with_suffix(".html,urc"))
 
     def get_msgs(
-        self, forum: str, path: Path | str, *, recursive: bool = False
+        self, forum: str, path: str, *, recursive: bool = False
     ) -> Iterator[URCMessage]:
         """
         This allows an empty path, unlike get_msg, since it returns the inner msgs.
@@ -37,20 +37,20 @@ class AllForums:
             yield URCMessage.from_path(msg_path.with_suffix(".html,urc"))
             if recursive:
                 yield from self.get_msgs(
-                    forum, Path(path) / msg_path.stem, recursive=True
+                    forum,
+                    f"{path}/{msg_path.stem}" if path else msg_path.stem,
+                    recursive=True,
                 )
 
-    def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
+    def get_msg_paths(self, forum: str, path: str) -> list[Path]:
         abspath = self.root / forum / path
         return sorted(abspath.glob("*?.html,urc"), key=lambda x: int(x.stem))
 
-    def get_num_msgs(
-        self, forum: str, path: Path | str, *, recursive: bool = False
-    ) -> int:
+    def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
         abspath = self.root / forum / path
         return len(list(abspath.glob("**/*?.html,urc" if recursive else "*?.html,urc")))
 
-    def get_html(self, forum: str, path: Path | str) -> str | None:
+    def get_html(self, forum: str, path: str) -> str | None:
         abspath = self.root / forum / path
         msg = abspath.parent.joinpath(f"{Path(path).stem}-body.html")
         if msg.exists():
@@ -105,20 +105,25 @@ class AllForums:
         return len(list(self.get_forum_paths()))
 
     def walk_tree(
-        self, forum: str, path: Path | str, func: Callable[[Path, T], T], start: T
+        self, forum: str, path: str, func: Callable[[Path, T], T], start: T
     ) -> Iterator[T]:
         for local_path in self.get_msg_paths(forum, path):
             branch = func(local_path, start)
             yield branch
 
-            yield from self.walk_tree(forum, Path(path) / local_path.stem, func, branch)
+            yield from self.walk_tree(
+                forum,
+                f"{path}/{local_path.stem}" if path else local_path.stem,
+                func,
+                branch,
+            )
 
 
 @attrs.define(kw_only=True)
 class DBForums(AllForums):
     db: sqlite3.Connection
 
-    def get_msg(self, forum: str, path: Path | str) -> URCMain | URCMessage:
+    def get_msg(self, forum: str, path: str) -> URCMain | URCMessage:
         with contextlib.closing(self.db.cursor()) as cur:
             (msg,) = cur.execute(
                 "SELECT * FROM msgs WHERE responses=?", (f"/{forum}/{path}",)
@@ -126,7 +131,7 @@ class DBForums(AllForums):
             return URCMessage.from_simple_tuple(msg)
 
     def get_msgs(
-        self, forum: str, path: Path | str, *, recursive: bool = False
+        self, forum: str, path: str, *, recursive: bool = False
     ) -> Iterator[URCMessage]:
         spath = f"/{path}" if path != path.__class__() else ""
         with contextlib.closing(self.db.cursor()) as cur:
@@ -143,9 +148,9 @@ class DBForums(AllForums):
             for msg in msgs:
                 yield URCMessage.from_simple_tuple(msg)
 
-    def get_msg_paths(self, forum: str, path: Path | str) -> list[Path]:
+    def get_msg_paths(self, forum: str, path: str) -> list[Path]:
         abspath = self.root.resolve()
-        spath = f"/{path}" if path != path.__class__() else ""
+        spath = f"/{path}" if path else ""
         with contextlib.closing(self.db.cursor()) as cur:
             responses = cur.execute(
                 "SELECT responses FROM msgs WHERE up_url=?",
@@ -159,9 +164,7 @@ class DBForums(AllForums):
                 key=lambda x: int(x.stem),
             )
 
-    def get_num_msgs(
-        self, forum: str, path: Path | str, *, recursive: bool = False
-    ) -> int:
+    def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
         spath = f"/{path}" if path else ""
         with contextlib.closing(self.db.cursor()) as cur:
             if recursive:
