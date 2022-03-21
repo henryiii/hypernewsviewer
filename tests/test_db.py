@@ -104,8 +104,8 @@ def test_get_msg_paths(db):
     forums = AllForums(root=ROOT)
     dbf = DBForums(root=ROOT, db=db)
 
-    results = list(dbf.get_msg_paths("hnTest", ""))
-    classic_results = list(forums.get_msg_paths("hnTest", ""))
+    results = set(dbf.get_msg_paths("hnTest", ""))
+    classic_results = set(forums.get_msg_paths("hnTest", ""))
     assert classic_results == results
     assert len(results) == 688
     assert len(classic_results) == 688

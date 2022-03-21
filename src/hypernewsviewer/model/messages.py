@@ -105,7 +105,7 @@ class URCBase(InfoBase):
     header_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
     moderation: Optional[str] = None
     user_url: Optional[URL] = attrs.field(converter=convert_url, default=None)
-    annotation_type: Optional[AnnotationType] = None
+    annotation_type: AnnotationType = AnnotationType.Default
 
 
 def convert_responses_to_num(self: "URCMain") -> str:
@@ -146,3 +146,103 @@ class URCMessage(URCBase):
     newsgroups: Optional[URL] = attrs.field(converter=convert_url, default=None)
 
     message_id: str
+
+
+@attrs.define(kw_only=True, eq=True, frozen=True)
+class Message(InfoBase):
+    content_type: ContentType
+    title: str
+    forum: str
+    msg: str
+    up: str
+
+    @property
+    def body(self) -> Path:
+        return Path(f"/{self.forum}/{self.msg}-body.html")
+
+    @property
+    def url(self) -> URL:
+        return f"/get/{self.forum}/{self.msg}.html"
+
+    @property
+    def base_url(self) -> URL:
+        return f"/get/{self.forum}.html"
+
+    @property
+    def responses(self) -> str:
+        return f"/{self.forum}/{self.msg}"
+
+    date: datetime
+    last_message_date: datetime
+    last_mod: datetime
+
+    name: str = ""
+    from_: Email = ""
+
+    num_messages: Optional[int]
+
+    @property
+    def footer_url(self) -> None:
+        return None
+
+    @property
+    def header_url(self) -> None:
+        return None
+
+    @property
+    def up_url(self) -> URL:
+        return (
+            f"/get/{self.forum}/{self.up}.html"
+            if self.up
+            else f"/get/{self.forum}.html"
+        )
+
+    @property
+    def moderation(self) -> None:
+        return None
+
+    @property
+    def user_url(self) -> None:
+        return None
+
+    annotation_type: AnnotationType
+
+    num: int
+
+    previous_num: Optional[int]
+    next_num: Optional[int]
+    up_rel: Optional[str]
+    node_type: Optional[str]
+    newsgroups: Optional[URL]
+
+    @property
+    def keywords(self) -> None:
+        return None
+
+    message_id: str
+
+
+def simplifiy_message(self: URCMessage) -> Message:
+    forum, msg = self.responses.lstrip("/").split("/", 1)
+
+    return Message(
+        content_type=self.content_type,
+        title=self.title,
+        forum=forum,
+        msg=msg,
+        up=msg.rsplit("/", 1)[0] if "/" in msg else "",
+        date=self.date,
+        last_message_date=self.last_message_date,
+        last_mod=self.last_mod,
+        name=self.name,
+        from_=self.from_,
+        num_messages=self.num_messages,
+        annotation_type=self.annotation_type,
+        num=self.num,
+        previous_num=self.previous_num,
+        next_num=self.next_num,
+        up_rel=self.up_rel,
+        node_type=self.node_type,
+        newsgroups=self.newsgroups,
+        message_id=self.message_id,
+    )

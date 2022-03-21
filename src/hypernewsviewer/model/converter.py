@@ -33,32 +33,33 @@ def us(inp: str) -> str:
     return retval
 
 
-def convert_datetime(string: str, _type: object = None) -> datetime:
+def convert_datetime(string: str, _type: object) -> datetime:
     # Formats:
     # Mon, 05 Dec 2005 01:55:14 GMT
     # Thu Feb 14 22:20:48 CET 2008
     return dateutil.parser.parse(string, tzinfos=TZOFFSETS)
 
 
+def convert_isodatetime(string: str, cls: type[datetime]) -> datetime:
+    return cls.fromisoformat(string)
+
+
 def convert_from_datetime(dt: datetime) -> str:
     return dt.isoformat()
+
+
+converter_utc.register_structure_hook(datetime, convert_datetime)
+converter_db.register_structure_hook(datetime, convert_datetime)
+converter_db.register_unstructure_hook(datetime, convert_from_datetime)
 
 
 def convert_simple(string: str, to_type: type[T]) -> T:
     return to_type(string)  # type: ignore[call-arg]
 
 
-converter_utc.register_unstructure_hook(datetime, convert_from_datetime)
-converter_utc.register_structure_hook(datetime, convert_datetime)
-
-converter_db.register_unstructure_hook(datetime, convert_from_datetime)
-converter_db.register_structure_hook(datetime, convert_datetime)
-
-converter_utc.register_unstructure_hook(Path, os.fspath)
 converter_utc.register_structure_hook(Path, convert_simple)
-
-converter_db.register_unstructure_hook(Path, os.fspath)
 converter_db.register_structure_hook(Path, convert_simple)
+converter_db.register_unstructure_hook(Path, os.fspath)
 
 
 def structure_kw_attrs_fromtuple(obj: tuple[Any, ...], cls: type[T]) -> T:
@@ -134,6 +135,9 @@ def convert_url(string: str | None) -> str | None:
     remove = "https://cmshypernews02.cern.ch/HyperNews/CMS"
     if string.startswith(remove):
         string = string[len(remove) :]
+
+    if not string.endswith(".html"):
+        string += ".html"
 
     return string
 
