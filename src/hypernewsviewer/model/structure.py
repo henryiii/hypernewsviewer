@@ -222,10 +222,11 @@ class DBForums(AllForums):
 
 @contextlib.contextmanager
 def connect_forums(
-    root: Path, db_path: Path | None
+    root: Path, db_path: Path | None, *, read_only: bool = False
 ) -> Generator[AllForums | DBForums, None, None]:
     if db_path:
-        with contextlib.closing(sqlite3.connect(str(db_path))) as db:
+        db_str = f"file:{db_path}?mode=ro" if read_only else f"file:{db_path}?mode=rwc"
+        with contextlib.closing(sqlite3.connect(db_str, uri=True)) as db:
             yield DBForums(root=root, db=db)
     else:
         yield AllForums(root=root)

@@ -21,7 +21,7 @@
     {% for forum in forums %}
       <dt>
           <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
-          <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ forum.last_mod.strftime('%Y-%m-%d') }})
+          <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
       </dt>
     {% endfor %}
     </dd>

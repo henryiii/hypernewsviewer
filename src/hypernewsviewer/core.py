@@ -16,7 +16,7 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
-from .model.structure import connect_forums
+from .model.structure import AllForums, DBForums, connect_forums
 
 app = Flask("hypernewsviewer")
 
@@ -28,11 +28,11 @@ DATA_ROOT = Path(HNFILES).resolve()
 DB_ROOT = Path(HNDATABASE).resolve() if HNDATABASE else None
 
 
-def get_forums() -> None:
+def get_forums() -> AllForums | DBForums:
     forums = getattr(g, "_forums", None)
     if forums is None:
         # pylint: disable-next=protected-access,assigning-non-slot
-        g._forums = connect_forums(DATA_ROOT, DB_ROOT)
+        g._forums = connect_forums(DATA_ROOT, DB_ROOT, read_only=True)
         forums = g._forums.__enter__()  # pylint: disable=protected-access
     return forums
 
@@ -68,15 +68,17 @@ def list_view(subpath: str) -> str:
         for part, spath in zip(parts, trail)
     ]
     forum, *others = parts
-    path = Path("/".join(others))
+    path = "/".join(others)
 
     forums = get_forums()
     try:
-        msg = forums.get_msg(forum, path) if others else forums.get_forum(forum)
+        msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
     except FileNotFoundError:
         return f"Unable to find message: {subpath} at {DATA_ROOT}"
 
-    body = forums.get_html(forum, path if others else path / path.name)
+    body = forums.get_html(
+        forum, path if others else (path + "/" + path.rsplit("/", 1)[-1])
+    )
 
     replies: list[dict[str, Any]] = []
     print(forum, path)
@@ -118,7 +120,7 @@ def top_page() -> str:
 def get_index() -> str:
     forums = get_forums()
     all_forums = filter(None, forums.get_forums_iter())
-    sorted_forums = sorted(all_forums, key=lambda x: x.last_mod, reverse=True)
+    sorted_forums = sorted(all_forums, key=lambda x: x.last_mod or x.date, reverse=True)
     return render_template("index.html", forums=sorted_forums)
 
 
@@ -127,7 +129,9 @@ def get_cindex() -> str:
     forums = get_forums()
     categories = forums.get_categories()
     all_forums = filter(None, forums.get_forums_iter())
-    sorted_forums = sorted(all_forums, key=lambda x: (x.categories, x.last_mod))
+    sorted_forums = sorted(
+        all_forums, key=lambda x: (x.categories, x.last_mod or x.date)
+    )
 
     grouped_forums = {
         a: list(b) for a, b in groupby(sorted_forums, lambda x: x.categories)
