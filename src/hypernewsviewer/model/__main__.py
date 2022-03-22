@@ -253,8 +253,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
             forums.get_num_members(),
             "People",
         ):
-            if member:
-                cur.execute(insert_people, member.as_simple_tuple())
+            cur.execute(insert_people, member.as_simple_tuple())
 
         forum_list = (
             [f.stem for f in forums.get_forum_paths()]
@@ -291,7 +290,6 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
                         total=length,
                         description=f"({n}/{len(forum_list)}) {forum_each}",
                     )
-                    if m
                 )
                 cur.executemany(insert_msg, msgs)
                 con.commit()

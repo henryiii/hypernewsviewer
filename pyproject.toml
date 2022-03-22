@@ -46,6 +46,9 @@ profile = "black"
 python_version = "3.8"
 warn_unused_configs = true
 strict = true
+show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unreachable = true
 
 [[tool.mypy.overrides]]
 module = ["inflection", "hypernewsviewer.filters.*"]
