@@ -264,7 +264,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
 
         outer_progress = Progress(*PROGRESS_COLUMNS, expand=True)
         inner_progress = Progress(*PROGRESS_COLUMNS, expand=True)
-        live_group = rich.console.Group(outer_progress, inner_progress)  # type: ignore[arg-type]
+        live_group = rich.console.Group(outer_progress, inner_progress)
 
         with rich.live.Live(live_group, refresh_per_second=10):
             insert_msg = Message.sqlite_insert_statement("msgs")
