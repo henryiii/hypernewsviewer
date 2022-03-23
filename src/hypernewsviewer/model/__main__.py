@@ -5,6 +5,7 @@ import contextlib
 import functools
 import logging
 import os
+import sqlite3
 import time
 from pathlib import Path
 from typing import Callable, Generator, Iterable, TypeVar
@@ -15,6 +16,7 @@ import rich.live
 import rich.logging
 import rich.progress
 import rich.traceback
+from bs4 import BeautifulSoup
 from rich import print  # pylint: disable=redefined-builtin
 from rich.progress import Progress
 from rich.table import Table
@@ -299,6 +301,36 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
         cur.execute("CREATE INDEX idx_msgs_up ON msgs(forum, up);")
         con.commit()
         con.set_trace_callback(None)
+
+
+@main.command(help="Populate a database with full text search")
+@click.pass_context
+@convert_context
+def populate_search(_forum: str, _path: str, db_forums: AllForums | DBForums) -> None:
+    assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
+    db_in = db_forums.db
+    with contextlib.closing(sqlite3.connect(os.environ["HNFTSDATABASE"])) as db_out:
+
+        db_out.execute(
+            "CREATE VIRTUAL TABLE fulltext USING FTS5(forum UNINDEXED, msg UNINDEXED, date UNINDEXED, title, from_, text);"
+        )
+
+        for forum, msg, date, title, from_ in track(
+            db_in.execute("SELECT forum, msg, date, title, from_ FROM msgs"),
+            total=db_in.execute("SELECT COUNT(*) FROM msgs").fetchone()[0],
+            description="Full text search",
+        ):
+            with open(
+                f"../allfiles/cms-hndocs/{forum}/{msg}-body.html", encoding="Latin-1"
+            ) as f:
+                html_text = f.read()
+            soup = BeautifulSoup(html_text, "html.parser")
+            text = soup.get_text()
+            db_out.execute(
+                "INSERT INTO fulltext VALUES (?, ?, ?, ?, ?, ?)",
+                (forum, msg, date, title, from_, text),
+            )
+            db_out.commit()
 
 
 if __name__ == "__main__":

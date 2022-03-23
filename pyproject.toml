@@ -21,6 +21,7 @@ test = ["pytest>=6.2"]
 cli = [
   "click>=8",
   "rich>=9.8.0",
+  "beautifulsoup4",
 ]
 deploy = [
   "gunicorn>=20.1"
@@ -51,7 +52,7 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["inflection", "hypernewsviewer.filters.*"]
+module = ["inflection", "hypernewsviewer.filters.*", "bs4"]
 ignore_missing_imports = true
 
 [tool.pylint]
