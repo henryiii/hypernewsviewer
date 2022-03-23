@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 from itertools import accumulate, groupby
 from pathlib import Path
@@ -108,6 +109,39 @@ def view_member() -> str:
     header = """<p><a href="/">home</a></p>\n"""
     return header + "<br/>\n".join(
         f"{k}: {v}" for k, v in member.as_simple_dict().items() if k != "password"
+    )
+
+
+@app.route("/view-members.pl")
+def view_members() -> str:
+    RESULTS_PER_PAGE = 50
+    find = request.args.get("find", default=None)
+    page = request.args.get("page", default=1, type=int)
+    forums = get_forums()
+    members = forums.get_member_iter()
+
+    # Simple find
+    if find:
+        find = find.strip("^").upper()
+        members = (
+            m
+            for m in members
+            if f" {find}" in m.name.upper() or m.email.upper().startswith(find)
+        )
+
+    sorted_members = sorted(members, key=lambda m: m.email)
+    num_pages = math.ceil(len(sorted_members) / RESULTS_PER_PAGE)
+    page = min(max(1, page), num_pages)
+    limited_members = sorted_members[
+        (page - 1) * RESULTS_PER_PAGE : page * RESULTS_PER_PAGE
+    ]
+
+    return render_template(
+        "members.html",
+        members=limited_members,
+        page=page,
+        num_pages=num_pages,
+        find=find,
     )
 
 
