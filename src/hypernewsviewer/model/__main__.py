@@ -6,6 +6,7 @@ import functools
 import logging
 import os
 import sqlite3
+import sys
 import time
 from pathlib import Path
 from typing import Callable, Generator, Iterable, TypeVar
@@ -26,12 +27,17 @@ from .cliutils import get_html_panel, walk_tree
 from .messages import Member, Message, URCMain
 from .structure import AllForums, DBForums, connect_forums
 
+if sys.version_info < (3, 10):
+    from typing_extensions import Concatenate, ParamSpec
+else:
+    from typing import Concatenate, ParamSpec
+
 # pylint: disable=redefined-outer-name
 
 rich.traceback.install(suppress=[click, rich], show_locals=True, width=None)
 
 T = TypeVar("T")
-
+P = ParamSpec("P")
 
 logging.basicConfig(
     level=logging.NOTSET,
@@ -77,21 +83,18 @@ def track(
 
 
 def convert_context(
-    function: Callable[[str, str, AllForums | DBForums], None]
-) -> Callable[[click.Context], None]:
+    function: Callable[Concatenate[AllForums | DBForums, P], None]  # type: ignore[misc]
+) -> Callable[P, None]:
     """
     Decorator to convert the context to a DBForums or AllForums object.
     """
 
     @functools.wraps(function)
-    def wrapper(ctx: click.Context) -> None:
-        forum: str = ctx.obj["forum"]
-        path: str = ctx.obj["path"]
-
+    def wrapper(ctx: click.Context, *args: P.args, **kwargs: P.kwargs) -> None:
         with connect_forums(ctx.obj["root"], ctx.obj["db"]) as forums:
-            function(forum, path, forums)
+            function(forums, *args, **kwargs)
 
-    return wrapper
+    return click.pass_context(wrapper)  # type: ignore[return-value]
 
 
 @click.group(
@@ -112,21 +115,20 @@ def convert_context(
     type=click.Path(file_okay=True, path_type=Path),  # type: ignore[type-var]
     help="Path to the database",
 )
-@click.argument("path")
 @click.pass_context
-def main(ctx: click.Context, root: Path, db: Path | None, path: str) -> None:
-    forum, *others = path.split("/")
+def main(ctx: click.Context, root: Path, db: Path | None) -> None:
     ctx.ensure_object(dict)
-    ctx.obj["forum"] = forum
-    ctx.obj["path"] = "/".join(others)
     ctx.obj["db"] = db.resolve() if db else None
     ctx.obj["root"] = root.resolve()
 
 
 @main.command("list", help="Show a table of messages.")
-@click.pass_context
 @convert_context
-def list_fn(forum: str, path: str, forums: AllForums | DBForums) -> None:
+@click.argument("path")
+def list_fn(forums: AllForums | DBForums, path: str) -> None:
+    forum, *others = path.split("/")
+    path = "/".join(others)
+
     html = forums.get_html(forum, path)
 
     panel = get_html_panel(html, title=f"{forum}/{path}")
@@ -148,9 +150,12 @@ def list_fn(forum: str, path: str, forums: AllForums | DBForums) -> None:
 
 
 @main.command(help="Show a tree view for messages")
-@click.pass_context
 @convert_context
-def tree(forum: str, path: str, forums: AllForums | DBForums) -> None:
+@click.argument("path")
+def tree(forums: AllForums | DBForums, path: str) -> None:
+    forum, *others = path.split("/")
+    path = "/".join(others)
+
     msg: Message | URCMain = (
         forums.get_msg(forum, path) if path else forums.get_forum(forum)
     )
@@ -168,9 +173,11 @@ def tree(forum: str, path: str, forums: AllForums | DBForums) -> None:
 
 
 @main.command(help="Show all parsed information for a message or main.")
-@click.pass_context
 @convert_context
-def show(forum: str, path: str, forums: AllForums | DBForums) -> None:
+def show(forums: AllForums | DBForums, path: str) -> None:
+    forum, *others = path.split("/")
+    path = "/".join(others)
+
     msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
     html = forums.get_html(forum, path)
 
@@ -182,9 +189,8 @@ def show(forum: str, path: str, forums: AllForums | DBForums) -> None:
 
 
 @main.command(help="Show all forums")
-@click.pass_context
 @convert_context
-def forums(_forum: str, _path: str, forums: AllForums | DBForums) -> None:
+def forums(forums: AllForums | DBForums) -> None:
 
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
@@ -199,14 +205,11 @@ def forums(_forum: str, _path: str, forums: AllForums | DBForums) -> None:
 
 
 @main.command(help="Populate a database with all messages")
-@click.pass_context
 @convert_context
-def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
+def populate(db_forums: AllForums | DBForums) -> None:
     assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
     con = db_forums.db
     forums = AllForums(root=db_forums.root)
-
-    length = forums.get_num_msgs(forum, path, recursive=True)
 
     with contextlib.closing(con.cursor()) as cur:
 
@@ -257,11 +260,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
         ):
             cur.execute(insert_people, member.as_simple_tuple())
 
-        forum_list = (
-            [f.stem for f in forums.get_forum_paths()]
-            if forum == "all"
-            else forum.split()
-        )
+        forum_list = [f.stem for f in forums.get_forum_paths()]
 
         outer_progress = Progress(*PROGRESS_COLUMNS, expand=True)
         inner_progress = Progress(*PROGRESS_COLUMNS, expand=True)
@@ -272,7 +271,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
             for n, forum_each in enumerate(
                 outer_progress.track(forum_list, description="Messages")
             ):
-                length = forums.get_num_msgs(forum_each, path, recursive=True)
+                length = forums.get_num_msgs(forum_each, "", recursive=True)
 
                 task_id = inner_progress.add_task("Forum")
                 task = inner_progress.tasks[inner_progress.task_ids.index(task_id)]
@@ -288,7 +287,7 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
                 msgs = (
                     m.as_simple_tuple()
                     for m in inner_track(
-                        forums.get_msgs(forum_each, path, recursive=True),
+                        forums.get_msgs(forum_each, "", recursive=True),
                         total=length,
                         description=f"({n}/{len(forum_list)}) {forum_each}",
                     )
@@ -304,9 +303,8 @@ def populate(forum: str, path: str, db_forums: AllForums | DBForums) -> None:
 
 
 @main.command(help="Populate a database with full text search")
-@click.pass_context
 @convert_context
-def populate_search(_forum: str, _path: str, db_forums: AllForums | DBForums) -> None:
+def populate_search(db_forums: AllForums | DBForums) -> None:
     assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
     db_in = db_forums.db
     with contextlib.closing(sqlite3.connect(os.environ["HNFTSDATABASE"])) as db_out:
