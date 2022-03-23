@@ -24,7 +24,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 from .cliutils import get_html_panel, walk_tree
-from .messages import Member, Message, URCMain
+from .messages import Member, URCMain, URCMessage
 from .structure import AllForums, DBForums, connect_forums
 
 if sys.version_info < (3, 10):
@@ -156,7 +156,7 @@ def tree(forums: AllForums | DBForums, path: str) -> None:
     forum, *others = path.split("/")
     path = "/".join(others)
 
-    msg: Message | URCMain = (
+    msg: URCMessage | URCMain = (
         forums.get_msg(forum, path) if path else forums.get_forum(forum)
     )
 
@@ -219,13 +219,7 @@ def populate(db_forums: AllForums | DBForums) -> None:
         con.set_trace_callback(log_info)
 
         create_forums = URCMain.sqlite_create_table_statement(
-            "forums",
-            {
-                "num": "PRIMARY KEY",
-                "responses": "UNIQUE",
-                "url": "UNIQUE",
-                "body": "UNIQUE",
-            },
+            "forums", {"responses": "PRIMARY KEY"}
         )
         cur.execute(create_forums)
 
@@ -234,11 +228,10 @@ def populate(db_forums: AllForums | DBForums) -> None:
         )
         cur.execute(create_members)
 
-        create_msgs = Message.sqlite_create_table_statement("msgs")
-        cur.execute(
-            create_msgs[:-3]
-            + ",\n    PRIMARY KEY(forum, msg),\n    FOREIGN KEY(forum) REFERENCES forums(num)\n);"
+        create_msgs = URCMessage.sqlite_create_table_statement(
+            "msgs", {"responses": "PRIMARY KEY"}
         )
+        cur.execute(create_msgs)
 
         con.set_trace_callback(None)
 
@@ -267,7 +260,7 @@ def populate(db_forums: AllForums | DBForums) -> None:
         live_group = rich.console.Group(outer_progress, inner_progress)
 
         with rich.live.Live(live_group, refresh_per_second=10):
-            insert_msg = Message.sqlite_insert_statement("msgs")
+            insert_msg = URCMessage.sqlite_insert_statement("msgs")
             for n, forum_each in enumerate(
                 outer_progress.track(forum_list, description="Messages")
             ):
@@ -297,7 +290,7 @@ def populate(db_forums: AllForums | DBForums) -> None:
                 inner_progress.remove_task(task_id)
 
         con.set_trace_callback(log_info)
-        cur.execute("CREATE INDEX idx_msgs_up ON msgs(forum, up);")
+        cur.execute("CREATE INDEX idx_msgs_up ON msgs(up_url);")
         con.commit()
         con.set_trace_callback(None)
 

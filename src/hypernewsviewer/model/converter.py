@@ -12,9 +12,15 @@ import dateutil.parser
 import dateutil.tz
 import inflection
 
-from .enums import AnnotationType, ContentType
+from .enums import AnnotationType, ContentType, UpRelType
 
-__all__ = ["converter_db", "converter_utc", "convert_url", "type_as_sqlite"]
+__all__ = [
+    "converter_db",
+    "converter_utc",
+    "convert_url",
+    "type_as_sqlite",
+    "produce_utc_dict",
+]
 
 
 TZOFFSETS = {
@@ -84,7 +90,7 @@ converter_db.register_structure_hook_func(
 
 
 def convert_annotation_type(string: str, t: type[AnnotationType]) -> AnnotationType:
-    if string == "Message":
+    if string.lower() == "message":
         return t.Message
     raise ValueError(f"Unknown annotation type {string}")
 
@@ -101,20 +107,33 @@ def convert_content_type(string: str, cls: type[ContentType]) -> ContentType:
     raise ValueError(f"Unknown content type {string}")
 
 
+def convert_uprel_type(string: str, cls: type[UpRelType]) -> UpRelType:
+    if string == "None":
+        return cls.None_
+    return cls[string]
+
+
 converter_utc.register_structure_hook(ContentType, convert_content_type)
 converter_utc.register_structure_hook(AnnotationType, convert_annotation_type)
+converter_utc.register_structure_hook(UpRelType, convert_uprel_type)
+
+
+# Raw data dict useful for testing generated properties
+def produce_utc_dict(obj: str) -> dict[str, Any]:
+    pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
+    info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
+    return info
 
 
 def structure_from_utc(obj: str, cls: type[T]) -> T:
-    pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
-    info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
+    info = produce_utc_dict(obj)
     fields = attrs.fields_dict(cls)
 
     conv_obj = {
         name: converter_utc._structure_attribute(  # pylint: disable=protected-access
             fields[name], info[name]
         )
-        for name in info
+        for name in (set(fields) & set(info))
     }
 
     return cls(**conv_obj)

@@ -19,17 +19,22 @@ ROOT = DIR.joinpath("../../hnfiles").resolve()
 def db(tmp_path_factory):
     directory = tmp_path_factory.mktemp("tmpdb")
     path = directory / "tmpdb.sql3"
-    subprocess.run(
+    result = subprocess.run(
         [
             sys.executable,
             "-m",
             "hypernewsviewer.model",
             f"--db={path}",
-            "all",
             "populate",
         ],
-        check=True,
+        capture_output=True,
+        check=False,
+        text=True,
     )
+    if result.returncode != 0:
+        print(result.stdout)
+        print(result.stderr, file=sys.stderr)
+        raise RuntimeError("Failed to populate database, see output")
     with contextlib.closing(sqlite3.connect(path)) as con:
         yield con
 
@@ -216,8 +221,8 @@ def test_get_forum_paths(db):
 
     results = sorted(dbf.get_forum_paths())
     classic_results = sorted(forums.get_forum_paths())
-    assert classic_results == results
     assert len(results) == 3
+    assert classic_results == results
 
 
 def test_get_num_forums(db):

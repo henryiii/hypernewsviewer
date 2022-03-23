@@ -3,14 +3,13 @@ import sqlite3
 import rich.pretty
 import rich.traceback
 
-from hypernewsviewer.model.messages import Member, Message, URCMain, URCMessage
+from hypernewsviewer.model.messages import Member, URCMain, URCMessage
 from hypernewsviewer.model.structure import AllForums, DBForums
 
 __all__ = [
     "AllForums",
     "DBForums",
     "Member",
-    "Message",
     "URCMain",
     "URCMessage",
     "cur",
