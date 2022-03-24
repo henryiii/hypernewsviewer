@@ -16,7 +16,7 @@ def type_as_sqal(
     name: str, inp: type[Any] | None, metadata: dict[str, Any]
 ) -> sqlalchemy.Column:
     assert inp is not None
-    options = dict(metadata.items())
+    options = dict(metadata)
     try:
         options["nullable"] = isinstance(None, inp)
     except TypeError:
