@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import List, Optional, Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 import attrs
 
@@ -33,10 +33,6 @@ class InfoBase:
         from .converter import converter_utc
 
         return converter_utc.structure(text, cls)
-
-    @classmethod
-    def get_field_names(cls) -> List[str]:
-        return [f.name for f in attrs.fields(cls)]
 
 
 @attrs_mapper("people", mapper_registry)

@@ -7,6 +7,8 @@ import attrs
 import sqlalchemy
 import sqlalchemy.orm
 
+__all__ = ["type_as_sqal", "mapper_registry"]
+
 mapper_registry = sqlalchemy.orm.registry()
 
 T = TypeVar("T")
@@ -15,6 +17,10 @@ T = TypeVar("T")
 def type_as_sqal(
     name: str, inp: type[Any] | None, metadata: dict[str, Any]
 ) -> sqlalchemy.Column:
+    """
+    Convert a static type to a SQLAlchemy column.
+    """
+
     assert inp is not None
     options = dict(metadata)
     try:
@@ -56,7 +62,6 @@ class attrs_mapper:
         attrs_class.__table__ = sqlalchemy.Table(  # type: ignore[attr-defined]
             self.table_name,
             self.registry.metadata,
-            # Column("id", Integer, primary_key=True),
             *columns,
         )
         return self.registry.mapped(attrs_class)  # type: ignore[no-any-return]

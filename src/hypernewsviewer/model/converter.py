@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
 from typing import Any, TypeVar
 
 import attrs
@@ -15,7 +14,6 @@ from .enums import AnnotationType, ContentType, UpRelType
 
 __all__ = [
     "converter_utc",
-    "convert_url",
     "produce_utc_dict",
 ]
 
@@ -28,11 +26,26 @@ TZOFFSETS = {
 T = TypeVar("T")
 
 
-converter_utc = cattr.GenConverter()
-
-
 def us(inp: str) -> str:
     return inflection.underscore(inp) if inp != "From" else "from_"  # type: ignore[no-any-return]
+
+
+def convert_url(string: str | None) -> str | None:
+    if string is None:
+        return None
+
+    remove = "https://hypernews.cern.ch/HyperNews/CMS"
+    if string.startswith(remove):
+        string = string[len(remove) :]
+
+    remove = "https://cmshypernews02.cern.ch/HyperNews/CMS"
+    if string.startswith(remove):
+        string = string[len(remove) :]
+
+    if not string.endswith(".html"):
+        string += ".html"
+
+    return string
 
 
 def convert_datetime(string: str, _type: object) -> datetime:
@@ -41,24 +54,6 @@ def convert_datetime(string: str, _type: object) -> datetime:
     # Thu Feb 14 22:20:48 CET 2008
     dt = dateutil.parser.parse(string, tzinfos=TZOFFSETS)
     return dt.astimezone(dateutil.tz.UTC).replace(tzinfo=None)
-
-
-def convert_isodatetime(string: str, cls: type[datetime]) -> datetime:
-    return cls.fromisoformat(string)
-
-
-def convert_from_datetime(dt: datetime) -> str:
-    return dt.isoformat()
-
-
-converter_utc.register_structure_hook(datetime, convert_datetime)
-
-
-def convert_simple(string: str, to_type: type[T]) -> T:
-    return to_type(string)  # type: ignore[call-arg]
-
-
-converter_utc.register_structure_hook(Path, convert_simple)
 
 
 def convert_annotation_type(string: str, t: type[AnnotationType]) -> AnnotationType:
@@ -83,6 +78,8 @@ def convert_uprel_type(string: str, cls: type[UpRelType]) -> UpRelType:
     return cls.None_ if string == "None" else cls[string]
 
 
+converter_utc = cattr.GenConverter()
+converter_utc.register_structure_hook(datetime, convert_datetime)
 converter_utc.register_structure_hook(ContentType, convert_content_type)
 converter_utc.register_structure_hook(AnnotationType, convert_annotation_type)
 converter_utc.register_structure_hook(UpRelType, convert_uprel_type)
@@ -115,21 +112,3 @@ converter_utc.register_structure_hook_func(
     attrs.has,
     structure_from_utc,
 )
-
-
-def convert_url(string: str | None) -> str | None:
-    if string is None:
-        return None
-
-    remove = "https://hypernews.cern.ch/HyperNews/CMS"
-    if string.startswith(remove):
-        string = string[len(remove) :]
-
-    remove = "https://cmshypernews02.cern.ch/HyperNews/CMS"
-    if string.startswith(remove):
-        string = string[len(remove) :]
-
-    if not string.endswith(".html"):
-        string += ".html"
-
-    return string
