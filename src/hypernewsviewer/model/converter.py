@@ -32,8 +32,7 @@ converter_utc = cattr.GenConverter()
 
 
 def us(inp: str) -> str:
-    retval: str = inflection.underscore(inp) if inp != "From" else "from_"
-    return retval
+    return inflection.underscore(inp) if inp != "From" else "from_"
 
 
 def convert_datetime(string: str, _type: object) -> datetime:
@@ -81,9 +80,7 @@ def convert_content_type(string: str, cls: type[ContentType]) -> ContentType:
 
 
 def convert_uprel_type(string: str, cls: type[UpRelType]) -> UpRelType:
-    if string == "None":
-        return cls.None_
-    return cls[string]
+    return cls.None_ if string == "None" else cls[string]
 
 
 converter_utc.register_structure_hook(ContentType, convert_content_type)
@@ -94,8 +91,7 @@ converter_utc.register_structure_hook(UpRelType, convert_uprel_type)
 # Raw data dict useful for testing generated properties
 def produce_utc_dict(obj: str) -> dict[str, Any]:
     pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
-    info = {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
-    return info
+    return {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
 
 
 def structure_from_utc(obj: str, cls: type[T]) -> T:

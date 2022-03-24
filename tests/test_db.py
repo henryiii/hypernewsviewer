@@ -36,8 +36,7 @@ def db(tmp_path_factory):
         print(result.stderr, file=sys.stderr)
         raise RuntimeError("Failed to populate database, see output")
 
-    engine = sqlalchemy.create_engine(f"sqlite:///{path}", future=True, echo=True)
-    yield engine
+    yield sqlalchemy.create_engine(f"sqlite:///{path}", future=True, echo=True)
 
 
 def test_basic(db):

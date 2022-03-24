@@ -67,13 +67,11 @@ class AllForums:
         return (
             p
             for p in self.root.joinpath("hnpeople").iterdir()
-            if (
-                p.is_file()
-                and not p.is_symlink()
-                and not p.stem.startswith(".")
-                and not p.suffix == ".sql3"
-                and not p.name.endswith("~")
-            )
+            if p.is_file()
+            and not p.is_symlink()
+            and not p.stem.startswith(".")
+            and p.suffix != ".sql3"
+            and not p.name.endswith("~")
         )
 
     def get_member_iter(self) -> Iterator[Member]:
