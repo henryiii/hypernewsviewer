@@ -125,10 +125,13 @@ class DBForums(AllForums):
 
     def get_msg(self, forum: str, path: str) -> URCMessage:
         assert path, "Must supply a path, use get_forum() instead for empty path"
-        (msg,) = self.db.execute(
+        cursor = self.db.execute(
             "SELECT * FROM msgs WHERE responses=?",
             (f"/{forum}/{path}",),
         )
+        msg = cursor.fetchone()
+        if msg is None:
+            raise FileNotFoundError(f"No such message: /{forum}/{path}")
         return URCMessage.from_simple_tuple(msg)
 
     def get_msgs(

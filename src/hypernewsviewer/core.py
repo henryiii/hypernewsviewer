@@ -56,13 +56,23 @@ def empty() -> Response:
 
 
 @app.route("/get/<path:subpath>")
-def list_view(subpath: str) -> str:
+def list_view(subpath: str) -> str | Response:
     if subpath.endswith(".html"):
         subpath = subpath[:-5]
     elif subpath.endswith(".htm"):
         subpath = subpath[:-4]
 
     parts = subpath.split("/")
+
+    direction = request.args.get("dir", default=None)
+    if direction is not None:
+        if direction == "next-in-thread":
+            parts.append("1")
+            return redirect(url_for("list_view", subpath="/".join(parts)))
+        if direction == "nextResponse":
+            parts[-1] = str(int(parts[-1]) + 1)
+            return redirect(url_for("list_view", subpath="/".join(parts)))
+
     trail = accumulate(parts, lambda a, b: f"{a}/{b}")
     breadcrumbs = [
         {"name": part, "url": url_for("list_view", subpath=spath)}
