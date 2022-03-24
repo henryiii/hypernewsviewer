@@ -6,8 +6,7 @@ __all__ = ["ContentType", "AnnotationType", "UpRelType"]
 
 
 class StrEnum(str, enum.Enum):
-    def __repr__(self) -> str:
-        return str(self.value)
+    pass
 
 
 class ContentType(StrEnum):

@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import contextlib
 import logging
-import sqlite3
 from pathlib import Path
-from typing import Callable, Generator, Iterator, TypeVar
+from typing import Any, Callable, Generator, Iterator, TypeVar
 
 import attrs
+import sqlalchemy
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from .messages import Member, URCMain, URCMessage
 
@@ -58,20 +60,18 @@ class AllForums:
 
         return None
 
-    def get_member(self, name: str) -> Member:
-        return Member.from_path(self.root / "hnpeople" / name)
+    def get_member(self, user_id: str) -> Member:
+        return Member.from_path(self.root / "hnpeople" / user_id)
 
     def get_members_paths(self) -> Iterator[Path]:
         return (
             p
             for p in self.root.joinpath("hnpeople").iterdir()
-            if (
-                p.is_file()
-                and not p.is_symlink()
-                and not p.stem.startswith(".")
-                and not p.suffix == ".sql3"
-                and not p.name.endswith("~")
-            )
+            if p.is_file()
+            and not p.is_symlink()
+            and not p.stem.startswith(".")
+            and p.suffix != ".sql3"
+            and not p.name.endswith("~")
         )
 
     def get_member_iter(self) -> Iterator[Member]:
@@ -121,105 +121,108 @@ class AllForums:
 
 @attrs.define(kw_only=True)
 class DBForums(AllForums):
-    db: sqlite3.Connection
+    engine: Any
 
     def get_msg(self, forum: str, path: str) -> URCMessage:
         assert path, "Must supply a path, use get_forum() instead for empty path"
-        cursor = self.db.execute(
-            "SELECT * FROM msgs WHERE responses=?",
-            (f"/{forum}/{path}",),
-        )
-        msg = cursor.fetchone()
+        selection = select(URCMessage).where(URCMessage.responses == f"/{forum}/{path}")
+        with Session(self.engine) as session:
+            msg: URCMessage = session.execute(selection).scalar_one_or_none()
         if msg is None:
             raise FileNotFoundError(f"No such message: /{forum}/{path}")
-        return URCMessage.from_simple_tuple(msg)
+        return msg
+
+    @staticmethod
+    def _get_msg_listing(forum: str, path: str, recursive: bool) -> Any:
+        if recursive:
+            return URCMessage.responses.like(  # type: ignore[attr-defined]
+                f"/{forum}/" + (f"{path}/%" if path else "%")
+            )
+        return URCMessage.up_url == (
+            f"/get/{forum}/{path}.html" if path else f"/get/{forum}.html"
+        )
 
     def get_msgs(
         self, forum: str, path: str, *, recursive: bool = False
     ) -> Iterator[URCMessage]:
+        selection = select(URCMessage).where(
+            self._get_msg_listing(forum, path, recursive)
+        )
         if recursive:
-            msgs = self.db.execute(
-                "SELECT * FROM msgs WHERE responses LIKE ? ORDER BY responses",
-                (f"/{forum}/{path}/%" if path else f"/{forum}/%",),
-            )
-        else:
-            msgs = self.db.execute(
-                "SELECT * FROM msgs WHERE up_url=?",
-                (f"/get/{forum}/{path}.html" if path else f"/get/{forum}.html",),
-            )
-        for msg in msgs:
-            yield URCMessage.from_simple_tuple(msg)
+            selection = selection.order_by(URCMessage.responses)
+
+        with Session(self.engine) as session:
+            yield from session.execute(selection).scalars()
 
     def get_msg_paths(self, forum: str, path: str) -> list[Path]:
-        responses = self.db.execute(
-            "SELECT responses FROM msgs WHERE up_url=?",
-            (f"/get/{forum}/{path}.html" if path else f"/get/{forum}.html",),
-        )
-        return sorted(
-            (
-                (self.root / resp[0].strip("/")).with_suffix(".html,urc")
-                for resp in responses
-            ),
-            key=lambda x: int(x.stem),
+        selection = select(URCMessage.responses).where(
+            self._get_msg_listing(forum, path, recursive=False)
         )
 
+        with Session(self.engine) as session:
+            return sorted(
+                (
+                    (self.root / resp.strip("/")).with_suffix(".html,urc")
+                    for resp in session.execute(selection).scalars()
+                ),
+                key=lambda x: int(x.stem),
+            )
+
     def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
-        if recursive:
-            result = self.db.execute(
-                "SELECT COUNT(*) FROM msgs WHERE responses LIKE ? ORDER BY responses",
-                (f"/{forum}/{path}/%" if path else f"/{forum}/%",),
-            )
-        else:
-            result = self.db.execute(
-                "SELECT COUNT(*) FROM msgs WHERE up_url=?",
-                (f"/get/{forum}/{path}.html" if path else f"/get/{forum}.html",),
-            )
-        answer: int = result.fetchone()[0]
-        return answer
+        selection = select(sqlalchemy.func.count()).where(
+            self._get_msg_listing(forum, path, recursive)
+        )
+        with Session(self.engine) as session:
+            return session.execute(selection).scalar()  # type: ignore[no-any-return]
 
     # get_html does not use the database
 
-    def get_member(self, name: str) -> Member:
-        results = list(self.db.execute("SELECT * FROM people WHERE user_id=?", (name,)))
-        (member,) = results
-        return Member.from_simple_tuple(member)
+    def get_member(self, user_id: str) -> Member:
+        selection = select(Member).where(Member.user_id == user_id)
+        with Session(self.engine) as session:
+            return session.execute(selection).scalar_one()  # type: ignore[no-any-return]
 
     def get_members_paths(self) -> Iterator[Path]:
-        for (path,) in self.db.execute("SELECT user_id FROM people"):
-            yield self.root / "hnpeople" / path
+        selection = select(Member.user_id)
+        with Session(self.engine) as session:
+            for path in session.execute(selection).scalars():
+                yield self.root / "hnpeople" / path
 
     def get_member_iter(self) -> Iterator[Member]:
-        for member_tuple in self.db.execute("SELECT * FROM people"):
-            yield Member.from_simple_tuple(member_tuple)
+        selection = select(Member)
+        with Session(self.engine) as session:
+            yield from session.execute(selection).scalars()
 
     # get_num_members doesn't need an optimization, it uses the database already
 
     # get_categories doesn't need an optimization, it reads one file only already
 
     def get_forum(self, forum: str) -> URCMain:
-        (result,) = self.db.execute(
-            "SELECT * FROM forums WHERE responses=?", (f"/{forum}",)
-        )
-        return URCMain.from_simple_tuple(result)
+        selection = select(URCMain).where(URCMain.responses == f"/{forum}")
+        with Session(self.engine) as session:
+            return session.execute(selection).scalar_one()  # type: ignore[no-any-return]
 
     def get_forums_iter(self) -> Iterator[URCMain]:
-        for result in self.db.execute("SELECT * FROM forums"):
-            yield URCMain.from_simple_tuple(result)
+        selection = select(URCMain)
+        with Session(self.engine) as session:
+            yield from session.execute(selection).scalars()
 
     def get_forum_paths(self) -> Iterator[Path]:
-        for (name,) in self.db.execute("SELECT responses FROM forums"):
-            yield self.root / f"{name.strip('/')}.html,urc"
+        selection = select(URCMain.responses)
+        with Session(self.engine) as session:
+            for name in session.execute(selection).scalars():
+                yield self.root / f"{name.strip('/')}.html,urc"
 
     # walk_tree is only used for the CLI, so not implementing it now
 
 
 @contextlib.contextmanager
 def connect_forums(
-    root: Path, db_path: Path | None, *, read_only: bool = False
+    root: Path, db_path: Path | None
 ) -> Generator[AllForums | DBForums, None, None]:
     if db_path:
-        db_str = f"file:{db_path}?mode=ro" if read_only else f"file:{db_path}?mode=rwc"
-        with contextlib.closing(sqlite3.connect(db_str, uri=True)) as db:
-            yield DBForums(root=root, db=db)
+        db_str = f"sqlite:///{db_path}"
+        engine = sqlalchemy.create_engine(db_str, future=True)
+        yield DBForums(root=root, engine=engine)
     else:
         yield AllForums(root=root)

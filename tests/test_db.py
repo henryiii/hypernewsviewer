@@ -1,13 +1,13 @@
 # pylint: disable=redefined-outer-name
 
-import contextlib
-import sqlite3
 import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
 
 import pytest
+import sqlalchemy
+import sqlalchemy.orm
 
 from hypernewsviewer.model.structure import AllForums, DBForums
 
@@ -35,27 +35,32 @@ def db(tmp_path_factory):
         print(result.stdout)
         print(result.stderr, file=sys.stderr)
         raise RuntimeError("Failed to populate database, see output")
-    with contextlib.closing(sqlite3.connect(path)) as con:
-        yield con
+
+    yield sqlalchemy.create_engine(f"sqlite:///{path}", future=True, echo=True)
 
 
 def test_basic(db):
-    with contextlib.closing(db.cursor()) as cur:
-        cur.execute("SELECT COUNT(*) FROM forums")
-        assert cur.fetchone()[0] == 3
-        cur.execute("SELECT COUNT(*) FROM msgs")
-        assert cur.fetchone()[0] == 2717
-        cur.execute("SELECT COUNT(*) FROM people")
-        assert cur.fetchone()[0] == 7017
+    with db.connect() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM forums"))
+        assert result.scalar_one() == 3
 
-        results = list(x[0] for x in cur.execute("SELECT user_id FROM people"))
+        result = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM msgs"))
+        assert result.scalar_one() == 2717
+
+        result = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM people"))
+        assert result.scalar_one() == 7017
+
+        result = connection.execute(sqlalchemy.text("SELECT user_id FROM people"))
+        results = list(result.scalars())
+        assert len(results) == 7017
+
         more_than_one = {n: v for n, v in Counter(results).items() if v > 1}
         assert not more_than_one
 
 
 def test_get_msg(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_msg("hnTest", "1")
     classic_results = forums.get_msg("hnTest", "1")
@@ -72,7 +77,7 @@ def test_get_msg(db):
 
 def test_get_msgs(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = list(dbf.get_msgs("hnTest", ""))
     classic_results = list(forums.get_msgs("hnTest", ""))
@@ -107,7 +112,7 @@ def test_get_msgs(db):
 
 def test_get_msg_paths(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = list(dbf.get_msg_paths("hnTest", ""))
     classic_results = list(forums.get_msg_paths("hnTest", ""))
@@ -129,7 +134,7 @@ def test_get_msg_paths(db):
 
 def test_get_num_msgs(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_num_msgs("hnTest", "")
     classic_results = forums.get_num_msgs("hnTest", "")
@@ -156,7 +161,7 @@ def test_get_num_msgs(db):
 
 def test_get_member(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_member("temple")
     classic_results = forums.get_member("temple")
@@ -165,7 +170,7 @@ def test_get_member(db):
 
 def test_get_members_paths(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = sorted(dbf.get_members_paths())
     classic_results = sorted(forums.get_members_paths())
@@ -176,7 +181,7 @@ def test_get_members_paths(db):
 
 def test_get_members_iter(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = list(dbf.get_member_iter())
     classic_results = list(forums.get_member_iter())
@@ -187,7 +192,7 @@ def test_get_members_iter(db):
 
 def test_get_num_members(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_num_members()
     classic_results = forums.get_num_members()
@@ -197,7 +202,7 @@ def test_get_num_members(db):
 
 def test_get_forum(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_forum("hnTest")
     classic_results = forums.get_forum("hnTest")
@@ -206,7 +211,7 @@ def test_get_forum(db):
 
 def test_get_forums_iter(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = list(dbf.get_forums_iter())
     classic_results = list(forums.get_forums_iter())
@@ -217,7 +222,7 @@ def test_get_forums_iter(db):
 
 def test_get_forum_paths(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = sorted(dbf.get_forum_paths())
     classic_results = sorted(forums.get_forum_paths())
@@ -227,7 +232,7 @@ def test_get_forum_paths(db):
 
 def test_get_num_forums(db):
     forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, db=db)
+    dbf = DBForums(root=ROOT, engine=db)
 
     results = dbf.get_num_forums()
     classic_results = forums.get_num_forums()
