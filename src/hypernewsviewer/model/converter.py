@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
@@ -15,10 +14,8 @@ import inflection
 from .enums import AnnotationType, ContentType, UpRelType
 
 __all__ = [
-    "converter_db",
     "converter_utc",
     "convert_url",
-    "type_as_sqlite",
     "produce_utc_dict",
 ]
 
@@ -32,7 +29,6 @@ T = TypeVar("T")
 
 
 converter_utc = cattr.GenConverter()
-converter_db = cattr.GenConverter()
 
 
 def us(inp: str) -> str:
@@ -57,8 +53,6 @@ def convert_from_datetime(dt: datetime) -> str:
 
 
 converter_utc.register_structure_hook(datetime, convert_datetime)
-converter_db.register_structure_hook(datetime, convert_isodatetime)
-converter_db.register_unstructure_hook(datetime, convert_from_datetime)
 
 
 def convert_simple(string: str, to_type: type[T]) -> T:
@@ -66,27 +60,6 @@ def convert_simple(string: str, to_type: type[T]) -> T:
 
 
 converter_utc.register_structure_hook(Path, convert_simple)
-converter_db.register_structure_hook(Path, convert_simple)
-converter_db.register_unstructure_hook(Path, os.fspath)
-
-
-def structure_kw_attrs_fromtuple(obj: tuple[Any, ...], cls: type[T]) -> T:
-    conv_obj = {}
-    for a, value in zip(attrs.fields(cls), obj):
-        converted = (
-            converter_db._structure_attribute(  # pylint: disable=protected-access
-                a, value
-            )
-        )
-        conv_obj[a.name] = converted
-
-    return cls(**conv_obj)
-
-
-converter_db.register_structure_hook_func(
-    lambda t: attrs.has(t) and any(a.kw_only for a in attrs.fields(t)),
-    structure_kw_attrs_fromtuple,
-)
 
 
 def convert_annotation_type(string: str, t: type[AnnotationType]) -> AnnotationType:
@@ -136,6 +109,9 @@ def structure_from_utc(obj: str, cls: type[T]) -> T:
         for name in (set(fields) & set(info))
     }
 
+    for name in filter(fields, lambda x: "url" in x):
+        conv_obj[name] = convert_url(conv_obj[name])
+
     return cls(**conv_obj)
 
 
@@ -161,22 +137,3 @@ def convert_url(string: str | None) -> str | None:
         string += ".html"
 
     return string
-
-
-def type_as_sqlite(inp: type[Any] | None) -> str:
-    if inp is None:
-        return "NULL"
-
-    try:
-        suffix = "" if isinstance(None, inp) else " NOT NULL"
-    except TypeError:
-        # Python < 3.10 doesn't support this on Optional - but that's okay, we now know it is Optional!
-        suffix = ""
-        (inp,) = (t for t in inp.__args__ if not isinstance(None, t))
-    assert inp is not None
-
-    if isinstance(1, inp):
-        return "INTEGER" + suffix
-    if isinstance(1.0, inp):
-        return "REAL" + suffix
-    return "TEXT" + suffix

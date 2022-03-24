@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import List, Optional, Type, TypeVar
 
 import attrs
 
-from .converter import convert_url, converter_db, converter_utc, type_as_sqlite
 from .enums import AnnotationType, ContentType, UpRelType
+from .orm import attrs_mapper, mapper_registry
 
 Email = str
 URL = str
@@ -13,7 +13,7 @@ URL = str
 IB = TypeVar("IB", bound="InfoBase")
 
 
-@attrs.define(kw_only=True, eq=True, frozen=True)
+@attrs.define(kw_only=True, eq=True, slots=False)
 class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
@@ -29,49 +29,20 @@ class InfoBase:
 
     @classmethod
     def from_file(cls: Type[IB], text: str) -> IB:
+        from .converter import converter_utc
+
         return converter_utc.structure(text, cls)
-
-    def as_simple_dict(self) -> Dict[str, Any]:
-        retval: Dict[str, Any] = converter_db.unstructure_attrs_asdict(self)
-        return retval
-
-    @classmethod
-    def from_simple_tuple(cls: Type[IB], info: Tuple[Any, ...]) -> IB:
-        return converter_db.structure(info, cls)
-
-    def as_simple_tuple(self) -> Tuple[Any, ...]:
-        retval: Tuple[Any, ...] = converter_db.unstructure_attrs_astuple(self)
-        return retval
 
     @classmethod
     def get_field_names(cls) -> List[str]:
         return [f.name for f in attrs.fields(cls)]
 
-    @classmethod
-    def sqlite_create_table_statement(
-        cls, name: str, constraint: Optional[Dict[str, str]] = None
-    ) -> str:
-        field_types = (type_as_sqlite(f.type) for f in attrs.fields(cls))
-        names = cls.get_field_names()
-        if constraint:
-            field_types = (
-                f"{f} {constraint[n]}" if n in constraint else f
-                for n, f in zip(names, field_types)
-            )
-        columns = ",\n    ".join(
-            f"{name} {column}" for name, column in zip(names, field_types)
-        )
-        return f"CREATE TABLE {name} (\n    {columns}\n);"
 
-    @classmethod
-    def sqlite_insert_statement(cls, name: str) -> str:
-        placeholders = ", ".join(["?"] * len(cls.get_field_names()))
-        return f"INSERT INTO {name} VALUES ({placeholders});"
-
-
-@attrs.define(kw_only=True, eq=True, frozen=True)
+@attrs_mapper("people", mapper_registry)
+@attrs.define(kw_only=True, eq=True, slots=False)
 class Member(InfoBase):
-    user_id: str
+    "Registered user information"
+    user_id: str = attrs.field(metadata={"primary_key": True})
     name: str = ""
     user_url: str = ""
     email: str = ""
@@ -79,7 +50,7 @@ class Member(InfoBase):
 
     alt_user_i_ds: str = ""
     content: str = "Everything"
-    format: str = "PlainText"
+    format: ContentType = ContentType.PlainText
     hide: str = "Nothing"
     old_email: str = ""
     # password: str = ""
@@ -88,9 +59,9 @@ class Member(InfoBase):
     subscribe: str = ""
 
 
-@attrs.define(kw_only=True, eq=True, frozen=True)
+@attrs.define(kw_only=True, eq=True, slots=False)
 class URCBase(InfoBase):
-    responses: str
+    responses: str = attrs.field(metadata={"primary_key": True})
 
     title: str = ""
     date: datetime
@@ -133,8 +104,10 @@ class URCBase(InfoBase):
         return None
 
 
-@attrs.define(kw_only=True, eq=True, frozen=True)
+@attrs_mapper("forums", mapper_registry)
+@attrs.define(kw_only=True, eq=True, slots=False)
 class URCMain(URCBase):
+    "Forum information"
     list_address: str = ""
     categories: int
 
@@ -159,8 +132,10 @@ class URCMain(URCBase):
         return None
 
 
-@attrs.define(kw_only=True, eq=True, frozen=True)
+@attrs_mapper("msgs", mapper_registry)
+@attrs.define(kw_only=True, eq=True, slots=False)
 class URCMessage(URCBase):
+    "Individual message information"
     last_message_date: datetime
     last_mod: datetime
 
@@ -169,7 +144,7 @@ class URCMessage(URCBase):
     previous_num: Optional[int] = None
     next_num: Optional[int] = None
 
-    up_url: URL = attrs.field(converter=convert_url)
+    up_url: URL = attrs.field(converter=convert_url, metadata={"index": True})
 
     up_rel: UpRelType = UpRelType.Default
     node_type: AnnotationType = AnnotationType.Default

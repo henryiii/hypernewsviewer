@@ -33,7 +33,7 @@ def get_forums() -> AllForums | DBForums:
     forums = getattr(g, "_forums", None)
     if forums is None:
         # pylint: disable-next=protected-access,assigning-non-slot
-        g._forums = connect_forums(DATA_ROOT, DB_ROOT, read_only=True)
+        g._forums = connect_forums(DATA_ROOT, DB_ROOT)
         forums = g._forums.__enter__()  # pylint: disable=protected-access
     return forums
 

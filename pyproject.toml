@@ -12,16 +12,17 @@ dependencies = [
   "markupsafe>=2.0",
   "inflection>=0.5.1",
   "attrs>=21.3.0",
-  "cattrs>=1.10.0",
-  "python-dateutil",
+  "sqlalchemy>=1.4.2",
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=6.2"]
 cli = [
-  "click>=8",
-  "rich>=9.8.0",
   "beautifulsoup4",
+  "cattrs>=1.10.0",
+  "click>=8",
+  "python-dateutil",
+  "rich>=9.8.0",
 ]
 deploy = [
   "gunicorn>=20.1"
@@ -52,7 +53,7 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["inflection", "hypernewsviewer.filters.*", "bs4"]
+module = ["inflection", "hypernewsviewer.filters.*", "bs4", "sqlalchemy.*"]
 ignore_missing_imports = true
 
 [tool.pylint]

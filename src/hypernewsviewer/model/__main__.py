@@ -14,7 +14,6 @@ from typing import Callable, Generator, Iterable, TypeVar
 import click
 import rich.console
 import rich.live
-import rich.logging
 import rich.progress
 import rich.traceback
 from bs4 import BeautifulSoup
@@ -22,9 +21,13 @@ from rich import print  # pylint: disable=redefined-builtin
 from rich.progress import Progress
 from rich.table import Table
 from rich.tree import Tree
+from sqlalchemy import select
+import sqlalchemy
+from sqlalchemy.orm import Session
 
 from .cliutils import get_html_panel, walk_tree
-from .messages import Member, URCMain, URCMessage
+from .messages import URCMain, URCMessage
+from .orm import mapper_registry
 from .structure import AllForums, DBForums, connect_forums
 
 if sys.version_info < (3, 10):
@@ -34,17 +37,10 @@ else:
 
 # pylint: disable=redefined-outer-name
 
-rich.traceback.install(suppress=[click, rich], show_locals=True, width=None)
+rich.traceback.install(suppress=[click, rich, sqlalchemy], show_locals=True, width=None)
 
 T = TypeVar("T")
 P = ParamSpec("P")
-
-logging.basicConfig(
-    level=logging.NOTSET,
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[rich.logging.RichHandler(rich_tracebacks=True)],
-)
 
 log_sql = logging.getLogger("hypernewsviewer.sql")
 log_sql.setLevel(logging.INFO)
@@ -208,50 +204,35 @@ def forums(forums: AllForums | DBForums) -> None:
 @convert_context
 def populate(db_forums: AllForums | DBForums) -> None:
     assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
-    con = db_forums.db
+    engine = db_forums.engine
     forums = AllForums(root=db_forums.root)
 
-    with contextlib.closing(con.cursor()) as cur:
+    engine.echo = True
 
-        def log_info(msg: str) -> None:
-            log_sql.info(msg, extra={"highlighter": None})
+    with Session(engine) as session:
+        mapper_registry.metadata.create_all(engine)
 
-        con.set_trace_callback(log_info)
+    engine.echo = False
 
-        create_forums = URCMain.sqlite_create_table_statement(
-            "forums", {"responses": "PRIMARY KEY"}
-        )
-        cur.execute(create_forums)
-
-        create_members = Member.sqlite_create_table_statement(
-            "people", {"user_id": "PRIMARY KEY"}
-        )
-        cur.execute(create_members)
-
-        create_msgs = URCMessage.sqlite_create_table_statement(
-            "msgs", {"responses": "PRIMARY KEY"}
-        )
-        cur.execute(create_msgs)
-
-        con.set_trace_callback(None)
-
-        insert_forum = URCMain.sqlite_insert_statement("forums")
+    with Session(engine) as session:
         for forum_main in track(
             forums.get_forums_iter(),
             forums.get_num_forums(),
             "Forums",
         ):
             if forum_main:
-                cur.execute(insert_forum, forum_main.as_simple_tuple())
-                con.commit()
+                session.add(forum_main)
 
-        insert_people = Member.sqlite_insert_statement("people")
+        session.commit()
+
         for member in track(
             forums.get_member_iter(),
             forums.get_num_members(),
             "People",
         ):
-            cur.execute(insert_people, member.as_simple_tuple())
+            session.add(member)
+
+        session.commit()
 
         forum_list = [f.stem for f in forums.get_forum_paths()]
 
@@ -260,7 +241,6 @@ def populate(db_forums: AllForums | DBForums) -> None:
         live_group = rich.console.Group(outer_progress, inner_progress)
 
         with rich.live.Live(live_group, refresh_per_second=10):
-            insert_msg = URCMessage.sqlite_insert_statement("msgs")
             for n, forum_each in enumerate(
                 outer_progress.track(forum_list, description="Messages")
             ):
@@ -277,38 +257,46 @@ def populate(db_forums: AllForums | DBForums) -> None:
                         iterable, total=total, task_id=task.id
                     )
 
-                msgs = (
-                    m.as_simple_tuple()
-                    for m in inner_track(
-                        forums.get_msgs(forum_each, "", recursive=True),
-                        total=length,
-                        description=f"({n}/{len(forum_list)}) {forum_each}",
-                    )
-                )
-                cur.executemany(insert_msg, msgs)
-                con.commit()
-                inner_progress.remove_task(task_id)
+                for msg in inner_track(
+                    forums.get_msgs(forum_each, "", recursive=True),
+                    total=length,
+                    description=f"({n}/{len(forum_list)}) {forum_each}",
+                ):
+                    session.add(msg)
 
-        con.set_trace_callback(log_info)
-        cur.execute("CREATE INDEX idx_msgs_up ON msgs(up_url);")
-        con.commit()
-        con.set_trace_callback(None)
+                session.commit()
+
+                inner_progress.remove_task(task_id)
 
 
 @main.command(help="Populate a database with full text search")
 @convert_context
-def populate_search(db_forums: AllForums | DBForums) -> None:
+@click.option(
+    "--fts",
+    default=Path(os.environ["HNFTSDATABASE"])
+    if "HNFTSDATABASE" in os.environ
+    else None,
+    type=click.Path(file_okay=True, exists=False, path_type=Path),  # type: ignore[type-var]
+    help="Path to make the fts database",
+)
+def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
     assert isinstance(db_forums, DBForums), "Must pass --db or HNDATABASE"
-    db_in = db_forums.db
-    with contextlib.closing(sqlite3.connect(os.environ["HNFTSDATABASE"])) as db_out:
+    with contextlib.closing(sqlite3.connect(str(fts))) as db_out, Session(
+        db_forums.engine
+    ) as session:
 
         db_out.execute(
             "CREATE VIRTUAL TABLE fulltext USING FTS5(forum UNINDEXED, msg UNINDEXED, date UNINDEXED, title, from_, text);"
         )
 
+        selection = select(
+            URCMessage.responses, URCMessage.title, URCMessage.date, URCMessage.from_
+        )
+        result = session.execute(selection)
+        total = result.count()
         for forum, msg, date, title, from_ in track(
-            db_in.execute("SELECT forum, msg, date, title, from_ FROM msgs"),
-            total=db_in.execute("SELECT COUNT(*) FROM msgs").fetchone()[0],
+            result,
+            total=total,
             description="Full text search",
         ):
             with open(
@@ -321,7 +309,7 @@ def populate_search(db_forums: AllForums | DBForums) -> None:
                 "INSERT INTO fulltext VALUES (?, ?, ?, ?, ?, ?)",
                 (forum, msg, date, title, from_, text),
             )
-            db_out.commit()
+        db_out.commit()
 
 
 if __name__ == "__main__":
