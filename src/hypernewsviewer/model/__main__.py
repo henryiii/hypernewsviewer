@@ -16,13 +16,13 @@ import rich.console
 import rich.live
 import rich.progress
 import rich.traceback
+import sqlalchemy
 from bs4 import BeautifulSoup
 from rich import print  # pylint: disable=redefined-builtin
 from rich.progress import Progress
 from rich.table import Table
 from rich.tree import Tree
 from sqlalchemy import select
-import sqlalchemy
 from sqlalchemy.orm import Session
 
 from .cliutils import get_html_panel, walk_tree

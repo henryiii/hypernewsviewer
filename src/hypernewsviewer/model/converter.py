@@ -32,7 +32,7 @@ converter_utc = cattr.GenConverter()
 
 
 def us(inp: str) -> str:
-    return inflection.underscore(inp) if inp != "From" else "from_"
+    return inflection.underscore(inp) if inp != "From" else "from_"  # type: ignore[no-any-return]
 
 
 def convert_datetime(string: str, _type: object) -> datetime:
@@ -105,7 +105,7 @@ def structure_from_utc(obj: str, cls: type[T]) -> T:
         for name in (set(fields) & set(info))
     }
 
-    for name in filter(fields, lambda x: "url" in x):
+    for name in (x for x in fields if "url" in x):
         conv_obj[name] = convert_url(conv_obj[name])
 
     return cls(**conv_obj)

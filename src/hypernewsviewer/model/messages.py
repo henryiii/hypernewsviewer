@@ -29,6 +29,7 @@ class InfoBase:
 
     @classmethod
     def from_file(cls: Type[IB], text: str) -> IB:
+        # pylint: disable-next=import-outside-toplevel
         from .converter import converter_utc
 
         return converter_utc.structure(text, cls)
@@ -144,7 +145,7 @@ class URCMessage(URCBase):
     previous_num: Optional[int] = None
     next_num: Optional[int] = None
 
-    up_url: URL = attrs.field(converter=convert_url, metadata={"index": True})
+    up_url: URL = attrs.field(metadata={"index": True})
 
     up_rel: UpRelType = UpRelType.Default
     node_type: AnnotationType = AnnotationType.Default
