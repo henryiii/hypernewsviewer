@@ -105,7 +105,7 @@ def structure_from_utc(obj: str, cls: type[T]) -> T:
         for name in (set(fields) & set(info))
     }
 
-    for name in (x for x in fields if "url" in x):
+    for name in (x for x in conv_obj if "url" in x):
         conv_obj[name] = convert_url(conv_obj[name])
 
     return cls(**conv_obj)
