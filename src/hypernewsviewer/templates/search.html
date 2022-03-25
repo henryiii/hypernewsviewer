@@ -11,11 +11,9 @@
 <body>
 
     {% include "partials/navigationbar.html" %}
-
     {% include "partials/readonly.html" %}
 
-
-    <form method="get" action="/HyperNews/CMS/search" enctype="application/x-www-form-urlencoded" class="form">
+    <form method="get" action="{{url_for('search')}}" enctype="application/x-www-form-urlencoded" class="form">
         <input maxlength="200" value="" size="32" type="text" name="query" />
 
         <input value="Search!" type="submit" name="submit" /><br>
@@ -157,9 +155,10 @@
             <option value="2015">2015</option>
             <option value="2014">2014</option>
         </select>
-
     </form>
     <hr>
+
+    Search not yet implemented.
 </body>
 
 </html>

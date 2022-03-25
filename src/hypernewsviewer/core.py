@@ -181,3 +181,11 @@ def get_cindex() -> str:
         a: list(b) for a, b in groupby(sorted_forums, lambda x: x.categories)
     }
     return render_template("cindex.html", groups=grouped_forums, categories=categories)
+
+@app.route("/search")
+def search() -> str:
+    results = []
+    if request.args:
+        pass # Compute search results here
+
+    return render_template("search.html", results=results)
