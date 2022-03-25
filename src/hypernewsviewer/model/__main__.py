@@ -286,28 +286,30 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
     ) as session:
 
         db_out.execute(
-            "CREATE VIRTUAL TABLE fulltext USING FTS5(forum UNINDEXED, msg UNINDEXED, date UNINDEXED, title, from_, text);"
+            "CREATE VIRTUAL TABLE fulltext USING FTS5(responses UNINDEXED, date UNINDEXED, title, from_, text);"
         )
 
+        total = session.execute(
+            select(sqlalchemy.func.count(URCMessage.responses))
+        ).scalar_one()
         selection = select(
             URCMessage.responses, URCMessage.title, URCMessage.date, URCMessage.from_
         )
         result = session.execute(selection)
-        total = result.count()
-        for forum, msg, date, title, from_ in track(
+        for responses, date, title, from_ in track(
             result,
-            total=total,
+            total=int(total),
             description="Full text search",
         ):
             with open(
-                f"../allfiles/cms-hndocs/{forum}/{msg}-body.html", encoding="Latin-1"
+                f"{db_forums.root}{responses}-body.html", encoding="Latin-1"
             ) as f:
                 html_text = f.read()
             soup = BeautifulSoup(html_text, "html.parser")
             text = soup.get_text()
             db_out.execute(
-                "INSERT INTO fulltext VALUES (?, ?, ?, ?, ?, ?)",
-                (forum, msg, date, title, from_, text),
+                "INSERT INTO fulltext VALUES (?, ?, ?, ?, ?)",
+                (responses, date, title, from_, text),
             )
         db_out.commit()
 
