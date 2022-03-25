@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
     <title>Members</title>
-  </head>
-  <body>
+</head>
+
+<body>
 
     {% include "partials/navigationbar.html" %}
 
@@ -17,35 +19,40 @@
     {% endfor %}
     <hr>
 
-   <h3>Members {% if find %} with names or emails starting with a {{find}} {% endif %}</h3>
-   <p>Page {{page}} of {{num_pages}}<br/>Select page:
-       {%- for page in range(1, num_pages + 1) %}
-         {%- if page == current_page %}
-           <b>{{ page }}</b>
-         {%- else %}
-            <a href="{{ url_for('view_members', page=page, find=find) }}">{{ page }}</a>
-         {%- endif %}
-       {%- endfor %}
-   </p>
+    <h3>Members {% if find %} with names or emails starting with a {{find}} {% endif %}</h3>
+    <p>Page {{page}} of {{num_pages}}<br />Select page:
+        {%- for page in range(1, num_pages + 1) %}
+        {%- if page == current_page %}
+        <b>{{ page }}</b>
+        {%- else %}
+        <a href="{{ url_for('view_members', page=page, find=find) }}">{{ page }}</a>
+        {%- endif %}
+        {%- endfor %}
+    </p>
 
-   <p>
+    <p>
     <table border="1">
-    <tbody>
-    <tr>
-        <td valign="top"><b>Name</b></td>
-        <td valign="top"><b>Email</b> <!--<br>(click to write email)--></td>
-        <td valign="top"><b>User ID</b> <!--<br>(click for more info)--></td>
-    </tr>
-    {% for member in members %}
-    <tr>
-        <td valign="top"><a href="/view-members.pl?{{member.user_id}}">{{ member.name }}</a> &nbsp;</td>
-        <td valign="top"><a href="mailto:{{member.email}}">{{ member.email }}</a> &nbsp;</td>
-        <td valign="top"><a href="/view-members.pl?{{member.user_id}}"><b>{{ member.user_id }}</b></a> &nbsp;</td>
-    </tr>
-    {% endfor %}
-    </tbody>
+        <tbody>
+            <tr>
+                <td valign="top"><b>Name</b></td>
+                <td valign="top"><b>Email</b>
+                    <!--<br>(click to write email)-->
+                </td>
+                <td valign="top"><b>User ID</b>
+                    <!--<br>(click for more info)-->
+                </td>
+            </tr>
+            {% for member in members %}
+            <tr>
+                <td valign="top"><a href="/view-members.pl?{{member.user_id}}">{{ member.name }}</a> &nbsp;</td>
+                <td valign="top"><a href="mailto:{{member.email}}">{{ member.email }}</a> &nbsp;</td>
+                <td valign="top"><a href="/view-members.pl?{{member.user_id}}"><b>{{ member.user_id }}</b></a> &nbsp;</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     </p>
 
-  </body>
+</body>
+
 </html>

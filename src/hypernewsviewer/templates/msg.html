@@ -1,145 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
     <title>{{ urc.title }}</title>
-  </head>
-  <body>
+</head>
+
+<body>
 
     {% include "partials/navigationbar.html" %}
 
     <div class="pagetitle">
-      <table width="100%">
-        <tbody>
-          <tr>
-            {% if breadcrumbs | length > 1 %}
-              <td class="titleleft">Message: {{ urc.title }}</td>
-            {% else %}
-              <td class="titleleft">Forum: {{ urc.title }}</td>
-            {% endif %}
-            </td>
-            <td class="titleright">
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table width="100%">
+            <tbody>
+                <tr>
+                    {% if breadcrumbs | length > 1 %}
+                    <td class="titleleft">Message: {{ urc.title }}</td>
+                    {% else %}
+                    <td class="titleleft">Forum: {{ urc.title }}</td>
+                    {% endif %}
+                    </td>
+                    <td class="titleright">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     {% include "partials/readonly.html" %}
 
     {% if breadcrumbs | length > 1 %}
-      <ul class="breadcrumb">
+    <ul class="breadcrumb">
         {% for item in breadcrumbs %}
-          <li>
+        <li>
             <a href="{{ item.url }}">{{ item.name }}</a>
-          </li>
-          {%- endfor %}
-      </ul>
+        </li>
+        {%- endfor %}
+    </ul>
 
-      <table>
+    <table>
         <tbody>
-          <tr>
-            <td>
-              <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-                <tbody>
-                  <tr>
-                    <td style="BORDER:0">
-                      <nobr>
-                      <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
-                        &nbsp;Next-in-Thread
-                      </a>
-                      </nobr>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
+            <tr>
+                <td>
+                    <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                        <tbody>
+                            <tr>
+                                <td style="BORDER:0">
+                                    <nobr>
+                                        <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
+                                            &nbsp;Next-in-Thread
+                                        </a>
+                                    </nobr>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
 
-            <td>
-              <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-                <tbody>
-                  <tr>
-                    <td style="BORDER:0">
-                      <nobr>
-                      <a href="{{ urc.url }}?dir=nextResponse" class="commandlink">
-                        &nbsp;Next-in-Forum
-                      </a>
-                      </nobr>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
+                <td>
+                    <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                        <tbody>
+                            <tr>
+                                <td style="BORDER:0">
+                                    <nobr>
+                                        <a href="{{ urc.url }}?dir=nextResponse" class="commandlink">
+                                            &nbsp;Next-in-Forum
+                                        </a>
+                                    </nobr>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
 
-          </tr>
+            </tr>
         </tbody>
-      </table>
+    </table>
 
-      <!-- start header -->
-      <h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
-      <dl>
+    <!-- start header -->
+    <h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
+    <dl>
         <dd>
-          <nobr>
+            <nobr>
 
 
-          <font size="+1">
-            <i>Forum:</i>
-            <a href="/">
-              {{ forum_title }}</a>
-            <br>
-          </font>
+                <font size="+1">
+                    <i>Forum:</i>
+                    <a href="/">
+                        {{ forum_title }}</a>
+                    <br>
+                </font>
 
-          <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
-          <i>From:</i>
-          <a href="/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
-          &lt;<i>{{ urc.name }}</i>&gt; <br>
+                <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
+                <i>From:</i>
+                <a href="/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
+                &lt;<i>{{ urc.name }}</i>&gt; <br>
 
-          </nobr>
+            </nobr>
         </dd>
-      </dl>
+    </dl>
 
-      <!--  start message body  -->
-      <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
+    <!--  start message body  -->
+    <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
         <tbody>
-          <tr>
-            <td>
-              {{ body | safe }}
-            </td>
-          </tr>
+            <tr>
+                <td>
+                    {{ body | safe }}
+                </td>
+            </tr>
         </tbody>
-      </table>
-      <!--  end message body -->
+    </table>
+    <!--  end message body -->
     {% else %}
-      <div>
+    <div>
         {{ body | safe }}
-      </div>
-      <hr size="5">
+    </div>
+    <hr size="5">
     {% endif %}
 
     {% if replies -%}
-      <div class="listing">
+    <div class="listing">
         <ol>
-          {% for item in replies[::-1] %}
+            {% for item in replies[::-1] %}
             <li value="{{ item.msg.num }}">
-              <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
-              <a href="{{item.url}}">
-                {{ item.msg.title }}
-              </a>
-              <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
-              {%- if item.entries > 0 -%}
-              <ul> <li> {{ item.entries | pluralize("reply") }} </li> </ul>
-              {%- endif -%}
+                <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
+                <a href="{{item.url}}">
+                    {{ item.msg.title }}
+                </a>
+                <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
+                {%- if item.entries > 0 -%}
+                <ul>
+                    <li> {{ item.entries | pluralize("reply") }} </li>
+                </ul>
+                {%- endif -%}
             </li>
             {%- endfor %}
         </ol>
-      </div>
+    </div>
     {% endif %}
 
     <details>
-      <summary>Click to see raw info</summary>
-      <pre>{{ urc.as_simple_dict() | tojson(indent=2) }}</pre>
+        <summary>Click to see raw info</summary>
+        <pre>{{ urc.as_simple_dict() | tojson(indent=2) }}</pre>
     </details>
-  </body>
+</body>
+
 </html>

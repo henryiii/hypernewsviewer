@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
     <title>Forums by Time Order</title>
-  </head>
-  <body>
+</head>
+
+<body>
 
     {% include "partials/navigationbar.html" %}
     {% include "partials/readonly.html" %}
@@ -18,14 +20,15 @@
     <hr>
 
     <dd>
-    {% for forum in forums %}
-      <dt>
-          <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
-          <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
-      </dt>
+        {% for forum in forums %}
+    <dt>
+        <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
+        <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
+    </dt>
     {% endfor %}
     </dd>
 
     {% include "partials/footer.html" %}
-    </body>
+</body>
+
 </html>

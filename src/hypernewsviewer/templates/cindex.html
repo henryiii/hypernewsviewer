@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
     <title>Forums by Category</title>
-  </head>
-  <body>
+</head>
+
+<body>
 
     {% include "partials/navigationbar.html" %}
     {% include "partials/readonly.html" %}
@@ -18,9 +20,10 @@
         {% for forum in forums %}
         <div class="categoryforum"><a class="catlink" href="{{ forum.url }}">{{ forum.title }}</a></div>
         {% endfor %}
-        </div>
-        {% endfor %}
+    </div>
+    {% endfor %}
 
     {% include "partials/footer.html" %}
-    </body>
+</body>
+
 </html>

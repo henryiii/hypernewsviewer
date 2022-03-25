@@ -62,3 +62,12 @@ repos:
     - flask
     - inflection
     - rich
+
+- repo: local
+  hooks:
+  - id: beautify
+    name: beautify
+    language: node
+    entry: js-beautify
+    types_or: [html]
+    additional_dependencies: [js-beautify]
