@@ -1,193 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "pages/base.html" %}
+{% block title %}CMS Hypernews{% endblock %}
 
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
-    <title>CMS Hypernews</title>
-</head>
+{% from 'macros/banner.html' import banner %}
+{% block banner %}
+{{ banner('Welcome to the CMS HyperNews System') }}
+{% endblock %}
 
-<body>
+{% block content %}
+<br>
+Welcome to the CMS HyperNews.
+<p>
+    HyperNews is a discussion management system providing both the functionality
+    of mailing list systems as well as the web interface of web forums.
+    Discussions are organized into forums and, depending on the configuration,
+    each forum may have an email gateway.
+<p>
 
-    <div class="pagetitle">
-        <table width=100%>
-            <tr>
-                <td class="titleleft">Welcome to the CMS HyperNews System
-    </div>
-    </td>
-    </td>
-    <td class="titleright"></td>
-    </tr>
-    </table>
-    </div>
+    This site uses HyperNewsViewer, based on the
+    <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A> system,
+    version 1.11-slac-70b. See the
+    <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A> webpage
+    for lists of forums at other HyperNews sites.
+<p>
 
-    {% include "partials/navigationbar.html" %}
-    {% include "partials/readonly.html" %}
-
-    <br>
-    Welcome to the CMS HyperNews.
-    <p>
-        HyperNews is a discussion management system providing both the functionality
-        of mailing list systems as well as the web interface of web forums.
-        Discussions are organized into forums and, depending on the configuration,
-        each forum may have an email gateway.
-    <p>
-
-        This site uses HyperNewsViewer, based on the
-        <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A> system,
-        version 1.11-slac-70b. See the
-        <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A> webpage
-        for lists of forums at other HyperNews sites.
-    <p>
-
-        Email <a HREF="mailto:hn-cms-admin@cern.ch"><B>hn-cms-admin@cern.ch</B></A> if you have problems
-        using this HyperNews site.
-        You are welcome to try out HyperNews on the
-        <A class="stablelink" HREF="/HyperNews/CMS/get/hnTest.html">Test Forum</a>.
-    <P>
+    Email <a HREF="mailto:hn-cms-admin@cern.ch"><B>hn-cms-admin@cern.ch</B></A> if you have problems
+    using this HyperNews site.
+    You are welcome to try out HyperNews on the
+    <A class="stablelink" HREF="/HyperNews/CMS/get/hnTest.html">Test Forum</a>.
+<P>
 
 
-    <p>Table of Contents</p>
+<p>Table of Contents</p>
+<ul>
+    <li> <a href="#introduction"> Introduction</a> </li>
+
+    <li> <a href="#services"> HyperNews services </a></li>
     <ul>
-        <li> <a href="#introduction"> Introduction</a> </li>
+        <li> <a href="#listServices"> List of services </a></li>
 
-        <li> <a href="#services"> HyperNews services </a></li>
-        <ul>
-            <li> <a href="#listServices"> List of services </a></li>
+        <li> <a href="#attachments"> Attachments </a></li>
+        <li> <a href="#selectSeveralItems"> Selecting several items from a menu </a> </li>
+        <li> <a href="#testHN"> Testing HN </a></li>
 
-            <li> <a href="#attachments"> Attachments </a></li>
-            <li> <a href="#selectSeveralItems"> Selecting several items from a menu </a> </li>
-            <li> <a href="#testHN"> Testing HN </a></li>
-
-        </ul>
-        <li> <a href="#savannah"> Interaction of HN and Savannah</a></li>
-        <li> <a href="#problemsImprovements"> Report problems or suggest improvements </a></li>
-        <li> <a href="#seeAlso">See also </a></li>
     </ul>
+    <li> <a href="#savannah"> Interaction of HN and Savannah</a></li>
+    <li> <a href="#problemsImprovements"> Report problems or suggest improvements </a></li>
+    <li> <a href="#seeAlso">See also </a></li>
+</ul>
 
-    <h3 id="introduction" title="id=introduction">Introduction</h3>
-    <p>HyperNews (HN) is a discussion management system, which bridges the use of
-        e-mail and forums. E-mail and forums corresponds to the &quot;push&quot;
-        and &quot;pull&quot; modes of HN, respectively: The user
-        may subscribe to forums to be informed by e-mail or look at the forums of his
-        choice via the web interface.
-        He may reply by e-mail or through the web interface. Most users work in a
-        mixture of &quot;push&quot; and &quot;pull&quot; mode, subscribing to the
-        Forums, which are close to their work and checking regularly recent postings
-        for other Forums. But you may as well work in &quot;pull&quot; mode only,
-        e.g. checking daily the postings of the last day to keep informed of ongoing
-        announcements and discussions.
-    </p>
+<h3 id="introduction" title="id=introduction">Introduction</h3>
+<p>HyperNews (HN) is a discussion management system, which bridges the use of
+    e-mail and forums. E-mail and forums corresponds to the &quot;push&quot;
+    and &quot;pull&quot; modes of HN, respectively: The user
+    may subscribe to forums to be informed by e-mail or look at the forums of his
+    choice via the web interface.
+    He may reply by e-mail or through the web interface. Most users work in a
+    mixture of &quot;push&quot; and &quot;pull&quot; mode, subscribing to the
+    Forums, which are close to their work and checking regularly recent postings
+    for other Forums. But you may as well work in &quot;pull&quot; mode only,
+    e.g. checking daily the postings of the last day to keep informed of ongoing
+    announcements and discussions.
+</p>
 
-    <p>Each Forum may be associated to a mail gate. This depends on the installation.
-        At CERN SIMBA2 lists are used with addresses like hn-atlas-&lt;forumName&gt;@cern.ch
-        or hn-cms-&lt;forumName&gt;@cern.ch.
-        To avoid spam, do not list this address explicitely on a public web page, point instead to the Forum address
-        e.g. <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a> Forum.
-        If you have to use the email address in a web page, use only the
-        &quot;disguised&quot; form, e.g.
-        <code>hn-atlas-Xxx@cernNOSPAM.ch</code>, where <code>Xxx</code> is specific to the Forum.
-    </p>
+<p>Each Forum may be associated to a mail gate. This depends on the installation.
+    At CERN SIMBA2 lists are used with addresses like hn-atlas-&lt;forumName&gt;@cern.ch
+    or hn-cms-&lt;forumName&gt;@cern.ch.
+    To avoid spam, do not list this address explicitely on a public web page, point instead to the Forum address
+    e.g. <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a> Forum.
+    If you have to use the email address in a web page, use only the
+    &quot;disguised&quot; form, e.g.
+    <code>hn-atlas-Xxx@cernNOSPAM.ch</code>, where <code>Xxx</code> is specific to the Forum.
+</p>
 
-    <p>Discussions are grouped into Forums and threads, and Forums are in turn grouped into
-        Categories. A search engine allows search at different levels, e.g. using the Forum Title or
-        the content of the postings. </p>
+<p>Discussions are grouped into Forums and threads, and Forums are in turn grouped into
+    Categories. A search engine allows search at different levels, e.g. using the Forum Title or
+    the content of the postings. </p>
 
-    <p>Each Forum and each posting corresponds to a URL; use this URL for refering to a Forum or posting.
-        More details on HN can be found in
-        <a href="./overViewUsers.html#seeAlso">Section &quot;See also&quot;</a>.
-    </p>
+<p>Each Forum and each posting corresponds to a URL; use this URL for refering to a Forum or posting.
+    More details on HN can be found in
+    <a href="./overViewUsers.html#seeAlso">Section &quot;See also&quot;</a>.
+</p>
 
-    <h3 id="services" title="id=services">HyperNews services</h3>
-    <p>All HN services are accessible from the header navigation bar. They are listed below
-        together with short descriptions. Longer explanations may be found on the service's
-        &quot;Help Page&quot;; clicking on the help box under the page's navigation bar,
-        help is provided in a collapsable window. </p>
-    <h4 id="listServices" title="id=listServices"> List of services</h4>
-    <ul>
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/cindex">Forums by Category</a>:
-            Complete list of all Forums ordered by Category.
-            Click on the Forum Title to see its postings or add a new posting.
-            For tests of HN use the &quot;HyperNews Test Forum&quot; (Category: HyperNews).
-        </li>
+<h3 id="services" title="id=services">HyperNews services</h3>
+<p>All HN services are accessible from the header navigation bar. They are listed below
+    together with short descriptions. Longer explanations may be found on the service's
+    &quot;Help Page&quot;; clicking on the help box under the page's navigation bar,
+    help is provided in a collapsable window. </p>
+<h4 id="listServices" title="id=listServices"> List of services</h4>
+<ul>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/cindex">Forums by Category</a>:
+        Complete list of all Forums ordered by Category.
+        Click on the Forum Title to see its postings or add a new posting.
+        For tests of HN use the &quot;HyperNews Test Forum&quot; (Category: HyperNews).
+    </li>
 
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/index">Forums by Time Order</a>:
-            List of Forums in order of the time of the last posting.
-            You can directly add a new posting from this page.
-        </li>
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/recent">Recent Postings</a>:
-            By default all Forums with activity during the last N days are listed.
-            You can choose the number N of days and the Forums and bookmark this choice for subsequent
-            reuse. The postings are listed without threading.
-        </li>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/index">Forums by Time Order</a>:
+        List of Forums in order of the time of the last posting.
+        You can directly add a new posting from this page.
+    </li>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/recent">Recent Postings</a>:
+        By default all Forums with activity during the last N days are listed.
+        You can choose the number N of days and the Forums and bookmark this choice for subsequent
+        reuse. The postings are listed without threading.
+    </li>
 
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/search">Search in Forums</a>: Various choices for Search are available: Subject/Body, URL, author and Forum; choice of time window; order in which the postings are shown.
-        </li>
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/SECURED/edit-member.pl">Member Info</a>:
-            Display of the information which you provided at subscription time or during later updates.
-            You can change here your password (even if you have forgotten the previous one).
-        </li>
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/view-members.pl">Members List</a>:
-            List of all members who registered for HyperNews on this installation (Name, e-mail addr, userId) .
-        </li>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/search">Search in Forums</a>: Various choices for Search are available: Subject/Body, URL, author and Forum; choice of time window; order in which the postings are shown.
+    </li>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/SECURED/edit-member.pl">Member Info</a>:
+        Display of the information which you provided at subscription time or during later updates.
+        You can change here your password (even if you have forgotten the previous one).
+    </li>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/view-members.pl">Members List</a>:
+        List of all members who registered for HyperNews on this installation (Name, e-mail addr, userId) .
+    </li>
 
-        <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/top.pl">Overview</a>:
-            This page.
-        </li>
-        <li> <a href="mailto:hn-cms-admin@cern.ch">Contact Admin</a>:
-            e-mail to the HN administrators
-        </li>
-    </ul>
+    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/top.pl">Overview</a>:
+        This page.
+    </li>
+    <li> <a href="mailto:hn-cms-admin@cern.ch">Contact Admin</a>:
+        e-mail to the HN administrators
+    </li>
+</ul>
 
-    <p>More details on selected items follow. </p>
+<p>More details on selected items follow. </p>
 
 
-    <h4 id="attachments" title="id=attachments"> Attachments </h4>
-    <p> At present attachments to postings are under test and should become available soon (Nov 2006).
-        The recommendation is, to make use of HN attachments only if other applications are not appropriate:
-        use instead CDS for permanent and longer documents,
-        use the agenda system (indico) for material related to meetings and
-        use the TWiki for collaborative writing of documents.
-    </p>
+<h4 id="attachments" title="id=attachments"> Attachments </h4>
+<p> At present attachments to postings are under test and should become available soon (Nov 2006).
+    The recommendation is, to make use of HN attachments only if other applications are not appropriate:
+    use instead CDS for permanent and longer documents,
+    use the agenda system (indico) for material related to meetings and
+    use the TWiki for collaborative writing of documents.
+</p>
 
-    <h4 id="selectSeveralItems" title="id=selectSeveralItems"> Selecting several items from a menu </h4>
-    <p>If you are selecting items from a menu and want to select more than one
-        which are perhaps non-adjacent in the menu,
-        there is often a key combination for the browser that allows you to do this,
-        e.g. ctrl-click (on linux, X11) or option-click (on MacOSX).
-        Shift-click typically allows you to select adjacent ranges of items from the menu.
-        The exact keys may depend on the browser and operating system.
-    </p>
+<h4 id="selectSeveralItems" title="id=selectSeveralItems"> Selecting several items from a menu </h4>
+<p>If you are selecting items from a menu and want to select more than one
+    which are perhaps non-adjacent in the menu,
+    there is often a key combination for the browser that allows you to do this,
+    e.g. ctrl-click (on linux, X11) or option-click (on MacOSX).
+    Shift-click typically allows you to select adjacent ranges of items from the menu.
+    The exact keys may depend on the browser and operating system.
+</p>
 
-    <h4 id="testHN" title="id=testHN"> Testing HN</h4>
-    <p> For tests of HN there is a special Forum, the
-        &quot;<a class="stablelink" href="/HyperNews/Atlas/get/hnTest.html">
+<h4 id="testHN" title="id=testHN"> Testing HN</h4>
+<p> For tests of HN there is a special Forum, the
+    &quot;<a class="stablelink" href="/HyperNews/Atlas/get/hnTest.html">
 
-            HyperNews Test Forum</a>&quot; (Category HyperNews).
-        Use only this Forum if you want to
-        try out some features. From time to time all postings in this Forum will be deleted. </p>
+        HyperNews Test Forum</a>&quot; (Category HyperNews).
+    Use only this Forum if you want to
+    try out some features. From time to time all postings in this Forum will be deleted. </p>
 
-    <h3 id="problemsImprovements" title="id=problemsImprovements">Report problems or suggest improvements</h3>
-    <p>
-        If you have a problem with any aspect of HyperNews, please add a posting to the Forum
-        <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a>,
-        or contact the <a href="mailto:hn-cms-admin@cern.ch">HN administrators</a>. Please specify
-        which browser/version you are using and on which system.
-    </p>
+<h3 id="problemsImprovements" title="id=problemsImprovements">Report problems or suggest improvements</h3>
+<p>
+    If you have a problem with any aspect of HyperNews, please add a posting to the Forum
+    <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a>,
+    or contact the <a href="mailto:hn-cms-admin@cern.ch">HN administrators</a>. Please specify
+    which browser/version you are using and on which system.
+</p>
 
-    <p> Before sending a problem report or suggesting improvements you may want to check the
-        <a href="./hnProblemsTasks.html"> List of known HN problems and tasks</a>.
-    </p>
+<p> Before sending a problem report or suggesting improvements you may want to check the
+    <a href="./hnProblemsTasks.html"> List of known HN problems and tasks</a>.
+</p>
 
-    <h3 id="seeAlso" title="id=seeAlso"> See also</h3>
-    <ul>
-        <li> The <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A>, which was derived from an earlier HyperNews project which is no longer online.
-        <li> <a href="http://indico.cern.ch/contributionDisplay.py?contribId=298&sessionId=5&confId=048"> HyperNews</a>, Presentation at CHEP06, Douglas Smith, Terry Hung, Peter Elmer</li>
-    </ul>
+<h3 id="seeAlso" title="id=seeAlso"> See also</h3>
+<ul>
+    <li> The <A HREF="http://hypernews.slac.stanford.edu/">SLAC HyperNews</A>, which was derived from an earlier HyperNews project which is no longer online.
+    <li> <a href="http://indico.cern.ch/contributionDisplay.py?contribId=298&sessionId=5&confId=048"> HyperNews</a>, Presentation at CHEP06, Douglas Smith, Terry Hung, Peter Elmer</li>
+</ul>
 
-    {% include "partials/footer.html" %}
-
-</body>
-
-</html>
+{% endblock %}

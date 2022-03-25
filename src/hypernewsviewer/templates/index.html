@@ -1,34 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "pages/base.html" %}
+{% block title %}Forums by Time Order{% endblock %}
+{% block content %}
 
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
-    <title>Forums by Time Order</title>
-</head>
+<br>
+<strong>Click on your Forum of choice.</strong>
+<br>
 
-<body>
+<hr>
 
-    {% include "partials/navigationbar.html" %}
-    {% include "partials/readonly.html" %}
+<dd>
+    {% for forum in forums %}
+<dt>
+    <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
+    <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
+</dt>
+{% endfor %}
+</dd>
 
-    <br>
-    <strong>Click on your Forum of choice.</strong>
-    <br>
-
-    <hr>
-
-    <dd>
-        {% for forum in forums %}
-    <dt>
-        <img alt="*" src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/redball.gif" width="14" height="14">
-        <b><a href="{{ forum.url }}">{{ forum.title }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
-    </dt>
-    {% endfor %}
-    </dd>
-
-    {% include "partials/footer.html" %}
-</body>
-
-</html>
+{% endblock %}

@@ -68,6 +68,6 @@ repos:
   - id: beautify
     name: beautify
     language: node
-    entry: js-beautify
+    entry: js-beautify --replace --type=html --end-with-newline
     types_or: [html]
     additional_dependencies: [js-beautify]

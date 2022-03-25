@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+</head>
+
+<body>
+    {% include "partials/navigationbar.html" %}
+
+    {% block banner %}{% endblock %}
+
+    {% include "partials/readonly.html" %}
+
+    {% block content %}{% endblock %}
+
+    {% include "partials/footer.html" %}
+</body>
+
+</html>

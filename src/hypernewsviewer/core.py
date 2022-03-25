@@ -182,10 +182,11 @@ def get_cindex() -> str:
     }
     return render_template("cindex.html", groups=grouped_forums, categories=categories)
 
+
 @app.route("/search")
 def search() -> str:
     results = []
     if request.args:
-        pass # Compute search results here
+        pass  # Compute search results here
 
     return render_template("search.html", results=results)

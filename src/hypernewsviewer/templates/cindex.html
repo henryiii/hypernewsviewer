@@ -1,29 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "pages/base.html" %}
+{% block title %}Forums by Category{% endblock %}
+{% block content %}
 
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
-    <title>Forums by Category</title>
-</head>
+{% for cat, forums in groups.items() %}
 
-<body>
-
-    {% include "partials/navigationbar.html" %}
-    {% include "partials/readonly.html" %}
-
-    {% for cat, forums in groups.items() %}
-
-    <div class="mycategory">
-        <div class="categoryheader"><a name="{{ cat }}"></a>Category: {{ categories[cat] }}</div>
-        {% for forum in forums %}
-        <div class="categoryforum"><a class="catlink" href="{{ forum.url }}">{{ forum.title }}</a></div>
-        {% endfor %}
-    </div>
+<div class="mycategory">
+    <div class="categoryheader"><a name="{{ cat }}"></a>Category: {{ categories[cat] }}</div>
+    {% for forum in forums %}
+    <div class="categoryforum"><a class="catlink" href="{{ forum.url }}">{{ forum.title }}</a></div>
     {% endfor %}
+</div>
+{% endfor %}
 
-    {% include "partials/footer.html" %}
-</body>
-
-</html>
+{% endblock %}

@@ -1,150 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "pages/base.html" %}
+{% block title %}{{ urc.title }}{% endblock %}
 
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
-    <title>{{ urc.title }}</title>
-</head>
+{% from 'macros/banner.html' import banner %}
+{% block banner %}
+{% if breadcrumbs | length > 1 %}
+{{ banner('Message: ' + urc.title) }}
+{% else %}
+{{ banner('Forum: ' + urc.title) }}
+{% endif %}
+{% endblock %}
 
-<body>
+{% block content %}
+{% if breadcrumbs | length > 1 %}
+<ul class="breadcrumb">
+    {% for item in breadcrumbs %}
+    <li>
+        <a href="{{ item.url }}">{{ item.name }}</a>
+    </li>
+    {%- endfor %}
+</ul>
 
-    {% include "partials/navigationbar.html" %}
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                    <tbody>
+                        <tr>
+                            <td style="BORDER:0">
+                                <nobr>
+                                    <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
+                                        &nbsp;Next-in-Thread
+                                    </a>
+                                </nobr>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
 
-    <div class="pagetitle">
-        <table width="100%">
-            <tbody>
-                <tr>
-                    {% if breadcrumbs | length > 1 %}
-                    <td class="titleleft">Message: {{ urc.title }}</td>
-                    {% else %}
-                    <td class="titleleft">Forum: {{ urc.title }}</td>
-                    {% endif %}
-                    </td>
-                    <td class="titleright">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <td>
+                <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
+                    <tbody>
+                        <tr>
+                            <td style="BORDER:0">
+                                <nobr>
+                                    <a href="{{ urc.url }}?dir=nextResponse" class="commandlink">
+                                        &nbsp;Next-in-Forum
+                                    </a>
+                                </nobr>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
 
-    {% include "partials/readonly.html" %}
+        </tr>
+    </tbody>
+</table>
 
-    {% if breadcrumbs | length > 1 %}
-    <ul class="breadcrumb">
-        {% for item in breadcrumbs %}
-        <li>
-            <a href="{{ item.url }}">{{ item.name }}</a>
+<!-- start header -->
+<h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
+<dl>
+    <dd>
+        <nobr>
+
+
+            <font size="+1">
+                <i>Forum:</i>
+                <a href="/">
+                    {{ forum_title }}</a>
+                <br>
+            </font>
+
+            <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
+            <i>From:</i>
+            <a href="/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
+            &lt;<i>{{ urc.name }}</i>&gt; <br>
+
+        </nobr>
+    </dd>
+</dl>
+
+<!--  start message body  -->
+<table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
+    <tbody>
+        <tr>
+            <td>
+                {{ body | safe }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+<!--  end message body -->
+{% else %}
+<div>
+    {{ body | safe }}
+</div>
+<hr size="5">
+{% endif %}
+
+{% if replies -%}
+<div class="listing">
+    <ol>
+        {% for item in replies[::-1] %}
+        <li value="{{ item.msg.num }}">
+            <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
+            <a href="{{item.url}}">
+                {{ item.msg.title }}
+            </a>
+            <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
+            {%- if item.entries > 0 -%}
+            <ul>
+                <li> {{ item.entries | pluralize("reply") }} </li>
+            </ul>
+            {%- endif -%}
         </li>
         {%- endfor %}
-    </ul>
+    </ol>
+</div>
+{% endif %}
 
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-                        <tbody>
-                            <tr>
-                                <td style="BORDER:0">
-                                    <nobr>
-                                        <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
-                                            &nbsp;Next-in-Thread
-                                        </a>
-                                    </nobr>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-
-                <td>
-                    <table style="border-style:outset" border="0" cellpadding="0" cellspacing="0" height="17">
-                        <tbody>
-                            <tr>
-                                <td style="BORDER:0">
-                                    <nobr>
-                                        <a href="{{ urc.url }}?dir=nextResponse" class="commandlink">
-                                            &nbsp;Next-in-Forum
-                                        </a>
-                                    </nobr>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- start header -->
-    <h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
-    <dl>
-        <dd>
-            <nobr>
-
-
-                <font size="+1">
-                    <i>Forum:</i>
-                    <a href="/">
-                        {{ forum_title }}</a>
-                    <br>
-                </font>
-
-                <i>Date:</i> {{ urc.date.strftime('%d %b, %Y') }} <br>
-                <i>From:</i>
-                <a href="/view-member.pl?{{ urc.from_ }}">{{ urc.name }}</a>
-                &lt;<i>{{ urc.name }}</i>&gt; <br>
-
-            </nobr>
-        </dd>
-    </dl>
-
-    <!--  start message body  -->
-    <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
-        <tbody>
-            <tr>
-                <td>
-                    {{ body | safe }}
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <!--  end message body -->
-    {% else %}
-    <div>
-        {{ body | safe }}
-    </div>
-    <hr size="5">
-    {% endif %}
-
-    {% if replies -%}
-    <div class="listing">
-        <ol>
-            {% for item in replies[::-1] %}
-            <li value="{{ item.msg.num }}">
-                <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
-                <a href="{{item.url}}">
-                    {{ item.msg.title }}
-                </a>
-                <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
-                {%- if item.entries > 0 -%}
-                <ul>
-                    <li> {{ item.entries | pluralize("reply") }} </li>
-                </ul>
-                {%- endif -%}
-            </li>
-            {%- endfor %}
-        </ol>
-    </div>
-    {% endif %}
-
-    <details>
-        <summary>Click to see raw info</summary>
-        <pre>{{ urc.as_simple_dict() | tojson(indent=2) }}</pre>
-    </details>
-</body>
-
-</html>
+<details>
+    <summary>Click to see raw info</summary>
+    <pre>{{ urc }}</pre>
+</details>
+{% endblock %}
