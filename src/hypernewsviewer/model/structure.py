@@ -169,9 +169,15 @@ class DBForums(AllForums):
             )
 
     def get_num_msgs(self, forum: str, path: str, *, recursive: bool = False) -> int:
-        selection = select(sqlalchemy.func.count()).where(
+        selection = select(sqlalchemy.func.count(URCMessage.responses)).where(
             self._get_msg_listing(forum, path, recursive)
         )
+        with Session(self.engine) as session:
+            return session.execute(selection).scalar()  # type: ignore[no-any-return]
+
+    # Only defined for DBForums (too slow for AllForums)
+    def get_total_msgs(self) -> int:
+        selection = select(sqlalchemy.func.count(URCMessage.responses))
         with Session(self.engine) as session:
             return session.execute(selection).scalar()  # type: ignore[no-any-return]
 

@@ -1,5 +1,5 @@
 {% extends "pages/base.html" %}
-{% block title %}{{ urc.title }}{% endblock %}
+{% block title %}{{ urc.title | safe }}{% endblock %}
 
 {% from 'macros/banner.html' import banner %}
 {% block banner %}
@@ -60,7 +60,7 @@
 </table>
 
 <!-- start header -->
-<h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title }}</h2>
+<h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title | safe }}</h2>
 <dl>
     <dd>
         <nobr>

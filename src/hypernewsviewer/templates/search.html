@@ -24,8 +24,19 @@
     </select>
     <label><input type="checkbox" name="reverse" value="on" />Reverse Sort</label>
 
+    <br>Limit to:
+    <label><input type="radio" name="dr_o" value="12" checked="checked" />All</label>
+    <label><input type="radio" name="dr_o" value="1" />Today</label>
+    <label><input type="radio" name="dr_o" value="2" />Yesterday</label>
+    <label><input type="radio" name="dr_o" value="4" />This&nbsp;Week</label>
+    <label><input type="radio" name="dr_o" value="5" />Last&nbsp;Week</label>
+    <label><input type="radio" name="dr_o" value="6" />Last&nbsp;90&nbsp;Days</label>
+    <label><input type="radio" name="dr_o" value="7" />This&nbsp;Month</label>
+    <label><input type="radio" name="dr_o" value="8" />Last&nbsp;Month</label>
 
-    <br>Limit to: <label><input type="radio" name="dr_o" value="12" checked="checked" />All</label> <label><input type="radio" name="dr_o" value="1" />Today</label> <label><input type="radio" name="dr_o" value="2" />Yesterday</label> <label><input type="radio" name="dr_o" value="4" />This&nbsp;Week</label> <label><input type="radio" name="dr_o" value="5" />Last&nbsp;Week</label> <label><input type="radio" name="dr_o" value="6" />Last&nbsp;90&nbsp;Days</label> <label><input type="radio" name="dr_o" value="7" />This&nbsp;Month</label> <label><input type="radio" name="dr_o" value="8" />Last&nbsp;Month</label><br><label><input type="radio" name="dr_o" value="13" />Select&nbsp;Date&nbsp;Range</label> <select name="dr_s_mon">
+    <br>
+    <label><input type="radio" name="dr_o" value="13" />Select&nbsp;Date&nbsp;Range</label>
+    <select name="dr_s_mon">
         <option value="1">Jan</option>
         <option value="2">Feb</option>
         <option selected="selected" value="3">Mar</option>
@@ -147,6 +158,16 @@
 </form>
 <hr>
 
-Search not yet implemented.
+<p>
+    {{ info_msg }}
+</p>
+
+{% for row in results %}
+<a href="/get{{ row[0] }}">{{ row[2] | safe }}</a> {{ row[1] }} - by <a href="/view-member.pl?{{ row[3] }}">{{ row[3] }}</a> <br />
+<p>
+    {{ row[4] | safe }}
+</p>
+<hr>
+{% endfor %}
 
 {% endblock %}

@@ -35,9 +35,9 @@
         </tr>
         {% for member in members %}
         <tr>
-            <td valign="top"><a href="/view-members.pl?{{member.user_id}}">{{ member.name }}</a> &nbsp;</td>
+            <td valign="top"><a href="/view-member.pl?{{member.user_id}}">{{ member.name }}</a> &nbsp;</td>
             <td valign="top"><a href="mailto:{{member.email}}">{{ member.email }}</a> &nbsp;</td>
-            <td valign="top"><a href="/view-members.pl?{{member.user_id}}"><b>{{ member.user_id }}</b></a> &nbsp;</td>
+            <td valign="top"><a href="/view-member.pl?{{member.user_id}}"><b>{{ member.user_id }}</b></a> &nbsp;</td>
         </tr>
         {% endfor %}
     </tbody>

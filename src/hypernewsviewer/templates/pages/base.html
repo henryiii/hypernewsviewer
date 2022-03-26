@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/breadcrumb.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title required %}{% endblock %}</title>
     {% endblock %}
 </head>
 
@@ -17,7 +17,7 @@
 
     {% include "partials/readonly.html" %}
 
-    {% block content %}{% endblock %}
+    {% block content required %}{% endblock %}
 
     {% include "partials/footer.html" %}
 </body>

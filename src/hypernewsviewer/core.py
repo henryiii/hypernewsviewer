@@ -6,6 +6,8 @@ from itertools import accumulate, groupby
 from pathlib import Path
 from typing import Any
 
+import attrs
+import sqlalchemy
 from flask import (
     Flask,
     g,
@@ -25,6 +27,12 @@ DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
 HNDATABASE = os.environ.get("HNDATABASE", None)
 
+HNFTSDATABASE = os.environ.get("HNFTSDATABASE", None)
+if HNFTSDATABASE:
+    db_file = Path(HNFTSDATABASE).resolve()
+    db_uri = f"sqlite:///file:{db_file}?mode=ro&uri=true"
+
+
 DATA_ROOT = Path(HNFILES).resolve()
 DB_ROOT = Path(HNDATABASE).resolve() if HNDATABASE else None
 
@@ -36,6 +44,14 @@ def get_forums() -> AllForums | DBForums:
         g._forums = connect_forums(DATA_ROOT, DB_ROOT)
         forums = g._forums.__enter__()  # pylint: disable=protected-access
     return forums
+
+
+def get_search_engine() -> AllForums | DBForums:
+    if getattr(g, "_search_engine", None) is None:
+        # pylint: disable-next=protected-access,assigning-non-slot
+        g._search_engine = sqlalchemy.create_engine(db_uri, future=True)
+    # pylint: disable-next=protected-access
+    return g._search_engine
 
 
 @app.teardown_appcontext
@@ -116,10 +132,9 @@ def view_member() -> str:
     forums = get_forums()
     member = forums.get_member(answer)
 
-    header = """<p><a href="/">home</a></p>\n"""
-    return header + "<br/>\n".join(
-        f"{k}: {v}" for k, v in member.as_simple_dict().items() if k != "password"
-    )
+    member_dict = {k: v for k, v in attrs.asdict(member).items() if k != "password"}
+
+    return render_template("member.html", member=member_dict)
 
 
 @app.route("/view-members.pl")
@@ -185,8 +200,40 @@ def get_cindex() -> str:
 
 @app.route("/search")
 def search() -> str:
-    results = []
-    if request.args:
-        pass  # Compute search results here
+    if HNFTSDATABASE is None:
+        return render_template(
+            "search.html", results=[], info_msg="No database configured"
+        )
 
-    return render_template("search.html", results=results)
+    search_engine = get_search_engine()
+
+    # query=test,
+    # submit=Search!,
+    # metaname=swishdefault,
+    # sort=swishrank,
+    # dr_o=12,
+    # dr_s_mon=3,
+    # dr_s_day=25,
+    # dr_s_year=2022,
+    # dr_e_mon=3,
+    # dr_e_day=25,
+    # dr_e_year=2022
+
+    if request.args:
+        info_msg = f"Displaying results for: {request.args['query']} (max 50)"
+        with search_engine.connect() as con:
+            results_iter = con.execute(
+                sqlalchemy.text(
+                    "SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', '...', 24) FROM fulltext WHERE fulltext MATCH :query ORDER BY rank LIMIT 50"
+                ),
+                {"query": request.args["query"]},
+            )
+            results = list(results_iter)
+
+    else:
+        forums = get_forums()
+        size = forums.get_total_msgs()
+        info_msg = f"Total number of messages to search: {size:,}"
+        results = []
+
+    return render_template("search.html", results=results, info_msg=info_msg)
