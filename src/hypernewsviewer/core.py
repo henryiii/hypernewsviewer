@@ -230,10 +230,9 @@ def search() -> str:
         with search_engine.connect() as con:
             results_iter = con.execute(
                 sqlalchemy.text(
-                    "SELECT * FROM ("
-                    "  SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64) "
-                    "  FROM fulltext WHERE fulltext=:query ORDER BY rank"
-                    ") WHERE date BETWEEN :start AND :stop LIMIT 50 OFFSET :offset;"
+                    "SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64) "
+                    "FROM fulltext WHERE fulltext=:query AND date BETWEEN :start AND :stop ORDER BY rank "
+                    "LIMIT 50 OFFSET :offset;"
                 ),
                 {
                     "query": query,
