@@ -13,7 +13,7 @@
 <hr>
 
 <p>
-    {{ info_msg }}
+    {% if query %}{{ info_msg }}{% else %}{{ info_msg | safe }}{% endif %}
 </p>
 
 {% for row in results %}

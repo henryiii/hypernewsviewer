@@ -223,7 +223,7 @@ def search() -> str:
     start = request.args.get("start", "2005-12-01")
     stop = request.args.get("stop", "2022-12-31")
     page = int(request.args.get("page", "1"))
-    query = request.args.get("query")
+    query = request.args.get("query", "")
 
     if query:
         info_msg = f"Displaying results for: {query!r} (max 50 per page, page {page})"
