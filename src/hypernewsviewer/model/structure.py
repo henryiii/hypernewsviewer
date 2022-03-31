@@ -175,12 +175,6 @@ class DBForums(AllForums):
         with Session(self.engine) as session:
             return session.execute(selection).scalar()  # type: ignore[no-any-return]
 
-    # Only defined for DBForums (too slow for AllForums)
-    def get_total_msgs(self) -> int:
-        selection = select(sqlalchemy.func.count(URCMessage.responses))
-        with Session(self.engine) as session:
-            return session.execute(selection).scalar()  # type: ignore[no-any-return]
-
     # get_html does not use the database
 
     def get_member(self, user_id: str) -> Member:

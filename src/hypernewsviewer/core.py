@@ -247,11 +247,7 @@ def search() -> str:
         search_engine.echo = False
 
     else:
-        global total_msgs  # pylint: disable=global-statement
-        if total_msgs is None:
-            forums = get_forums()
-            total_msgs = forums.get_total_msgs()
-        info_msg = f"Total number of messages to search: {total_msgs:,}"
+        info_msg = 'Search for a forum post. See <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a> for details on the syntax.'
         results = []
 
     return render_template(
