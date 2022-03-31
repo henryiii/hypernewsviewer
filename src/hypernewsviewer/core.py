@@ -220,14 +220,13 @@ def search() -> str:
     # dr_e_day=25,
     # dr_e_year=2022
 
-    current = ""
-    if request.args:
-        query = request.args["query"]
-        start = request.args.get("start", "2005-12-01")
-        stop = request.args.get("stop", "2022-12-31")
-        page = int(request.args.get("page", "1"))
-        info_msg = f"Displaying results for: {current} (max 50 per page, page {page})"
-        search_engine.echo = True
+    start = request.args.get("start", "2005-12-01")
+    stop = request.args.get("stop", "2022-12-31")
+    page = int(request.args.get("page", "1"))
+    query = request.args.get("query")
+
+    if query:
+        info_msg = f"Displaying results for: {query!r} (max 50 per page, page {page})"
         with search_engine.connect() as con:
             results_iter = con.execute(
                 sqlalchemy.text(
@@ -244,7 +243,6 @@ def search() -> str:
                 },
             )
             results = list(results_iter)
-        search_engine.echo = False
 
     else:
         info_msg = 'Search for a forum post. See <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a> for details on the syntax.'
