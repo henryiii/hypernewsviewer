@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import os
+import time
 from itertools import accumulate, groupby
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,7 @@ from flask import (
     send_from_directory,
     url_for,
 )
+from sqlalchemy import column, select, table, text
 from werkzeug.wrappers import Response
 
 from .model.structure import AllForums, DBForums, connect_forums
@@ -36,6 +38,22 @@ if HNFTSDATABASE:
 
 DATA_ROOT = Path(HNFILES).resolve()
 DB_ROOT = Path(HNDATABASE).resolve() if HNDATABASE else None
+
+FULLTEXT = table(
+    "fulltext",
+    column("responses"),
+    column("title"),
+    column("date"),
+    column("from_"),
+    column("rank"),
+)
+FTS_QUERY = select(
+    FULLTEXT.c.responses,
+    FULLTEXT.c.title,
+    FULLTEXT.c.date,
+    FULLTEXT.c.from_,
+    text("snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64)"),
+)
 
 
 def get_forums() -> AllForums | DBForums:
@@ -224,24 +242,20 @@ def search() -> str:
     stop = request.args.get("stop", "2022-12-31")
     page = int(request.args.get("page", "1"))
     query = request.args.get("query", "")
+    needs_range = start > "2000-01-01" or stop < "2022-12-31"
 
     if query:
-        info_msg = f"Displaying results for: {query!r} (max 50 per page, page {page})"
+        timer = time.perf_counter()
+        q = FTS_QUERY.where(text("fulltext=:query"))
+        if needs_range:
+            q = q.where(FULLTEXT.c.date.between(start, stop))
+        q = q.order_by(FULLTEXT.c.rank).limit(50).offset((page - 1) * 50)
+
         with search_engine.connect() as con:
-            results_iter = con.execute(
-                sqlalchemy.text(
-                    "SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64) "
-                    "FROM fulltext WHERE fulltext=:query AND date BETWEEN :start AND :stop ORDER BY rank "
-                    "LIMIT 50 OFFSET :offset;"
-                ),
-                {
-                    "query": query,
-                    "start": start,
-                    "stop": stop,
-                    "offset": (page - 1) * 50,
-                },
-            )
+            results_iter = con.execute(q, {"query": query})
             results = list(results_iter)
+        total_time = time.perf_counter() - timer
+        info_msg = f"Displaying results for: {query!r} (max 50 per page, page {page}) (took {total_time:.3f}s)"
 
     else:
         info_msg = 'Search for a forum post. See <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a> for details on the syntax.'
