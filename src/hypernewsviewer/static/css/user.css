@@ -9,3 +9,11 @@ div.hn-archive-warning {
   font-weight: bold;
   border-radius: 0px 0px 12px 12px;
 }
+
+div.searchresult {
+  background-color: #ddd;
+  box-shadow: rgb(185, 185, 185) 5px 5px 5px;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 12px;
+}

@@ -22,6 +22,7 @@ from werkzeug.wrappers import Response
 from .model.structure import AllForums, DBForums, connect_forums
 
 app = Flask("hypernewsviewer")
+total_msgs: int | None = None
 
 DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
@@ -221,23 +222,44 @@ def search() -> str:
 
     current = ""
     if request.args:
-        current = request.args["query"]
-        info_msg = f"Displaying results for: {current} (max 50)"
+        query = request.args["query"]
+        start = request.args.get("start", "2005-12-01")
+        stop = request.args.get("stop", "2022-12-31")
+        page = int(request.args.get("page", "1"))
+        info_msg = f"Displaying results for: {current} (max 50 per page, page {page})"
+        search_engine.echo = True
         with search_engine.connect() as con:
             results_iter = con.execute(
                 sqlalchemy.text(
-                    "SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', '...', 24) FROM fulltext WHERE fulltext MATCH :query ORDER BY rank LIMIT 50"
+                    "SELECT * FROM ("
+                    "  SELECT responses, title, date, from_, snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64) "
+                    "  FROM fulltext WHERE fulltext=:query ORDER BY rank"
+                    ") WHERE date BETWEEN :start AND :stop LIMIT 50 OFFSET :offset;"
                 ),
-                {"query": request.args["query"]},
+                {
+                    "query": query,
+                    "start": start,
+                    "stop": stop,
+                    "offset": (page - 1) * 50,
+                },
             )
             results = list(results_iter)
+        search_engine.echo = False
 
     else:
-        forums = get_forums()
-        size = forums.get_total_msgs()
-        info_msg = f"Total number of messages to search: {size:,}"
+        global total_msgs  # pylint: disable=global-statement
+        if total_msgs is None:
+            forums = get_forums()
+            total_msgs = forums.get_total_msgs()
+        info_msg = f"Total number of messages to search: {total_msgs:,}"
         results = []
 
     return render_template(
-        "search.html", results=results, info_msg=info_msg, current=current
+        "search.html",
+        results=results,
+        info_msg=info_msg,
+        query=query,
+        page=page,
+        start=start,
+        stop=stop,
     )

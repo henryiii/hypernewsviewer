@@ -1,0 +1,9 @@
+{% extends "pages/base.html" %}
+{% block title %}Member: {{ member.name }} {% endblock %}
+{% block content %}
+
+{% for key, value in member.items() %}
+{{ key }}: {{ value }}<br>
+{% endfor %}
+
+{% endblock %}
