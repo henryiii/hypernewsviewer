@@ -293,7 +293,7 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
             select(sqlalchemy.func.count(URCMessage.responses))
         ).scalar_one()
         selection = select(
-            URCMessage.responses, URCMessage.title, URCMessage.date, URCMessage.from_
+            URCMessage.responses, URCMessage.date, URCMessage.title, URCMessage.from_
         )
         result = session.execute(selection)
         for responses, date, title, from_ in track(
@@ -311,6 +311,11 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
                 "INSERT INTO fulltext VALUES (?, ?, ?, ?, ?)",
                 (responses, date, title, from_, text),
             )
+        db_out.commit()
+
+        db_out.set_trace_callback(log_sql.info)
+        db_out.execute("CREATE INDEX date_index ON fulltext_content(c1);")
+        db_out.execute("INSERT INTO fulltext(fulltext) VALUES('optimize');")
         db_out.commit()
 
 

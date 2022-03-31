@@ -219,8 +219,10 @@ def search() -> str:
     # dr_e_day=25,
     # dr_e_year=2022
 
+    current = ""
     if request.args:
-        info_msg = f"Displaying results for: {request.args['query']} (max 50)"
+        current = request.args["query"]
+        info_msg = f"Displaying results for: {current} (max 50)"
         with search_engine.connect() as con:
             results_iter = con.execute(
                 sqlalchemy.text(
@@ -236,4 +238,6 @@ def search() -> str:
         info_msg = f"Total number of messages to search: {size:,}"
         results = []
 
-    return render_template("search.html", results=results, info_msg=info_msg)
+    return render_template(
+        "search.html", results=results, info_msg=info_msg, current=current
+    )
