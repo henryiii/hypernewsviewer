@@ -220,7 +220,7 @@ def search() -> str:
     # dr_e_day=25,
     # dr_e_year=2022
 
-    start = request.args.get("start", "2005-12-01")
+    start = request.args.get("start", "2000-01-01")
     stop = request.args.get("stop", "2022-12-31")
     page = int(request.args.get("page", "1"))
     query = request.args.get("query", "")
