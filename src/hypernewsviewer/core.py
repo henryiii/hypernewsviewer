@@ -258,7 +258,12 @@ def search() -> str:
         info_msg = f"Displaying results for: {query!r} (max 50 per page, page {page}) (took {total_time:.3f}s)"
 
     else:
-        info_msg = 'Search for a forum post. See <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a> for details on the syntax.'
+        info_msg = """
+        Search for a forum post. See
+        <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a>
+        for details on the syntax. Please avoid very simple queries that might
+        match large nubers of posts, as those might time out the response."""
+
         results = []
 
     return render_template(
