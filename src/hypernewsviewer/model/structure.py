@@ -53,8 +53,11 @@ class AllForums:
         return len(list(abspath.glob("**/*?.html,urc" if recursive else "*?.html,urc")))
 
     def get_html(self, forum: str, path: str) -> str | None:
-        abspath = self.root / forum / path
-        msg = abspath.parent.joinpath(f"{Path(path).stem}-body.html")
+        if path:
+            abspath = self.root / forum / path
+            msg = abspath.parent.joinpath(f"{Path(path).stem}-body.html")
+        else:
+            msg = self.root.joinpath(f"{forum}.note")
         if msg.exists():
             return msg.read_text()
 

@@ -122,9 +122,7 @@ def list_view(subpath: str) -> str | Response:
     except FileNotFoundError:
         return f"Unable to find message: {subpath} at {DATA_ROOT}"
 
-    body = forums.get_html(
-        forum, path if others else f"{path}/" + path.rsplit("/", 1)[-1]
-    )
+    body = forums.get_html(forum, path)
 
     replies: list[dict[str, Any]] = []
     print(forum, path)
@@ -208,7 +206,7 @@ def get_cindex() -> str:
     categories = forums.get_categories()
     all_forums = filter(None, forums.get_forums_iter())
     sorted_forums = sorted(
-        all_forums, key=lambda x: (x.categories, x.last_mod or x.date)
+        all_forums, key=lambda x: (categories[x.categories], x.last_mod or x.date)
     )
 
     grouped_forums = {
@@ -225,18 +223,6 @@ def search() -> str:
         )
 
     search_engine = get_search_engine()
-
-    # query=test,
-    # submit=Search!,
-    # metaname=swishdefault,
-    # sort=swishrank,
-    # dr_o=12,
-    # dr_s_mon=3,
-    # dr_s_day=25,
-    # dr_s_year=2022,
-    # dr_e_mon=3,
-    # dr_e_day=25,
-    # dr_e_year=2022
 
     start = request.args.get("start", "2000-01-01")
     stop = request.args.get("stop", "2022-12-31")
