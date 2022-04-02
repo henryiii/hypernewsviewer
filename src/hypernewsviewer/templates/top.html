@@ -26,7 +26,7 @@ Welcome to the CMS HyperNews.
     Email <a HREF="mailto:hn-cms-admin@cern.ch"><B>hn-cms-admin@cern.ch</B></A> if you have problems
     using this HyperNews site.
     You are welcome to try out HyperNews on the
-    <A class="stablelink" HREF="/HyperNews/CMS/get/hnTest.html">Test Forum</a>.
+    <A class="stablelink" HREF="{{ url_for('get', responses='hnTest') }}">Test Forum</a>.
 <P>
 
 
@@ -62,16 +62,6 @@ Welcome to the CMS HyperNews.
     announcements and discussions.
 </p>
 
-<p>Each Forum may be associated to a mail gate. This depends on the installation.
-    At CERN SIMBA2 lists are used with addresses like hn-atlas-&lt;forumName&gt;@cern.ch
-    or hn-cms-&lt;forumName&gt;@cern.ch.
-    To avoid spam, do not list this address explicitely on a public web page, point instead to the Forum address
-    e.g. <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a> Forum.
-    If you have to use the email address in a web page, use only the
-    &quot;disguised&quot; form, e.g.
-    <code>hn-atlas-Xxx@cernNOSPAM.ch</code>, where <code>Xxx</code> is specific to the Forum.
-</p>
-
 <p>Discussions are grouped into Forums and threads, and Forums are in turn grouped into
     Categories. A search engine allows search at different levels, e.g. using the Forum Title or
     the content of the postings. </p>
@@ -88,33 +78,24 @@ Welcome to the CMS HyperNews.
     help is provided in a collapsable window. </p>
 <h4 id="listServices" title="id=listServices"> List of services</h4>
 <ul>
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/cindex">Forums by Category</a>:
+    <li> <a href="{{ url_for('cindex') }}">Forums by Category</a>:
         Complete list of all Forums ordered by Category.
         Click on the Forum Title to see its postings or add a new posting.
         For tests of HN use the &quot;HyperNews Test Forum&quot; (Category: HyperNews).
     </li>
 
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/index">Forums by Time Order</a>:
+    <li> <a href="{{ url_for('index') }}">Forums by Time Order</a>:
         List of Forums in order of the time of the last posting.
         You can directly add a new posting from this page.
     </li>
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/recent">Recent Postings</a>:
-        By default all Forums with activity during the last N days are listed.
-        You can choose the number N of days and the Forums and bookmark this choice for subsequent
-        reuse. The postings are listed without threading.
-    </li>
 
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/search">Search in Forums</a>: Various choices for Search are available: Subject/Body, URL, author and Forum; choice of time window; order in which the postings are shown.
+    <li> <a href="{{ url_for('search') }}">Search in Forums</a>: Various choices for Search are available: Subject/Body, URL, author and Forum; choice of time window; order in which the postings are shown.
     </li>
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/SECURED/edit-member.pl">Member Info</a>:
-        Display of the information which you provided at subscription time or during later updates.
-        You can change here your password (even if you have forgotten the previous one).
-    </li>
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/view-members.pl">Members List</a>:
+    <li> <a href="{{ url_for('view_members') }}">Members List</a>:
         List of all members who registered for HyperNews on this installation (Name, e-mail addr, userId) .
     </li>
 
-    <li> <a href="https://hypernews.cern.ch/HyperNews/CMS/top.pl">Overview</a>:
+    <li> <a href="{{ url_for('home_page') }}">Overview</a>:
         This page.
     </li>
     <li> <a href="mailto:hn-cms-admin@cern.ch">Contact Admin</a>:
@@ -144,23 +125,12 @@ Welcome to the CMS HyperNews.
 
 <h4 id="testHN" title="id=testHN"> Testing HN</h4>
 <p> For tests of HN there is a special Forum, the
-    &quot;<a class="stablelink" href="/HyperNews/Atlas/get/hnTest.html">
+    &quot;<a class="stablelink" href="{{ url_for('get', responses='hnTest') }}">
 
         HyperNews Test Forum</a>&quot; (Category HyperNews).
     Use only this Forum if you want to
     try out some features. From time to time all postings in this Forum will be deleted. </p>
 
-<h3 id="problemsImprovements" title="id=problemsImprovements">Report problems or suggest improvements</h3>
-<p>
-    If you have a problem with any aspect of HyperNews, please add a posting to the Forum
-    <a href="/HyperNews/Atlas/get/hnFeedback.html">HyperNews Feedback</a>,
-    or contact the <a href="mailto:hn-cms-admin@cern.ch">HN administrators</a>. Please specify
-    which browser/version you are using and on which system.
-</p>
-
-<p> Before sending a problem report or suggesting improvements you may want to check the
-    <a href="./hnProblemsTasks.html"> List of known HN problems and tasks</a>.
-</p>
 
 <h3 id="seeAlso" title="id=seeAlso"> See also</h3>
 <ul>

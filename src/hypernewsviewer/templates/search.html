@@ -3,7 +3,7 @@
 {% block content %}
 
 <br />
-<form method="get" action="{{url_for('search')}}" enctype="application/x-www-form-urlencoded" class="form">
+<form method="get" action="{{ url_for('search') }}" enctype="application/x-www-form-urlencoded" class="form">
     Query:<input maxlength="200" value="{{ query }}" size="64" type="text" name="query" />
     <input value="Search!" type="submit" name="submit" /><br />
     Start:<input type="date" name="start" value="{{ start }}" min="2000-01-01" max="2022-12-31" />
@@ -18,7 +18,8 @@
 
 {% for row in results %}
 <div class="searchresult">
-    <a href="/get{{ row[0] }}">{{ row[1] | safe }}</a> {{ row[2] }} - by <a href="/view-member.pl?{{ row[3] }}">{{ row[3] }}</a> <br />
+    <a href="{{url_for('get', responses=row[0])}}">{{ row[1] | safe }}</a>
+    {{ row[2] }} - by <a href="{{url_for('view_member', responses=row[3]) }}">{{ row[3] }}</a> <br />
     <p>
         {{ row[4] | safe }}
     </p>

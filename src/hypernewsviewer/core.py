@@ -18,7 +18,6 @@ from flask import (
     send_from_directory,
     url_for,
 )
-from sqlalchemy import column, select, table, text
 from werkzeug.wrappers import Response
 
 from .model.structure import AllForums, DBForums, connect_forums
@@ -39,21 +38,26 @@ if HNFTSDATABASE:
 DATA_ROOT = Path(HNFILES).resolve()
 DB_ROOT = Path(HNDATABASE).resolve() if HNDATABASE else None
 
-FULLTEXT = table(
+FULLTEXT = sqlalchemy.table(
     "fulltext",
-    column("responses"),
-    column("title"),
-    column("date"),
-    column("from_"),
-    column("rank"),
+    sqlalchemy.column("responses"),
+    sqlalchemy.column("title"),
+    sqlalchemy.column("date"),
+    sqlalchemy.column("from_"),
+    sqlalchemy.column("rank"),
 )
-FTS_QUERY = select(
+FTS_QUERY = sqlalchemy.select(
     FULLTEXT.c.responses,
     FULLTEXT.c.title,
     FULLTEXT.c.date,
     FULLTEXT.c.from_,
-    text("snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64)"),
+    sqlalchemy.text("snippet(fulltext, 4, '<mark>', '</mark>', ' ... ', 64)"),
 )
+
+
+@app.context_processor
+def base_url():
+    return dict(base_url="")
 
 
 def get_forums() -> AllForums | DBForums:
@@ -82,35 +86,43 @@ def close_connection(_exception: Exception | None) -> None:
 
 @app.route("/")
 def reroute() -> Response:
-    return redirect(url_for("top_page"))
+    return redirect(url_for("home_page"))
 
 
 @app.route("/favicon.ico")
-def empty() -> Response:
+def favicon() -> Response:
     return send_from_directory("static", "favicon.ico")
 
 
-@app.route("/get/<path:subpath>")
-def list_view(subpath: str) -> str | Response:
-    if subpath.endswith(".html"):
-        subpath = subpath[:-5]
-    elif subpath.endswith(".htm"):
-        subpath = subpath[:-4]
+@app.route("/Icons/<path:path>")
+def icons(path: str) -> Response:
+    return send_from_directory("static", "Icons/" + path)
 
-    parts = subpath.split("/")
+
+@app.route("/get/<path:responses>")
+def get(responses: str) -> str | Response:
+    if responses.endswith(".html"):
+        responses = responses[:-5]
+    elif responses.endswith(".htm"):
+        responses = responses[:-4]
+    # Just in case this gets added with url_for
+    if responses.startswith("/"):
+        responses = responses[1:]
+
+    parts = responses.split("/")
 
     direction = request.args.get("dir", default=None)
     if direction is not None:
         if direction == "next-in-thread":
             parts.append("1")
-            return redirect(url_for("list_view", subpath="/".join(parts)))
+            return redirect(url_for("get", responses="/".join(parts)))
         if direction == "nextResponse":
             parts[-1] = str(int(parts[-1]) + 1)
-            return redirect(url_for("list_view", subpath="/".join(parts)))
+            return redirect(url_for("get", responses="/".join(parts)))
 
     trail = accumulate(parts, lambda a, b: f"{a}/{b}")
     breadcrumbs = [
-        {"name": part, "url": url_for("list_view", subpath=spath)}
+        {"name": part, "url": url_for("get", responses=spath)}
         for part, spath in zip(parts, trail)
     ]
     forum, *others = parts
@@ -120,23 +132,22 @@ def list_view(subpath: str) -> str | Response:
     try:
         msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
     except FileNotFoundError:
-        return f"Unable to find message: {subpath} at {DATA_ROOT}"
+        return f"Unable to find message: {responses} at {DATA_ROOT}"
 
     body = forums.get_html(forum, path)
 
     replies: list[dict[str, Any]] = []
-    print(forum, path)
     for m in forums.get_msgs(forum, path):
         local_forum, *local_others = m.responses.lstrip("/").split("/")
         msgs = forums.get_msg_paths(local_forum, "/".join(local_others))
         entries = len(list(msgs))
-        url = url_for("list_view", subpath=m.responses)
+        url = url_for("get", responses=m.responses)
         replies.append({"msg": m, "url": url, "entries": entries})
 
     return render_template(
         "msg.html",
         urc=msg,
-        forum_title="HyperNews Test Forum",
+        forum=forums.get_forum(forum),
         body=body or "",
         breadcrumbs=breadcrumbs,
         replies=replies,
@@ -188,12 +199,12 @@ def view_members() -> str:
 
 
 @app.route("/top.pl")
-def top_page() -> str:
+def home_page() -> str:
     return render_template("top.html")
 
 
 @app.route("/index")
-def get_index() -> str:
+def index() -> str:
     forums = get_forums()
     all_forums = filter(None, forums.get_forums_iter())
     sorted_forums = sorted(all_forums, key=lambda x: x.last_mod or x.date, reverse=True)
@@ -201,7 +212,7 @@ def get_index() -> str:
 
 
 @app.route("/cindex")
-def get_cindex() -> str:
+def cindex() -> str:
     forums = get_forums()
     categories = forums.get_categories()
     all_forums = filter(None, forums.get_forums_iter())
@@ -232,7 +243,7 @@ def search() -> str:
 
     if query:
         timer = time.perf_counter()
-        q = FTS_QUERY.where(text("fulltext=:query"))
+        q = FTS_QUERY.where(sqlalchemy.text("fulltext=:query"))
         if needs_range:
             q = q.where(FULLTEXT.c.date.between(start, stop))
         q = q.order_by(FULLTEXT.c.rank).limit(50).offset((page - 1) * 50)

@@ -15,7 +15,7 @@
 <ul class="breadcrumb">
     {% for item in breadcrumbs %}
     <li>
-        <a href="{{ item.url }}">{{ item.name }}</a>
+        <a href="{{ base_url }}{{ item.url }}">{{ item.name }}</a>
     </li>
     {%- endfor %}
 </ul>
@@ -29,7 +29,7 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
-                                    <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
+                                    <a href="{{ base_url }}{{ urc.url }}?dir=next-in-thread" class="commandlink">
                                         &nbsp;Next-in-Thread
                                     </a>
                                 </nobr>
@@ -45,7 +45,7 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
-                                    <a href="{{ urc.url }}?dir=nextResponse" class="commandlink">
+                                    <a href="{{ base_url }}{{ urc.url }}?dir=nextResponse" class="commandlink">
                                         &nbsp;Next-in-Forum
                                     </a>
                                 </nobr>
@@ -60,7 +60,7 @@
 </table>
 
 <!-- start header -->
-<h2><img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title | safe }}</h2>
+<h2><img src="{{ urc.up_rel | urc_icon }}" alt="None" width="15" height="15" align="texttop" border="0">{{ urc.title | safe }}</h2>
 <dl>
     <dd>
         <nobr>
@@ -68,8 +68,8 @@
 
             <font size="+1">
                 <i>Forum:</i>
-                <a href="/">
-                    {{ forum_title }}</a>
+                <a href="{{ url_for('get', responses=forum.responses)}}">
+                    {{ forum.title }}</a>
                 <br>
             </font>
 
@@ -83,6 +83,11 @@
 </dl>
 
 <!--  start message body  -->
+{% if urc.content_type == "h" %}
+<div>
+    {{ body | safe }}
+</div>
+{% else %}
 <table border="" cellpadding="5" cellspacing="0" width="100%" bgcolor="#FFFFFF">
     <tbody>
         <tr>
@@ -93,6 +98,7 @@
     </tbody>
 </table>
 <!--  end message body -->
+{% endif %}
 {% else %}
 <br />
 <div>
@@ -106,9 +112,9 @@
     <ol>
         {% for item in replies[::-1] %}
         <li value="{{ item.msg.num }}">
-            <img src="https://hypernews.cern.ch/HyperNewsDocs/CMS/Icons/hnsmall.gif" alt="None:" width="15" height="15" align="texttop">
+            <img src="{{ item.msg.up_rel | urc_icon }}" alt="None:" width="15" height="15" align="texttop">
             <a href="{{item.url}}">
-                {{ item.msg.title }}
+                {{ item.msg.title | safe }}
             </a>
             <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
             {%- if item.entries > 0 -%}
