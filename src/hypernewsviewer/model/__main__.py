@@ -165,6 +165,7 @@ def tree(forums: AllForums | DBForums, path: str) -> None:
 
 @main.command(help="Show all parsed information for a message or main.")
 @convert_context
+@click.argument("path")
 def show(forums: AllForums | DBForums, path: str) -> None:
     forum, *others = path.split("/")
     path = "/".join(others)
