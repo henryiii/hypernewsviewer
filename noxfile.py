@@ -23,7 +23,7 @@ def tests(session: nox.Session) -> None:
     """
     Run the package tests (minimal at the moment).
     """
-    session.install(".[test]")
+    session.install("-e", ".[test]")
     session.run("pytest", *session.posargs)
 
 
