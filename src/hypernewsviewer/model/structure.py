@@ -58,10 +58,7 @@ class AllForums:
             msg = abspath.parent.joinpath(f"{Path(path).stem}-body.html")
         else:
             msg = self.root.joinpath(f"{forum}.note")
-        if msg.exists():
-            return msg.read_text()
-
-        return None
+        return msg.read_text() if msg.exists() else None
 
     def get_member(self, user_id: str) -> Member:
         return Member.from_path(self.root / "hnpeople" / user_id)
