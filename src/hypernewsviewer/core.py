@@ -29,8 +29,7 @@ DIR = Path(".").resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
 HNDATABASE = os.environ.get("HNDATABASE", None)
 
-HNFTSDATABASE = os.environ.get("HNFTSDATABASE", None)
-if HNFTSDATABASE:
+if HNFTSDATABASE := os.environ.get("HNFTSDATABASE", None):
     db_file = Path(HNFTSDATABASE).resolve()
     db_uri = f"sqlite:///file:{db_file}?mode=ro&uri=true"
 
@@ -97,7 +96,7 @@ def favicon() -> Response:
 
 @app.route("/Icons/<path:path>")
 def icons(path: str) -> Response:
-    return send_from_directory("static", "Icons/" + path)
+    return send_from_directory("static", f"Icons/{path}")
 
 
 @app.route("/get/<path:responses>")
@@ -240,11 +239,11 @@ def search() -> str:
     stop = request.args.get("stop", "2022-12-31")
     page = int(request.args.get("page", "1"))
     query = request.args.get("query", "")
-    needs_range = start > "2000-01-01" or stop < "2022-12-31"
-
     if query:
         timer = time.perf_counter()
         q = FTS_QUERY.where(sqlalchemy.text("fulltext=:query"))
+        needs_range = start > "2000-01-01" or stop < "2022-12-31"
+
         if needs_range:
             q = q.where(FULLTEXT.c.date.between(start, stop))
         q = q.order_by(FULLTEXT.c.rank).limit(50).offset((page - 1) * 50)
