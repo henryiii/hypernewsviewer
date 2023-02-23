@@ -15,6 +15,8 @@ URL = str
 
 @attrs.define(kw_only=True, eq=True, slots=False)
 class InfoBase:
+    __allow_unmapped__ = True
+
     @classmethod
     def from_path(cls, path: os.PathLike[str]) -> Self:
         with Path(path).open("rb") as f:
