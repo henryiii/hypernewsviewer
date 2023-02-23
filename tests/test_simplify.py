@@ -13,7 +13,7 @@ DIR = Path(__file__).parent.resolve()
 HNFILES = DIR.parent.parent.joinpath("hnfiles")
 
 if not HNFILES.exists():
-    pytest.skip("No hnfiles directory found")
+    pytest.skip("No hnfiles directory found", allow_module_level=True)
 
 
 def missed(path: Path) -> dict[str, Any]:
