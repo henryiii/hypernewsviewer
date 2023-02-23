@@ -18,7 +18,7 @@ class InfoBase:
     __allow_unmapped__ = True
 
     @classmethod
-    def from_path(cls, path: os.PathLike[str]) -> Self:
+    def from_path(cls, path: "os.PathLike[str]") -> Self:
         with Path(path).open("rb") as f:
             btxt = f.read().translate(None, b"\x0D\x1C\x1D\x1E\x1F")
         try:

@@ -12,7 +12,10 @@ import sqlalchemy.orm
 from hypernewsviewer.model.structure import AllForums, DBForums
 
 DIR = Path(__file__).parent.resolve()
-ROOT = DIR.joinpath("../../hnfiles").resolve()
+HNFILES = DIR.joinpath("../../hnfiles").resolve()
+
+if not HNFILES.exists():
+    pytest.skip("No hnfiles directory found", allow_module_level=True)
 
 
 @pytest.fixture(scope="session")
@@ -60,8 +63,8 @@ def test_basic(db):
 
 
 def test_get_msg(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_msg("hnTest", "1")
     classic_results = forums.get_msg("hnTest", "1")
@@ -77,8 +80,8 @@ def test_get_msg(db):
 
 
 def test_get_msgs(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = list(dbf.get_msgs("hnTest", ""))
     classic_results = list(forums.get_msgs("hnTest", ""))
@@ -112,8 +115,8 @@ def test_get_msgs(db):
 
 
 def test_get_msg_paths(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = list(dbf.get_msg_paths("hnTest", ""))
     classic_results = list(forums.get_msg_paths("hnTest", ""))
@@ -134,8 +137,8 @@ def test_get_msg_paths(db):
 
 
 def test_get_num_msgs(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_num_msgs("hnTest", "")
     classic_results = forums.get_num_msgs("hnTest", "")
@@ -161,8 +164,8 @@ def test_get_num_msgs(db):
 
 
 def test_get_member(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_member("temple")
     classic_results = forums.get_member("temple")
@@ -170,8 +173,8 @@ def test_get_member(db):
 
 
 def test_get_members_paths(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = sorted(dbf.get_members_paths())
     classic_results = sorted(forums.get_members_paths())
@@ -181,8 +184,8 @@ def test_get_members_paths(db):
 
 
 def test_get_members_iter(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = list(dbf.get_member_iter())
     classic_results = list(forums.get_member_iter())
@@ -192,8 +195,8 @@ def test_get_members_iter(db):
 
 
 def test_get_num_members(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_num_members()
     classic_results = forums.get_num_members()
@@ -202,8 +205,8 @@ def test_get_num_members(db):
 
 
 def test_get_forum(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_forum("hnTest")
     classic_results = forums.get_forum("hnTest")
@@ -211,8 +214,8 @@ def test_get_forum(db):
 
 
 def test_get_forums_iter(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = list(dbf.get_forums_iter())
     classic_results = list(forums.get_forums_iter())
@@ -222,8 +225,8 @@ def test_get_forums_iter(db):
 
 
 def test_get_forum_paths(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = sorted(dbf.get_forum_paths())
     classic_results = sorted(forums.get_forum_paths())
@@ -232,8 +235,8 @@ def test_get_forum_paths(db):
 
 
 def test_get_num_forums(db):
-    forums = AllForums(root=ROOT)
-    dbf = DBForums(root=ROOT, engine=db)
+    forums = AllForums(root=HNFILES)
+    dbf = DBForums(root=HNFILES, engine=db)
 
     results = dbf.get_num_forums()
     classic_results = forums.get_num_forums()
