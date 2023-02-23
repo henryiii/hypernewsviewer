@@ -22,6 +22,7 @@ repos:
   rev: "v0.0.252"
   hooks:
   - id: ruff
+    args: ["--fix", "--show-fixes"]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.0.1
