@@ -19,7 +19,7 @@ import rich.traceback
 import sqlalchemy
 from bs4 import BeautifulSoup
 from rich import print  # pylint: disable=redefined-builtin
-from rich.progress import Progress
+from rich.progress import Progress, Task
 from rich.table import Table
 from rich.tree import Tree
 from sqlalchemy import select
@@ -79,7 +79,7 @@ def track(
 
 
 def convert_context(
-    function: Callable[Concatenate[AllForums | DBForums, P], None]  # type: ignore[misc]
+    function: Callable[Concatenate[AllForums | DBForums, P], None]
 ) -> Callable[P, None]:
     """
     Decorator to convert the context to a DBForums or AllForums object.
@@ -187,7 +187,6 @@ def show(forums: AllForums | DBForums, path: str) -> None:
 @main.command(help="Show all forums")
 @convert_context
 def forums(forums: AllForums | DBForums) -> None:
-
     t = Table(title="Forums")
     t.add_column("#", style="cyan")
     t.add_column("Cat", style="green")
@@ -250,7 +249,7 @@ def populate(db_forums: AllForums | DBForums) -> None:
                 task = inner_progress.tasks[inner_progress.task_ids.index(task_id)]
 
                 def inner_track(
-                    iterable: Iterable[T], total: int, description: str
+                    iterable: Iterable[T], total: int, description: str, task: Task
                 ) -> Iterable[T]:
                     task.description = description
                     yield from inner_progress.track(
@@ -261,6 +260,7 @@ def populate(db_forums: AllForums | DBForums) -> None:
                     forums.get_msgs(forum_each, "", recursive=True),
                     total=length,
                     description=f"({n}/{len(forum_list)}) {forum_each}",
+                    task=task,
                 ):
                     session.add(msg)
 
@@ -284,7 +284,6 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
     with contextlib.closing(sqlite3.connect(str(fts))) as db_out, Session(
         db_forums.engine
     ) as session:
-
         db_out.execute(
             "CREATE VIRTUAL TABLE fulltext USING FTS5(responses UNINDEXED, date UNINDEXED, title, from_, text);"
         )
@@ -301,8 +300,8 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
             total=int(total),
             description="Full text search",
         ):
-            with open(
-                f"{db_forums.root}{responses}-body.html", encoding="Latin-1"
+            with Path(f"{db_forums.root}{responses}-body.html").open(
+                encoding="Latin-1"
             ) as f:
                 html_text = f.read()
             soup = BeautifulSoup(html_text, "html.parser")
