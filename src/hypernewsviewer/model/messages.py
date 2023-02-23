@@ -1,23 +1,22 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Type, TypeVar
+from typing import Optional
 
 import attrs
 
+from .._compat.typing import Self
 from .enums import AnnotationType, ContentType, UpRelType
 from .orm import attrs_mapper, mapper_registry
 
 Email = str
 URL = str
 
-IB = TypeVar("IB", bound="InfoBase")
-
 
 @attrs.define(kw_only=True, eq=True, slots=False)
 class InfoBase:
     @classmethod
-    def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
+    def from_path(cls, path: os.PathLike[str]) -> Self:
         with Path(path).open("rb") as f:
             btxt = f.read().translate(None, b"\x0D\x1C\x1D\x1E\x1F")
         try:
@@ -31,7 +30,7 @@ class InfoBase:
             raise RuntimeError(msg) from err
 
     @classmethod
-    def from_file(cls: Type[IB], text: str) -> IB:
+    def from_file(cls, text: str) -> Self:
         # pylint: disable-next=import-outside-toplevel
         from .converter import converter_utc
 

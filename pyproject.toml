@@ -13,6 +13,7 @@ dependencies = [
   "inflection>=0.5.1",
   "attrs>=22.1.0",
   "sqlalchemy>=1.4.2",
+  'typing_extensions>=4.1;python_version<"3.11"'
 ]
 
 [project.optional-dependencies]

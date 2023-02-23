@@ -6,7 +6,6 @@ import functools
 import logging
 import os
 import sqlite3
-import sys
 import time
 from pathlib import Path
 from typing import Callable, Generator, Iterable, TypeVar
@@ -25,15 +24,11 @@ from rich.tree import Tree
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .._compat.typing import Concatenate, ParamSpec
 from .cliutils import get_html_panel, walk_tree
 from .messages import URCMain, URCMessage
 from .orm import mapper_registry
 from .structure import AllForums, DBForums, connect_forums
-
-if sys.version_info < (3, 10):
-    from typing_extensions import Concatenate, ParamSpec
-else:
-    from typing import Concatenate, ParamSpec
 
 # pylint: disable=redefined-outer-name
 
