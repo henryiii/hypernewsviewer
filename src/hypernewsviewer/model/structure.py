@@ -98,7 +98,7 @@ class AllForums:
             try:
                 yield URCMain.from_path(path)
             except (TypeError, ValueError) as e:
-                print(f"Failed to parse: {path}:", e)
+                print(f"Failed to parse: {path}:", e)  # noqa: T201
                 yield None
 
     def get_forum_paths(self) -> Iterator[Path]:
@@ -130,9 +130,10 @@ class DBForums(AllForums):
         assert path, "Must supply a path, use get_forum() instead for empty path"
         selection = select(URCMessage).where(URCMessage.responses == f"/{forum}/{path}")
         with Session(self.engine) as session:
-            msg: URCMessage = session.execute(selection).scalar_one_or_none()
+            msg: URCMessage | None = session.execute(selection).scalar_one_or_none()
         if msg is None:
-            raise FileNotFoundError(f"No such message: /{forum}/{path}")
+            errmsg = f"No such message: /{forum}/{path}"
+            raise FileNotFoundError(errmsg)
         return msg
 
     @staticmethod

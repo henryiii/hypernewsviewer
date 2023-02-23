@@ -57,21 +57,22 @@ FTS_QUERY = sqlalchemy.select(
 
 @app.context_processor
 def base_url():
-    return dict(base_url="")
+    return {"base_url": ""}
 
 
 def get_forums() -> AllForums | DBForums:
     forums = getattr(g, "_forums", None)
     if forums is None:
-        # pylint: disable-next=protected-access,assigning-non-slot
+        # pylint: disable-next=protected-access
         g._forums = connect_forums(DATA_ROOT, DB_ROOT)
-        forums = g._forums.__enter__()  # pylint: disable=protected-access
+        # pylint: disable-next=protected-access,unnecessary-dunder-call
+        return g._forums.__enter__()
     return forums
 
 
 def get_search_engine() -> AllForums | DBForums:
     if getattr(g, "_search_engine", None) is None:
-        # pylint: disable-next=protected-access,assigning-non-slot
+        # pylint: disable-next=protected-access
         g._search_engine = sqlalchemy.create_engine(db_uri, future=True)
     # pylint: disable-next=protected-access
     return g._search_engine

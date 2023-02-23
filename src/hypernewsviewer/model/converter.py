@@ -23,8 +23,6 @@ TZOFFSETS = {
     "CEST": 2 * 60 * 60,
 }
 
-T = TypeVar("T")
-
 
 def us(inp: str) -> str:
     return inflection.underscore(inp) if inp != "From" else "from_"  # type: ignore[no-any-return]
@@ -59,7 +57,8 @@ def convert_datetime(string: str, _type: object) -> datetime:
 def convert_annotation_type(string: str, t: type[AnnotationType]) -> AnnotationType:
     if string.lower() == "message":
         return t.Message
-    raise ValueError(f"Unknown annotation type {string}")
+    msg = f"Unknown annotation type {string}"
+    raise ValueError(msg)
 
 
 def convert_content_type(string: str, cls: type[ContentType]) -> ContentType:
@@ -71,7 +70,8 @@ def convert_content_type(string: str, cls: type[ContentType]) -> ContentType:
         return cls.SmartText
     if string == "Word Processor":
         return cls.WordProcessor
-    raise ValueError(f"Unknown content type {string}")
+    msg = f"Unknown content type {string}"
+    raise ValueError(msg)
 
 
 def convert_uprel_type(string: str, cls: type[UpRelType]) -> UpRelType:
@@ -89,6 +89,9 @@ converter_utc.register_structure_hook(UpRelType, convert_uprel_type)
 def produce_utc_dict(obj: str) -> dict[str, Any]:
     pairs = (ll.split(":", 1) for line in obj.splitlines() if (ll := line.strip()))
     return {us(k.strip()): vv for k, v in pairs if (vv := v.strip())}
+
+
+T = TypeVar("T", bound=attrs.AttrsInstance)
 
 
 def structure_from_utc(obj: str, cls: type[T]) -> T:

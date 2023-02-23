@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, Type, TypeVar
 
 import attrs
@@ -17,15 +18,17 @@ IB = TypeVar("IB", bound="InfoBase")
 class InfoBase:
     @classmethod
     def from_path(cls: Type[IB], path: os.PathLike[str]) -> IB:
-        with open(path, "rb") as f:
+        with Path(path).open("rb") as f:
             btxt = f.read().translate(None, b"\x0D\x1C\x1D\x1E\x1F")
         try:
             txt = btxt.decode("Latin-1")
             return cls.from_file(txt)
         except KeyError as err:
-            raise KeyError(f"{err} missing in {path} for {cls.__name__}") from err
+            msg = f"{err} missing in {path} for {cls.__name__}"
+            raise KeyError(msg) from err
         except Exception as err:
-            raise RuntimeError(f"{err} in {path} for {cls.__name__}") from err
+            msg = f"{err} in {path} for {cls.__name__}"
+            raise RuntimeError(msg) from err
 
     @classmethod
     def from_file(cls: Type[IB], text: str) -> IB:

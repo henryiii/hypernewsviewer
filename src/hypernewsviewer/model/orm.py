@@ -11,8 +11,6 @@ __all__ = ["type_as_sqal", "mapper_registry"]
 
 mapper_registry = sqlalchemy.orm.registry()
 
-T = TypeVar("T")
-
 
 def type_as_sqal(
     name: str, inp: type[Any] | None, metadata: dict[str, Any]
@@ -48,6 +46,9 @@ def type_as_sqal(
         )
 
     return sqlalchemy.Column(name, sqlalchemy.String, **options)
+
+
+T = TypeVar("T", bound=attrs.AttrsInstance)
 
 
 class attrs_mapper:
