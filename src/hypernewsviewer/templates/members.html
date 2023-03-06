@@ -8,7 +8,7 @@
 {% for let in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
 <a href="{{ url_for('view_members', find=let) }}">{{ let }}</a>
 {% endfor %}
-<hr>
+<hr>/
 
 <h3>Members {% if find %} with names or emails starting with a {{find}} {% endif %}</h3>
 <p>Page {{page}} of {{num_pages}}<br />Select page:

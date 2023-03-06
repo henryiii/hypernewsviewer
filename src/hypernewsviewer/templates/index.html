@@ -2,16 +2,16 @@
 {% block title %}Forums by Time Order{% endblock %}
 {% block content %}
 
-<br>
+<br />
 <strong>Click on your Forum of choice.</strong>
-<br>
+<br />
 
-<hr>
+<hr />
 
 <dd>
     {% for forum in forums %}
 <dt>
-    <img alt="*" src="{{ url_for('icons', path='whiteball.gif') }}" width="14" height="14">
+    <img alt="*" src="{{ url_for('icons', path='whiteball.gif') }}" width="14" height="14" />
     <b><a href="{{ forum.url }}">{{ forum.title | e }}</a> </b> ({{ (forum.last_mod or forum.date).strftime('%Y-%m-%d') }})
 </dt>
 {% endfor %}
