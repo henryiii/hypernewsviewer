@@ -1,4 +1,5 @@
-a.invalid:link, a.invalid:visited {
+a.invalid:link,
+a.invalid:visited {
   color: red;
 }
 

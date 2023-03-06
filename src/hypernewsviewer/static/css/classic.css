@@ -1,4 +1,3 @@
-
 body {
   /* DONT CHANGE width, margin and padding size, or you ll be very sorry for
         MSIE users */
@@ -6,41 +5,117 @@ body {
   margin-left: 5;
   margin-right: 5;
   margin-bottom: 5;
-  background-color: #FFFFFF;
-  font-family: arial,helvetica;
+  background-color: #ffffff;
+  font-family: arial, helvetica;
   color: #333333;
 }
 
-a { text-decoration: none; color: #006699;}
-a:visited { color: #663366;}
-a:hover { color: #ff0000; }
-a:active { color: #000000; }
-a.sortbutton { color: #FFFFFF; }
+a {
+  text-decoration: none;
+  color: #006699;
+}
+a:visited {
+  color: #663366;
+}
+a:hover {
+  color: #ff0000;
+}
+a:active {
+  color: #000000;
+}
+a.sortbutton {
+  color: #ffffff;
+}
 
-  /* Doesn't change color after visited */
-a.stablelink {color: #006699;}
+/* Doesn't change color after visited */
+a.stablelink {
+  color: #006699;
+}
 
-a.button { text-decoration: none; color: #000000;}
-a.button:hover { color: #000000; }
-a.button:active { color: #000000; }
+a.button {
+  text-decoration: none;
+  color: #000000;
+}
+a.button:hover {
+  color: #000000;
+}
+a.button:active {
+  color: #000000;
+}
 
-a.titlelink:link    {color: #f0f000; text-decoration: none}
-a.titlelink:visited {color: #f0f000; text-decoration: none}
-a.titlelink:hover   {color: #ff0000; text-decoration: none}
+a.titlelink:link {
+  color: #f0f000;
+  text-decoration: none;
+}
+a.titlelink:visited {
+  color: #f0f000;
+  text-decoration: none;
+}
+a.titlelink:hover {
+  color: #ff0000;
+  text-decoration: none;
+}
 
-a.navlink:link    {color: #002993; text-decoration: none; font-weight: bold;font-size: small;}
-a.navlink:visited {color: #002993; text-decoration: none; font-weight: bold;font-size: small;}
-a.navlink:hover   {color: #ff0000; text-decoration: none; font-weight: bold;font-size: small;}
+a.navlink:link {
+  color: #002993;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: small;
+}
+a.navlink:visited {
+  color: #002993;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: small;
+}
+a.navlink:hover {
+  color: #ff0000;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: small;
+}
 
-a.headerlink:link  {color: #006699; text-decoration: none; font-weight: bold;font-size: xlarge;}
-a.headerlink:visited {color: #006699; text-decoration: none; font-weight: bold;font-size: xlarge;}
-a.headerlink:hover {color: #ff0000; text-decoration: none; font-weight: bold;font-size: xlarge;}
+a.headerlink:link {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: xlarge;
+}
+a.headerlink:visited {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: xlarge;
+}
+a.headerlink:hover {
+  color: #ff0000;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: xlarge;
+}
 
-a.commandlink:link  {color: #006699; text-decoration: none; font-weight: bold;font-size: medium;}
-a.commandlink:visited {color: #006699; text-decoration: none; font-weight: bold;font-size: medium;}
-a.commandlink:hover {color: #ff0000; text-decoration: none; font-weight: bold;font-size: medium;}
+a.commandlink:link {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: medium;
+}
+a.commandlink:visited {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: medium;
+}
+a.commandlink:hover {
+  color: #ff0000;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: medium;
+}
 
-a.catlink {font-size: small;}
+a.catlink {
+  font-size: small;
+}
 
 .navheader {
   color: #000000;
@@ -70,14 +145,28 @@ img {
   border: 0px;
 }
 
-.error { color: #980000; }
-.footer {  color: #333333; }
+.error {
+  color: #980000;
+}
+.footer {
+  color: #333333;
+}
 
-.tabs { color: #006699; }
-.tabs:hover { color: #ff0000; }
-.tabselect { color: #000000; font-weight: bold; }
-.tabselect:hover { background-color: #e0cd9f; color: #000000; font-weight: bold;
- }
+.tabs {
+  color: #006699;
+}
+.tabs:hover {
+  color: #ff0000;
+}
+.tabselect {
+  color: #000000;
+  font-weight: bold;
+}
+.tabselect:hover {
+  background-color: #e0cd9f;
+  color: #000000;
+  font-weight: bold;
+}
 
 .pagetitle {
   font-weight: bold;
@@ -86,7 +175,7 @@ img {
   border-left: solid #9999ff;
   border-bottom: solid #575967;
   border-right: solid #575967;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: medium;
   text-align: left;
 }
@@ -95,13 +184,13 @@ img {
   font-size: medium;
   font-weight: bold;
   text-align: left;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 .titleright {
   font-size: small;
   font-weight: bold;
   text-align: right;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .member {
@@ -111,12 +200,12 @@ img {
 .navigationbar {
   background-color: #9999ff;
   border: 1px;
-  border-top: solid #A8C9DE;
-  border-left: solid #A8C9DE;
+  border-top: solid #a8c9de;
+  border-left: solid #a8c9de;
   border-bottom: solid #336699;
   border-right: solid #336699;
-  color: #FFFFFF;
-  margin: 0px 0px 0px 0px
+  color: #ffffff;
+  margin: 0px 0px 0px 0px;
 }
 
 .navlist {
@@ -154,11 +243,10 @@ img {
   margin-right: 40px;
 }
 
-
 .hnhelptitle {
   margin: 0px;
   padding: 3px;
-  color: #FFFFFF;
+  color: #ffffff;
   background-color: #0069c3;
 }
 
