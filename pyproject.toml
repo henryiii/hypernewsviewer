@@ -1,3 +1,8 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
 [project]
 name = "hypernewsviewer"
 version = "0.1.0"
@@ -44,10 +49,6 @@ dev = [
 [project.scripts]
 hyper-model = "hypernewsviewer.model.__main__:main"
 
-[build-system]
-requires = ["flit_core>=3.4"]
-build-backend = "flit_core.buildapi"
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -70,6 +71,7 @@ warn_unreachable = true
 module = ["inflection", "hypernewsviewer.filters.*", "bs4", "sqlalchemy.*"]
 ignore_missing_imports = true
 
+
 [tool.pylint]
 master.py-version = "3.8"
 master.jobs = "0"
@@ -87,7 +89,9 @@ messages_control.disable = [
   "invalid-name",
   "import-error",
   "no-member",
+  "redefined-builtin",
 ]
+
 
 [tool.ruff]
 select = [

@@ -17,7 +17,7 @@ import rich.progress
 import rich.traceback
 import sqlalchemy
 from bs4 import BeautifulSoup
-from rich import print  # pylint: disable=redefined-builtin
+from rich import print
 from rich.progress import Progress, Task
 from rich.table import Table
 from rich.tree import Tree

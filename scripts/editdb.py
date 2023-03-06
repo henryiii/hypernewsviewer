@@ -6,6 +6,7 @@ For example:
     py -m IPython -i scripts/editdb.py
 """
 
+from pathlib import Path
 
 import rich.pretty
 import rich.syntax
@@ -13,7 +14,7 @@ import rich.table
 import rich.traceback
 import sqlalchemy
 import sqlalchemy.orm
-from rich import print  # pylint: disable=redefined-builtin
+from rich import print
 from sqlalchemy import select
 
 from hypernewsviewer.model.messages import Member, URCMain, URCMessage
@@ -36,8 +37,8 @@ rich.pretty.install()
 rich.traceback.install(show_locals=True, width=None)
 
 engine = sqlalchemy.create_engine("sqlite:///hnvdb.sql3", future=True, echo=True)
-forums = DBForums(root="../hnfiles", engine=engine)
-file_forums = AllForums(root="../hnfiles")
+forums = DBForums(root=Path("../hnfiles"), engine=engine)
+file_forums = AllForums(root=Path("../hnfiles"))
 
 Session = sqlalchemy.orm.sessionmaker(engine)
 
