@@ -33,8 +33,8 @@ def serve(session: nox.Session) -> None:
     Serve a session (Ctrl-C to quit).
     """
     env = os.environ.copy()
-    env["FLASK_ENV"] = "development"
-    session.install(".")
+    env["FLASK_DEBUG"] = "1"
+    session.install(".[cli]")
     session.run("flask", "run", *session.posargs, env=env)
 
 
