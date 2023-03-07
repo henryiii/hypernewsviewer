@@ -22,7 +22,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: "v0.0.253"
+  rev: "v0.0.254"
   hooks:
   - id: ruff
     args: ["--fix", "--show-fixes"]
@@ -43,7 +43,7 @@ repos:
     - types-werkzeug
 
 - repo: https://github.com/PyCQA/pylint
-  rev: "v2.16.2"
+  rev: "v2.16.4"
   hooks:
   - id: pylint
     additional_dependencies:
