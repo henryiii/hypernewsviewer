@@ -69,7 +69,7 @@ def get_forums() -> AllForums | DBForums:
     return forums
 
 
-def get_search_engine() -> AllForums | DBForums:
+def get_search_engine() -> sqlalchemy.engine.Engine:
     if getattr(g, "_search_engine", None) is None:
         # pylint: disable-next=protected-access
         g._search_engine = sqlalchemy.create_engine(db_uri, future=True)
@@ -78,7 +78,7 @@ def get_search_engine() -> AllForums | DBForums:
 
 
 @app.teardown_appcontext
-def close_connection(_exception: Exception | None) -> None:
+def close_connection(_exception: BaseException | None) -> None:
     forums = getattr(g, "_forums", None)
     if forums is not None:
         forums.__exit__(None, None, None)
@@ -238,7 +238,7 @@ def search() -> str:
     start = request.args.get("start", "2000-01-01")
     stop = request.args.get("stop", "2022-12-31")
     page = int(request.args.get("page", "1"))
-    query = request.args.get("query", "")
+    query = request.args.get("query", "") or request.args.get("q", "")
     if query:
         timer = time.perf_counter()
         q = FTS_QUERY.where(sqlalchemy.text("fulltext=:query"))
