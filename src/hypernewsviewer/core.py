@@ -54,9 +54,10 @@ FTS_QUERY = sqlalchemy.select(
 )
 
 
-@app.context_processor
-def base_url():
-    return {"base_url": ""}
+@app.template_filter("absolute_url")
+def absolute_url(s: str) -> str:
+    retval = f"{request.url_root}{s.lstrip('/')}"
+    return retval
 
 
 def get_forums() -> AllForums | DBForums:
@@ -101,13 +102,9 @@ def icons(path: str) -> Response:
 
 @app.route("/get/<path:responses>")
 def get(responses: str) -> str | Response:
-    if responses.endswith(".html"):
-        responses = responses[:-5]
-    elif responses.endswith(".htm"):
-        responses = responses[:-4]
-    # Just in case this gets added with url_for
-    if responses.startswith("/"):
-        responses = responses[1:]
+    if responses.endswith((".html", ".htm")):
+        responses, _ = responses.rsplit(".", maxsplit=1)
+    responses = responses.strip("/")
 
     parts = responses.split("/")
 

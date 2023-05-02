@@ -15,7 +15,7 @@
 <ul class="breadcrumb">
     {% for item in breadcrumbs %}
     <li>
-        <a href="{{ base_url }}{{ item.url }}">{{ item.name }}</a>
+        <a href="{{ urc.url | absolute_url }}">{{ item.name }}</a>
     </li>
     {%- endfor %}
 </ul>
@@ -29,7 +29,7 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
-                                    <a href="{{ base_url }}{{ urc.url }}?dir=next-in-thread" class="commandlink">
+                                    <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
                                         &nbsp;Next-in-Thread
                                     </a>
                                 </nobr>
@@ -45,7 +45,7 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
-                                    <a href="{{ base_url }}{{ urc.url }}?dir=nextResponse" class="commandlink">
+                                    <a href="{{ urc.url | absolute_url }}?dir=nextResponse" class="commandlink">
                                         &nbsp;Next-in-Forum
                                     </a>
                                 </nobr>
