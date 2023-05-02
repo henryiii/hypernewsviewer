@@ -58,7 +58,7 @@ class AllForums:
             msg = abspath.parent.joinpath(f"{Path(path).stem}-body.html")
         else:
             msg = self.root.joinpath(f"{forum}.note")
-        return msg.read_text() if msg.exists() else None
+        return msg.read_text(encoding="Latin-1") if msg.exists() else None
 
     def get_member(self, user_id: str) -> Member:
         return Member.from_path(self.root / "hnpeople" / user_id)
@@ -83,7 +83,10 @@ class AllForums:
 
     def get_categories(self) -> dict[int, str]:
         path = self.root / "CATEGORIES"
-        pairs = (a.split(" ", 1) for a in path.read_text().strip().splitlines())
+        pairs = (
+            a.split(" ", 1)
+            for a in path.read_text(encoding="Latin-1").strip().splitlines()
+        )
         return {int(a): b for a, b in pairs}
 
     def get_forum(self, forum: str) -> URCMain:

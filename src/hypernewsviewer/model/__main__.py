@@ -296,10 +296,9 @@ def populate_search(db_forums: AllForums | DBForums, fts: Path) -> None:
             total=int(total),
             description="Full text search",
         ):
-            with Path(f"{db_forums.root}{responses}-body.html").open(
+            html_text = Path(f"{db_forums.root}{responses}-body.html").read_text(
                 encoding="Latin-1"
-            ) as f:
-                html_text = f.read()
+            )
             soup = BeautifulSoup(html_text, "html.parser")
             text = soup.get_text()
             db_out.execute(
