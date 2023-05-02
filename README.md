@@ -39,8 +39,8 @@ when you install. If you want to update your dependencies, run:
 pdm update
 ```
 
-You'll also want to update the requirements-locked.txt file - pre-commit (below) will
-do this for you, or you can run `pdm export -o requirements-locked.txt` yourself.
+You'll also want to update the requirements.txt file - pre-commit (below) will
+do this for you, or you can run `pdm export -o requirements.txt` yourself.
 
 ### Dev: styles
 
