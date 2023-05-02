@@ -87,3 +87,10 @@ repos:
       - id: check-sdist
         args: [--inject-junk]
         additional_dependencies: [hatchling]
+
+  - repo: https://github.com/pdm-project/pdm
+    rev: 2.5.3
+    hooks:
+      - id: pdm-export
+        args: [-o, requirements.txt, -Gdeploy]
+      - id: pdm-lock-check
