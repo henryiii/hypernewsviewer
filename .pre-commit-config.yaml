@@ -3,12 +3,12 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: "23.3.0"
     hooks:
       - id: black
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: "v4.4.0"
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -28,7 +28,7 @@ repos:
         args: ["--fix", "--show-fixes"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.2.0
+    rev: "v1.2.0"
     hooks:
       - id: mypy
         files: ^src/hypernewsviewer/model/
@@ -75,3 +75,15 @@ repos:
         entry: js-beautify --replace --type=html --end-with-newline
         types_or: [html]
         additional_dependencies: [js-beautify]
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "0.11.1"
+    hooks:
+      - id: pyproject-fmt
+
+  - repo: https://github.com/henryiii/check-sdist
+    rev: v0.1.0
+    hooks:
+      - id: check-sdist
+        args: [--inject-junk]
+        additional_dependencies: [hatchling]

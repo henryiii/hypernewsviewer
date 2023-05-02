@@ -5,7 +5,7 @@ Python 3.8+ required, 3.9 used in production.
 This project has a nox file for quick runs. If you have nox:
 
 ```console
-nox -e serve
+nox -s serve
 ```
 
 If you don't have nox but do have pipx, then `pipx run nox` replaces `nox`
@@ -29,9 +29,6 @@ pdm install
 
 Now, you are ready to use anything, just prefix any command with `pdm run` to
 run inside the environment.
-
-If this bugs you for some reason, you can use `pdm --pep582 >> ~./bash_profile`
-(or rc) to teach Python about the PDM package folder.
 
 ### Dev: styles
 

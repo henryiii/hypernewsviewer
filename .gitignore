@@ -137,7 +137,10 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-.pdm.toml
+.pdm-python
 
 # Database
 *.sql3
+
+# Ruff
+.ruff_cache
