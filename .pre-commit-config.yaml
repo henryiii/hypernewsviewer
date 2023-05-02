@@ -3,7 +3,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
 
@@ -22,13 +22,13 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.254"
+    rev: "v0.0.264"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.1
+    rev: v1.2.0
     hooks:
       - id: mypy
         files: ^src/hypernewsviewer/model/
@@ -43,7 +43,7 @@ repos:
           - types-werkzeug
 
   - repo: https://github.com/PyCQA/pylint
-    rev: "v2.16.4"
+    rev: "v3.0.0a6"
     hooks:
       - id: pylint
         additional_dependencies:
@@ -55,12 +55,13 @@ repos:
           - rich
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.2"
+    rev: "v2.2.4"
     hooks:
       - id: codespell
+        args: ["-Lslac"]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.6"
+    rev: "v3.0.0-alpha.9-for-vscode"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, css, scss, javascript, json]
