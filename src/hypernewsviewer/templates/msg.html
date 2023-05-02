@@ -15,7 +15,7 @@
 <ul class="breadcrumb">
     {% for item in breadcrumbs %}
     <li>
-        <a href="{{ urc.url | absolute_url }}">{{ item.name }}</a>
+        <a href="{{ item.url | absolute_url }}">{{ item.name }}</a>
     </li>
     {%- endfor %}
 </ul>
