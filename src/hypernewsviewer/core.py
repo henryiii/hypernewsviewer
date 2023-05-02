@@ -20,6 +20,8 @@ from flask import (
 )
 from werkzeug.wrappers import Response
 
+from hypernewsviewer.model.messages import URCMain, URCMessage
+
 from .model.structure import AllForums, DBForums, connect_forums
 
 app = Flask("hypernewsviewer")
@@ -56,17 +58,16 @@ FTS_QUERY = sqlalchemy.select(
 
 @app.template_filter("absolute_url")
 def absolute_url(s: str) -> str:
-    retval = f"{request.url_root}{s.lstrip('/')}"
-    return retval
+    return f"{request.url_root}{s.lstrip('/')}"
 
 
 def get_forums() -> AllForums | DBForums:
-    forums = getattr(g, "_forums", None)
+    forums = getattr(g, "_forums_ctx", None)
     if forums is None:
         # pylint: disable-next=protected-access
         g._forums = connect_forums(DATA_ROOT, DB_ROOT)
         # pylint: disable-next=protected-access,unnecessary-dunder-call
-        return g._forums.__enter__()
+        forums = g._forums_ctx = g._forums.__enter__()
     return forums
 
 
@@ -100,6 +101,16 @@ def icons(path: str) -> Response:
     return send_from_directory("static", f"Icons/{path}")
 
 
+def get_msg_or_none(parts: list[str]) -> URCMessage | URCMain | None:
+    forum, *others = parts
+    path = "/".join(others)
+    forums = get_forums()
+    try:
+        return forums.get_msg(forum, path) if path else forums.get_forum(forum)
+    except FileNotFoundError:
+        return None
+
+
 @app.route("/get/<path:responses>")
 def get(responses: str) -> str | Response:
     if responses.endswith((".html", ".htm")):
@@ -107,29 +118,32 @@ def get(responses: str) -> str | Response:
     responses = responses.strip("/")
 
     parts = responses.split("/")
+    forum, *others = parts
+    path = "/".join(others)
+    forums = get_forums()
+
+    next_in_thread = ([*parts, "1"]) if path else []
+    next_response = (parts[:-1] + [str(int(parts[-1]) + 1)]) if path else []
 
     direction = request.args.get("dir", default=None)
     if direction is not None:
         if direction == "next-in-thread":
-            parts.append("1")
-            return redirect(url_for("get", responses="/".join(parts)))
+            return redirect(url_for("get", responses="/".join(next_in_thread)))
         if direction == "nextResponse":
-            parts[-1] = str(int(parts[-1]) + 1)
-            return redirect(url_for("get", responses="/".join(parts)))
+            return redirect(url_for("get", responses="/".join(next_response)))
 
     trail = accumulate(parts, lambda a, b: f"{a}/{b}")
     breadcrumbs = [
         {"name": part, "url": url_for("get", responses=spath)}
         for part, spath in zip(parts, trail)
     ]
-    forum, *others = parts
-    path = "/".join(others)
 
-    forums = get_forums()
-    try:
-        msg = forums.get_msg(forum, path) if path else forums.get_forum(forum)
-    except FileNotFoundError:
+    msg = get_msg_or_none(parts)
+    if msg is None:
         return f"Unable to find message: {responses} at {DATA_ROOT}"
+
+    has_next_in_thread = get_msg_or_none(next_in_thread) is not None if path else False
+    has_next_response = get_msg_or_none(next_response) is not None if path else False
 
     body = forums.get_html(forum, path)
 
@@ -148,6 +162,8 @@ def get(responses: str) -> str | Response:
         body=body or "",
         breadcrumbs=breadcrumbs,
         replies=replies,
+        has_next_in_thread=has_next_in_thread,
+        has_next_response=has_next_response,
     )
 
 

@@ -29,9 +29,11 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
+                                    {% if has_next_in_thread %}
                                     <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
                                         &nbsp;Next-in-Thread
                                     </a>
+                                    {% endif %}
                                 </nobr>
                             </td>
                         </tr>
@@ -45,9 +47,11 @@
                         <tr>
                             <td style="BORDER:0">
                                 <nobr>
+                                    {% if has_next_response %}
                                     <a href="{{ urc.url | absolute_url }}?dir=nextResponse" class="commandlink">
                                         &nbsp;Next-in-Forum
                                     </a>
+                                    {% endif %}
                                 </nobr>
                             </td>
                         </tr>
