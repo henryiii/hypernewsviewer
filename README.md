@@ -102,3 +102,22 @@ pdm run hyper-model hnTest/1 tree
 ```bash
 pdm run hyper-model any forum
 ```
+
+#### Producing a database
+
+You need to pre-process the file root to make two database files; one for
+metadata, and one for full text search. For example:
+
+```bash
+HNFILES=$PWD/cms-hndocs HNDATABASE=hnvdb.sql3 pdm run hyper-model populate
+HNFTSDATABASE=hnvfullfts.sql3 HNDATABASE=hnvdb.sql3 HNFILES=$PWD/cms-hndocs pdm run populate-search
+```
+
+### Selecting a file to use
+
+If you produce a database (and optionally a search database), then those can be
+specified by environment variables:
+
+- `HNFTSDATABASE`: The full-text-search database
+- `HNDATABASE`: The database with all the metadata
+- `HNFILES`: tTe file directory root
