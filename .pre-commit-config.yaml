@@ -22,13 +22,13 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.264"
+    rev: "v0.0.272"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.2.0"
+    rev: "v1.3.0"
     hooks:
       - id: mypy
         files: ^src/hypernewsviewer/model/
@@ -77,19 +77,19 @@ repos:
         additional_dependencies: [js-beautify]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "0.11.1"
+    rev: "0.11.2"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/henryiii/check-sdist
-    rev: v0.1.0
+    rev: v0.1.2
     hooks:
       - id: check-sdist
         args: [--inject-junk]
         additional_dependencies: [hatchling]
 
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.5.3
+    rev: 2.7.2
     hooks:
       - id: pdm-export
         args: [-o, requirements.txt, -Gdeploy]
