@@ -89,7 +89,7 @@ repos:
         additional_dependencies: [hatchling]
 
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.8.0a2
+    rev: 2.7.4
     hooks:
       - id: pdm-export
         args: [-o, requirements.txt, -Gdeploy]
