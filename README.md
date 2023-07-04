@@ -121,3 +121,55 @@ specified by environment variables:
 - `HNFTSDATABASE`: The full-text-search database
 - `HNDATABASE`: The database with all the metadata
 - `HNFILES`: tTe file directory root
+
+
+## Setup for development
+
+### Connecting to CERN
+
+Following the [guide](https://security.web.cern.ch/recommendations/en/ssh_tunneling.shtml), run this in a terminal:
+
+```console
+sshuttle --dns -vr hschrein@lxplus.cern.ch 137.138.0.0/16 128.141.0.0/16 128.142.0.0/16 188.184.0.0/15
+```
+
+### Platform as a Service
+
+Log on to <https://paas.cern.ch>. Site at <https://test-hypernewsviewer.app.cern.ch>.
+
+See `/eos/project/c/cms-hn-archive/www/hnDocs`.
+
+Followed <https://paas.docs.cern.ch/3._Storage/eos/> for EOS access.
+
+Followed <https://paas.docs.cern.ch/4._CERN_Authentication/2-deploy-sso-proxy/> for SSO proxy.
+
+I set up the group access with <https://paas.docs.cern.ch/4._CERN_Authentication/3-configuring-authorized-users/> .
+
+
+### Local
+
+Local:
+
+I used a recent Rπ. I used:
+
+```bash
+sudo apt install sshfs
+sudo mkdir /eos
+sshfs -o allow_other hschrein@lxplus.cern.ch:/eos /eos/
+```
+
+Now you can use `HNFILES=/eos/project/c/cms-hn-archive/www/hnDocs` instead of `/eos/user/h/hschrein/hnfiles` in the BC (Build Config).
+
+<https://cern.service-now.com/service-portal?id=kb_article&sys_id=68deb363db3f0c58006fd9f9f49619aa>
+
+Database transfer:
+
+```bash
+oc get pods
+oc rsync . hypernewsviewer-c55f84966-9c2lh:/hnvstorage
+```
+
+```bash
+HNDATABASE=/hnvstorage/hnvdb-2022-03-21.sql3
+HNFILES=/eos/project/c/cms-hn-archive/www/hnDocs
+```
