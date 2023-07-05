@@ -137,7 +137,7 @@ sshuttle --dns -vr hschrein@lxplus.cern.ch 137.138.0.0/16 128.141.0.0/16 128.142
 ### Platform as a Service
 
 Log on to <https://paas.cern.ch>. Site at
-<https://test-hypernewsviewer.app.cern.ch>.
+<https://hypernewsviewer.app.cern.ch>.
 
 See `/eos/project/c/cms-hn-archive/www/hnDocs`.
 
