@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import os
 import time
+import warnings
 from itertools import accumulate, groupby
 from pathlib import Path
 from typing import Any
@@ -56,9 +57,16 @@ FTS_QUERY = sqlalchemy.select(
 )
 
 
+BASE_PATH = "/hypernews/CMS"
+
+
 @app.template_filter("absolute_url")
 def absolute_url(s: str) -> str:
-    return f"{request.url_root}{s.lstrip('/')}"
+    if s.startswith(BASE_PATH):
+        msg = f"Should not make absolute url from {s}, stripping"
+        warnings.warn(msg, stacklevel=2)
+        s = s[len(BASE_PATH) :]
+    return f"{request.url_root}{BASE_PATH.strip('/')}/{s.lstrip('/')}"
 
 
 def get_forums() -> AllForums | DBForums:
@@ -86,9 +94,24 @@ def close_connection(_exception: BaseException | None) -> None:
         forums.__exit__(None, None, None)
 
 
-@app.route("/")
-def reroute() -> Response:
+@app.route(f"{BASE_PATH}/")
+def reroute_base_path() -> Response:
     return redirect(url_for("home_page"))
+
+
+@app.route("/hypernews/CMSCVS/<path:path>")
+def reroute_hypernews_classic(path: str) -> Response:
+    return redirect(f"/hypernews/CMS/{path}")
+
+
+@app.route("/hypernews/")
+def reroute_hypernews() -> Response:
+    return redirect(url_for("home_page"))
+
+
+@app.route("/")
+def render_home() -> str:
+    return render_template("root_landing.html")
 
 
 @app.route("/favicon.ico")
@@ -96,7 +119,7 @@ def favicon() -> Response:
     return send_from_directory("static", "favicon.ico")
 
 
-@app.route("/Icons/<path:path>")
+@app.route(f"{BASE_PATH}/Icons/<path:path>")
 def icons(path: str) -> Response:
     return send_from_directory("static", f"Icons/{path}")
 
@@ -111,7 +134,7 @@ def get_msg_or_none(parts: list[str]) -> URCMessage | URCMain | None:
         return None
 
 
-@app.route("/get/<path:responses>")
+@app.route(f"{BASE_PATH}/get/<path:responses>")
 def get(responses: str) -> str | Response:
     if responses.endswith((".html", ".htm")):
         responses, _ = responses.rsplit(".", maxsplit=1)
@@ -167,7 +190,7 @@ def get(responses: str) -> str | Response:
     )
 
 
-@app.route("/view-member.pl")
+@app.route(f"{BASE_PATH}/view-member.pl")
 def view_member() -> str:
     (answer,) = request.args
     forums = get_forums()
@@ -178,7 +201,7 @@ def view_member() -> str:
     return render_template("member.html", member=member_dict)
 
 
-@app.route("/view-members.pl")
+@app.route(f"{BASE_PATH}/view-members.pl")
 def view_members() -> str:
     RESULTS_PER_PAGE = 50
     find = request.args.get("find", default=None)
@@ -211,12 +234,12 @@ def view_members() -> str:
     )
 
 
-@app.route("/top.pl")
+@app.route(f"{BASE_PATH}/top.pl")
 def home_page() -> str:
     return render_template("top.html")
 
 
-@app.route("/index")
+@app.route(f"{BASE_PATH}/index")
 def index() -> str:
     forums = get_forums()
     all_forums = filter(None, forums.get_forums_iter())
@@ -224,7 +247,7 @@ def index() -> str:
     return render_template("index.html", forums=sorted_forums)
 
 
-@app.route("/cindex")
+@app.route(f"{BASE_PATH}/cindex")
 def cindex() -> str:
     forums = get_forums()
     categories = forums.get_categories()
@@ -239,7 +262,7 @@ def cindex() -> str:
     return render_template("cindex.html", groups=grouped_forums, categories=categories)
 
 
-@app.route("/search")
+@app.route(f"{BASE_PATH}/search")
 def search() -> str:
     if HNFTSDATABASE is None:
         return render_template(

@@ -15,7 +15,7 @@
 <ul class="breadcrumb">
     {% for item in breadcrumbs %}
     <li>
-        <a href="{{ item.url | absolute_url }}">{{ item.name }}</a>
+        <a href="{{ item.url }}">{{ item.name }}</a>
     </li>
     {%- endfor %}
 </ul>
@@ -30,7 +30,7 @@
                             <td style="BORDER:0">
                                 <nobr>
                                     {% if has_next_in_thread %}
-                                    <a href="{{ urc.url }}?dir=next-in-thread" class="commandlink">
+                                    <a href="{{ urc.url | absolute_url }}?dir=next-in-thread" class="commandlink">
                                         &nbsp;Next-in-Thread
                                     </a>
                                     {% endif %}
@@ -117,7 +117,7 @@
         {% for item in replies[::-1] %}
         <li value="{{ item.msg.num }}">
             <img src="{{ item.msg.up_rel | urc_icon }}" alt="None:" width="15" height="15" align="texttop">
-            <a href="{{item.url}}">
+            <a href="{{ item.url }}">
                 {{ item.msg.title | safe }}
             </a>
             <em>({{ item.msg.name }} - {{ item.msg.date | smartdate }})</em>
