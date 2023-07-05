@@ -57,7 +57,7 @@ FTS_QUERY = sqlalchemy.select(
 )
 
 
-BASE_PATH = "/hypernews/CMS"
+BASE_PATH = "/HyperNews/CMS"
 
 
 @app.template_filter("absolute_url")
@@ -99,12 +99,12 @@ def reroute_base_path() -> Response:
     return redirect(url_for("home_page"))
 
 
-@app.route("/hypernews/CMSCVS/<path:path>")
+@app.route("/HyperNews/CMSCVS/<path:path>")
 def reroute_hypernews_classic(path: str) -> Response:
-    return redirect(f"/hypernews/CMS/{path}")
+    return redirect(f"/HyperNews/CMS/{path}")
 
 
-@app.route("/hypernews/")
+@app.route("/HyperNews/")
 def reroute_hypernews() -> Response:
     return redirect(url_for("home_page"))
 
