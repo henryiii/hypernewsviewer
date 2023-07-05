@@ -109,8 +109,17 @@ You need to pre-process the file root to make two database files; one for
 metadata, and one for full text search. For example:
 
 ```bash
-HNFILES=$PWD/cms-hndocs HNDATABASE=hnvdb.sql3 pdm run hyper-model populate
-HNFTSDATABASE=hnvfullfts.sql3 HNDATABASE=hnvdb.sql3 HNFILES=$PWD/cms-hndocs pdm run populate-search
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[cli]"
+cd ../allfiles
+scp 'lxplus:/eos/project/c/cms-hn-archive/www/tarballs/2023-05-17/*' .
+cat cms-hndocs.tgz.aa cms-hndocs.tgz.ab cms-hndocs.tgz.ac cms-hndocs.tgz.ad cms-hndocs.tgz.ae > cms-hndocs.tgz
+rm rm cms-hndocs.tgz.a?
+mkdir cms-hndocs
+tar xzf cms-hndocs.tgz -C cms-hndocs  # Takes about 40 mins
+HNFILES=$PWD/cms-hndocs HNDATABASE=hnvdb.sql3 hyper-model populate  # Takes about 40 mins
+HNFTSDATABASE=hnvfullfts.sql3 HNDATABASE=hnvdb.sql3 HNFILES=$PWD/cms-hndocs hyper-model populate-search  # Takes about 30 mins
 ```
 
 ### Selecting a file to use
@@ -120,7 +129,7 @@ specified by environment variables:
 
 - `HNFTSDATABASE`: The full-text-search database
 - `HNDATABASE`: The database with all the metadata
-- `HNFILES`: tTe file directory root
+- `HNFILES`: The file directory root
 
 ## Setup for development
 
@@ -136,19 +145,19 @@ sshuttle --dns -vr hschrein@lxplus.cern.ch 137.138.0.0/16 128.141.0.0/16 128.142
 
 ### Platform as a Service
 
-Log on to <https://paas.cern.ch>. Site at
-<https://hypernewsviewer.app.cern.ch>.
+Log on to <https://paas.cern.ch>. Site at <https://hypernewsviewer.app.cern.ch>.
 
 See `/eos/project/c/cms-hn-archive/www/hnDocs`.
 
-Followed <https://paas.docs.cern.ch/3._Storage/eos/> for EOS access.
+Followed [pass eos docs](https://paas.docs.cern.ch/3._Storage/eos/) for EOS
+access.
 
-Followed <https://paas.docs.cern.ch/4._CERN_Authentication/2-deploy-sso-proxy/>
+Followed
+[paas sso docs](https://paas.docs.cern.ch/4._CERN_Authentication/2-deploy-sso-proxy/)
 for SSO proxy.
 
 I set up the group access with
-<https://paas.docs.cern.ch/4._CERN_Authentication/3-configuring-authorized-users/>
-.
+[paas auth docs](https://paas.docs.cern.ch/4._CERN_Authentication/3-configuring-authorized-users/).
 
 ### Local
 
@@ -165,7 +174,7 @@ sshfs -o allow_other hschrein@lxplus.cern.ch:/eos /eos/
 Now you can use `HNFILES=/eos/project/c/cms-hn-archive/www/hnDocs` instead of
 `/eos/user/h/hschrein/hnfiles` in the BC (Build Config).
 
-<https://cern.service-now.com/service-portal?id=kb_article&sys_id=68deb363db3f0c58006fd9f9f49619aa>
+[Service now page](https://cern.service-now.com/service-portal?id=kb_article&sys_id=68deb363db3f0c58006fd9f9f49619aa).
 
 Database transfer:
 

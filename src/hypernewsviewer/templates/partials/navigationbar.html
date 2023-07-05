@@ -19,28 +19,14 @@
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <a class="navlink" href="/cindex">Forums by Category</a>
+                                                    <a class="navlink" href="{{ url_for('cindex') }}">Forums by Category</a>
                                                 </td>
                                                 <td>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <a class="navlink" href="/index">Forums by Time Order</a>
-                                                </td>
-                                                <td>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-
-                                <td>
-                                    <table>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <a class="navlink" href="/search">Search in Forums</a>
+                                                    <a class="navlink" href="{{ url_for('index') }}">Forums by Time Order</a>
                                                 </td>
                                                 <td>
                                                 </td>
@@ -54,7 +40,7 @@
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <a class="navlink" href="/view-members.pl">Members List</a>
+                                                    <a class="navlink" href="{{ url_for('search') }}">Search in Forums</a>
                                                 </td>
                                                 <td>
                                                 </td>
@@ -68,7 +54,21 @@
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <a class="navlink" href="/top.pl">Overview</a>
+                                                    <a class="navlink" href="{{ url_for ('view_members') }}">Members List</a>
+                                                </td>
+                                                <td>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+
+                                <td>
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <a class="navlink" href="{{ url_for('home_page') }}">Overview</a>
                                                 </td>
                                                 <td>
                                                 </td>

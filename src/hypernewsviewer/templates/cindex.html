@@ -7,7 +7,7 @@
 <div class="mycategory">
     <div class="categoryheader"><a name="{{ cat }}"></a>Category: {{ categories[cat] }}</div>
     {% for forum in forums %}
-    <div class="categoryforum"><a class="catlink" href="{{ forum.url }}">{{ forum.title }}</a></div>
+    <div class="categoryforum"><a class="catlink" href="{{ forum.url | absolute_url }}">{{ forum.title }}</a></div>
     {% endfor %}
 </div>
 {% endfor %}
