@@ -140,8 +140,11 @@ Following the
 run this in a terminal:
 
 ```console
-sshuttle --dns -vr hschrein@lxplus.cern.ch 137.138.0.0/16 128.141.0.0/16 128.142.0.0/16 188.184.0.0/15
+sshuttle --dns -vr <username>@lxplus.cern.ch 137.138.0.0/16 128.141.0.0/16 128.142.0.0/16 188.184.0.0/15 128.141.0.0/16 128.142.0.0/16 137.138.0.0/16 185.249.56.0/22 188.184.0.0/15 192.65.196.0/23 192.91.242.0/24 194.12.128.0/18 2001:1458::/32 2001:1459::/32
 ```
+
+(If you want to use `oc`, you'll need the above to shuttle IPv6 too; it's a
+little simpler if you just needed IPv4).
 
 ### Platform as a Service
 
@@ -165,25 +168,29 @@ Local:
 
 I used a recent Rπ. I used:
 
-```bash
-sudo apt install sshfs
-sudo mkdir /eos
-sshfs -o allow_other hschrein@lxplus.cern.ch:/eos /eos/
-```
+````bash sudo apt install sshfs sudo mkdir /eos sshfs -o allow_other
+<username>@lxplus.cern.ch:/eos /eos/ ```
 
 Now you can use `HNFILES=/eos/project/c/cms-hn-archive/www/hnDocs` instead of
-`/eos/user/h/hschrein/hnfiles` in the BC (Build Config).
+`/eos/user/h/<username>/hnfiles` in the BC (Build Config).
 
-[Service now page](https://cern.service-now.com/service-portal?id=kb_article&sys_id=68deb363db3f0c58006fd9f9f49619aa).
+[Service now
+page](https://cern.service-now.com/service-portal?id=kb_article&sys_id=68deb363db3f0c58006fd9f9f49619aa).
 
-Database transfer:
+Database transfer (you can get `openshift-cli` from brew, and your login
+command from [here](https://oauth-openshift.paas.cern.ch/oauth/token/display):
+
+```bash oc get pods oc rsync . hypernewsviewer-c55f84966-9c2lh:/hnvstorage ```
+
+I find that transferring is far too slow. A much faster way is to rsync the
+files to lxplus, then use `oc` on lxplus (you can download a binary for it
+[here](https://readthedocs.web.cern.ch/pages/viewpage.action?pageId=170033571))
+can then do the rsync much faster. Th two step procedure takes about 20
+minutes, while a direct transfer takes ~4 days.
+
+You can log into the container with `oc rsh <podname>`.
 
 ```bash
-oc get pods
-oc rsync . hypernewsviewer-c55f84966-9c2lh:/hnvstorage
-```
-
-```bash
-HNDATABASE=/hnvstorage/hnvdb-2022-03-21.sql3
+HNDATABASE=/hnvstorage/hnvdb-2023-07-05.sql3
 HNFILES=/eos/project/c/cms-hn-archive/www/hnDocs
-```
+````
