@@ -3,7 +3,7 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: "23.3.0"
+    rev: "23.7.0"
     hooks:
       - id: black
 
@@ -22,13 +22,13 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.0.277"
+    rev: "v0.0.286"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.4.1"
+    rev: "v1.5.1"
     hooks:
       - id: mypy
         files: ^src/hypernewsviewer/model/
@@ -43,7 +43,7 @@ repos:
           - types-werkzeug
 
   - repo: https://github.com/PyCQA/pylint
-    rev: "v3.0.0a6"
+    rev: "v3.0.0a7"
     hooks:
       - id: pylint
         additional_dependencies:
@@ -61,7 +61,7 @@ repos:
         args: ["-Lslac"]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0"
+    rev: "v3.0.2"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, css, scss, javascript, json]
@@ -77,7 +77,7 @@ repos:
         additional_dependencies: [js-beautify]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "0.13.0"
+    rev: "1.1.0"
     hooks:
       - id: pyproject-fmt
 
@@ -89,7 +89,7 @@ repos:
         additional_dependencies: [hatchling]
 
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.8.0a2
+    rev: 2.7.4
     hooks:
       - id: pdm-export
         args: [-o, requirements.txt, -Gdeploy]
