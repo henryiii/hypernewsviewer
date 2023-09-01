@@ -28,7 +28,7 @@ from .model.structure import AllForums, DBForums, connect_forums
 app = Flask("hypernewsviewer")
 total_msgs: int | None = None
 
-DIR = Path(".").resolve()
+DIR = Path().resolve()
 HNFILES = os.environ.get("HNFILES", str(DIR.parent.joinpath("hnfiles")))
 HNDATABASE = os.environ.get("HNDATABASE", None)
 
