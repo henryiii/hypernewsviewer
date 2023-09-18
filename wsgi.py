@@ -12,7 +12,7 @@ class HealthCheckFilter(logging.Filter):
 
 
 # Remove health check from application server logs
-logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
+logging.getLogger("gunicorn.access").addFilter(HealthCheckFilter())
 
 logger = logging.getLogger(__name__)
 
