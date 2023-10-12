@@ -295,7 +295,7 @@ def search() -> str:
         Search for a forum post. See
         <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">SQLite FTS5</a>
         for details on the syntax. Please avoid very simple queries that might
-        match large nubers of posts, as those might time out the response."""
+        match large numbers of posts, as those might time out the response."""
 
         results = []
 
