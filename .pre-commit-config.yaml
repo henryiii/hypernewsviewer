@@ -58,7 +58,7 @@ repos:
     rev: "v2.2.6"
     hooks:
       - id: codespell
-        args: ["-Lslac"]
+        args: ["-Lslac", "-w"]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: "v3.0.3"
