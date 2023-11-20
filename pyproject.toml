@@ -94,26 +94,6 @@ unfixable = [
 flake8-unused-arguments.ignore-variadic-names = true
 per-file-ignores."tests/**" = ["T20"]
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-xfail_strict = true
-filterwarnings = ["error"]
-log_cli_level = "info"
-testpaths = ["tests"]
-
-[tool.mypy]
-python_version = "3.8"
-warn_unused_configs = true
-strict = true
-show_error_codes = true
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-module = ["inflection", "hypernewsviewer.filters.*", "bs4", "sqlalchemy.*"]
-ignore_missing_imports = true
-
 [tool.pylint]
 master.py-version = "3.8"
 master.jobs = "0"
@@ -133,3 +113,23 @@ messages_control.disable = [
   "no-member",
   "redefined-builtin",
 ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_unused_configs = true
+strict = true
+show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["inflection", "hypernewsviewer.filters.*", "bs4", "sqlalchemy.*"]
+ignore_missing_imports = true
