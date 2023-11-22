@@ -137,7 +137,7 @@ def get_msg_or_none(parts: list[str]) -> URCMessage | URCMain | None:
 
 @app.route(f"{BASE_PATH}/get/AUX/<path:path>")
 def attachments(path: str) -> Response:
-    return send_from_directory("static", f"{DATA_ROOT}/AUX/{path}")
+    return send_from_directory(f"{DATA_ROOT}/AUX", path)
 
 
 @app.route(f"{BASE_PATH}/get/<path:responses>")
