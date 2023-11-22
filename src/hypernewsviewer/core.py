@@ -12,6 +12,7 @@ import attrs
 import sqlalchemy
 from flask import (
     Flask,
+    abort,
     g,
     redirect,
     render_template,
@@ -134,6 +135,11 @@ def get_msg_or_none(parts: list[str]) -> URCMessage | URCMain | None:
         return None
 
 
+@app.route(f"{BASE_PATH}/get/AUX/<path:path>")
+def attachments(path: str) -> Response:
+    return send_from_directory("static", f"{DATA_ROOT}/AUX/{path}")
+
+
 @app.route(f"{BASE_PATH}/get/<path:responses>")
 def get(responses: str) -> str | Response:
     if responses.endswith((".html", ".htm")):
@@ -146,7 +152,10 @@ def get(responses: str) -> str | Response:
     forums = get_forums()
 
     next_in_thread = ([*parts, "1"]) if path else []
-    next_response = (parts[:-1] + [str(int(parts[-1]) + 1)]) if path else []
+    try:
+        next_response = (parts[:-1] + [str(int(parts[-1]) + 1)]) if path else []
+    except ValueError:
+        abort(404)
 
     direction = request.args.get("dir", default=None)
     if direction is not None:
