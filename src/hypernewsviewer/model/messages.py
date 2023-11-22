@@ -42,6 +42,7 @@ class InfoBase:
 @attrs.define(kw_only=True, eq=True, slots=False)
 class Member(InfoBase):
     "Registered user information"
+
     user_id: str = attrs.field(metadata={"primary_key": True})
     name: str = ""
     user_url: str = ""
@@ -108,6 +109,7 @@ class URCBase(InfoBase):
 @attrs.define(kw_only=True, eq=True, slots=False)
 class URCMain(URCBase):
     "Forum information"
+
     list_address: str = ""
     categories: int
 
@@ -136,6 +138,7 @@ class URCMain(URCBase):
 @attrs.define(kw_only=True, eq=True, slots=False)
 class URCMessage(URCBase):
     "Individual message information"
+
     last_message_date: datetime
     last_mod: datetime
 
