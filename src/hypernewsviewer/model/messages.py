@@ -19,7 +19,7 @@ class InfoBase:
 
     @classmethod
     def from_path(cls, path: "os.PathLike[str]") -> Self:
-        btxt = Path(path).read_bytes().translate(None, b"\x0D\x1C\x1D\x1E\x1F")
+        btxt = Path(path).read_bytes().translate(None, b"\x0d\x1c\x1d\x1e\x1f")
         try:
             txt = btxt.decode("Latin-1")
             return cls.from_file(txt)
