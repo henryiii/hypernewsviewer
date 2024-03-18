@@ -17,14 +17,14 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.1.6"
+    rev: "v0.3.3"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.7.0"
+    rev: "v1.9.0"
     hooks:
       - id: mypy
         files: ^src/hypernewsviewer/model/
@@ -39,7 +39,7 @@ repos:
           - types-werkzeug
 
   - repo: https://github.com/PyCQA/pylint
-    rev: "v3.0.1"
+    rev: "v3.1.0"
     hooks:
       - id: pylint
         additional_dependencies:
@@ -57,7 +57,7 @@ repos:
         args: ["-Lslac", "-w"]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
+    rev: "v4.0.0-alpha.8"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, css, scss, javascript, json]
@@ -73,7 +73,7 @@ repos:
         additional_dependencies: [js-beautify]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "1.5.1"
+    rev: "1.7.0"
     hooks:
       - id: pyproject-fmt
 
@@ -85,7 +85,7 @@ repos:
         additional_dependencies: [hatchling]
 
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.10.3
+    rev: 2.12.4
     hooks:
       - id: pdm-export
         args: [-o, requirements.txt, -Gdeploy]
