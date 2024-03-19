@@ -74,7 +74,7 @@ def track(
 
 
 def convert_context(
-    function: Callable[Concatenate[AllForums | DBForums, P], None]
+    function: Callable[Concatenate[AllForums | DBForums, P], None],
 ) -> Callable[P, None]:
     """
     Decorator to convert the context to a DBForums or AllForums object.
