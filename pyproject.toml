@@ -9,7 +9,7 @@ name = "hypernewsviewer"
 version = "0.1.0"
 description = "A viewer for HyperNews"
 authors = [
-  {name = "Henry Schreiner", email="henryschreineriii@gmail.com"},
+  { name = "Henry Schreiner", email = "henryschreineriii@gmail.com" },
 ]
 requires-python = ">=3.8"
 classifiers = [
@@ -28,7 +28,7 @@ dependencies = [
   "inflection>=0.5.1",
   "markupsafe>=2",
   "sqlalchemy>=2",
-  'typing_extensions>=4.1; python_version < "3.11"',
+  "typing-extensions>=4.1; python_version<'3.11'",
 ]
 optional-dependencies.cli = [
   "beautifulsoup4",
@@ -56,47 +56,56 @@ optional-dependencies.test = [
 scripts.hyper-model = "hypernewsviewer.model.__main__:main"
 
 [tool.ruff]
-src = ["src"]
+src = [
+  "src",
+]
 
 [tool.ruff.lint]
 extend-select = [
-  "B",           # flake8-bugbear
-  "I",           # isort
-  "ARG",         # flake8-unused-arguments
-  "C4",          # flake8-comprehensions
-  "EM",          # flake8-errmsg
-  "ICN",         # flake8-import-conventions
-  "ISC",         # flake8-implicit-str-concat
-  "G",           # flake8-logging-format
-  "PGH",         # pygrep-hooks
-  "PIE",         # flake8-pie
-  "PL",          # pylint
-  "PT",          # flake8-pytest-style
-  "PTH",         # flake8-use-pathlib
-  "RET",         # flake8-return
-  "RUF",         # Ruff-specific
-  "SIM",         # flake8-simplify
-  "T20",         # flake8-print
-  "UP",          # pyupgrade
-  "YTT",         # flake8-2020
-  "EXE",         # flake8-executable
-  "NPY",         # NumPy specific rules
-  "PD",          # pandas-vet
+  "B",   # flake8-bugbear
+  "I",   # isort
+  "ARG", # flake8-unused-arguments
+  "C4",  # flake8-comprehensions
+  "EM",  # flake8-errmsg
+  "ICN", # flake8-import-conventions
+  "ISC", # flake8-implicit-str-concat
+  "G",   # flake8-logging-format
+  "PGH", # pygrep-hooks
+  "PIE", # flake8-pie
+  "PL",  # pylint
+  "PT",  # flake8-pytest-style
+  "PTH", # flake8-use-pathlib
+  "RET", # flake8-return
+  "RUF", # Ruff-specific
+  "SIM", # flake8-simplify
+  "T20", # flake8-print
+  "UP",  # pyupgrade
+  "YTT", # flake8-2020
+  "EXE", # flake8-executable
+  "NPY", # NumPy specific rules
+  "PD",  # pandas-vet
 ]
 ignore = [
-  "ISC001",  # Conflicts with the formatter
-  "PLR09",   # Too many X
+  "ISC001", # Conflicts with the formatter
+  "PLR09",  # Too many X
 ]
-typing-modules = ["hypernewsviewer._compat.typing"]
+typing-modules = [
+  "hypernewsviewer._compat.typing",
+]
 flake8-unused-arguments.ignore-variadic-names = true
-per-file-ignores."tests/**" = ["T20", "PLR2004"]
+per-file-ignores."tests/**" = [
+  "T20",
+  "PLR2004",
+]
 
 [tool.pylint]
 master.py-version = "3.8"
 master.jobs = "0"
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
-messages_control.enable = ["useless-suppression"]
+messages_control.enable = [
+  "useless-suppression",
+]
 messages_control.disable = [
   "design",
   "fixme",
@@ -113,20 +122,38 @@ messages_control.disable = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = [
+  "-ra",
+  "--showlocals",
+  "--strict-markers",
+  "--strict-config",
+]
 xfail_strict = true
-filterwarnings = ["error"]
+filterwarnings = [
+  "error",
+]
 log_cli_level = "info"
-testpaths = ["tests"]
+testpaths = [
+  "tests",
+]
 
 [tool.mypy]
 python_version = "3.8"
 warn_unused_configs = true
 strict = true
 show_error_codes = true
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+enable_error_code = [
+  "ignore-without-code",
+  "redundant-expr",
+  "truthy-bool",
+]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["inflection", "hypernewsviewer.filters.*", "bs4", "sqlalchemy.*"]
+module = [
+  "inflection",
+  "hypernewsviewer.filters.*",
+  "bs4",
+  "sqlalchemy.*",
+]
 ignore_missing_imports = true
